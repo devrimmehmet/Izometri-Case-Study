@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Services/" />
+  <Folder Name="/src/Services/ExpenseService/">
+    <Project Path="src/Services/ExpenseService/ExpenseService.Api/ExpenseService.Api.csproj" />
+    <Project Path="src/Services/ExpenseService/ExpenseService.Application/ExpenseService.Application.csproj" />
+    <Project Path="src/Services/ExpenseService/ExpenseService.Domain/ExpenseService.Domain.csproj" />
+    <Project Path="src/Services/ExpenseService/ExpenseService.Infrastructure/ExpenseService.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/NotificationService/">
+    <Project Path="src/Services/NotificationService/NotificationService.Api/NotificationService.Api.csproj" />
+    <Project Path="src/Services/NotificationService/NotificationService.Application/NotificationService.Application.csproj" />
+    <Project Path="src/Services/NotificationService/NotificationService.Domain/NotificationService.Domain.csproj" />
+    <Project Path="src/Services/NotificationService/NotificationService.Infrastructure/NotificationService.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/ExpenseManagement.Contracts/ExpenseManagement.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ExpenseService.Tests/ExpenseService.Tests.csproj" />
+  </Folder>
+</Solution>
