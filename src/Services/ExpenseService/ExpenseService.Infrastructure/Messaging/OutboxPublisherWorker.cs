@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using ExpenseManagement.Contracts;
 using ExpenseService.Domain.Entities;
@@ -13,6 +14,7 @@ namespace ExpenseService.Infrastructure.Messaging;
 
 public sealed class OutboxPublisherWorker : BackgroundService
 {
+    private static readonly ActivitySource ActivitySource = new("ExpenseService.Messaging");
     private readonly ILogger<OutboxPublisherWorker> _logger;
     private readonly RabbitMqOptions _options;
     private readonly IServiceScopeFactory _scopeFactory;
@@ -71,6 +73,10 @@ public sealed class OutboxPublisherWorker : BackgroundService
 
         foreach (var message in messages)
         {
+            using var activity = ActivitySource.StartActivity("outbox.publish", ActivityKind.Producer);
+            activity?.SetTag("messaging.system", "rabbitmq");
+            activity?.SetTag("messaging.destination", message.RoutingKey);
+            activity?.SetTag("messaging.message.id", message.Id.ToString());
             try
             {
                 var body = Encoding.UTF8.GetBytes(message.Payload);
@@ -83,6 +89,7 @@ public sealed class OutboxPublisherWorker : BackgroundService
 
                 message.ProcessedAt = DateTime.UtcNow;
                 message.Error = null;
+                activity?.SetStatus(ActivityStatusCode.Ok);
             }
             catch (Exception ex)
             {
@@ -93,6 +100,7 @@ public sealed class OutboxPublisherWorker : BackgroundService
                     message.DeadLetteredAt = DateTime.UtcNow;
                 }
 
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                 _logger.LogError(ex, "Failed to publish outbox message {MessageId}.", message.Id);
             }
         }

@@ -29,12 +29,5 @@ jobs:
       - name: Validate compose
         run: docker compose config --quiet
 
-      - name: Start dependencies and APIs
-        run: docker compose up -d --build
-
       - name: Test
         run: dotnet test Izometri.CaseStudy.slnx --configuration Release --no-build
-
-      - name: Stop compose
-        if: always()
-        run: docker compose down

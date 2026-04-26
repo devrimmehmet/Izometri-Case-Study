@@ -9,28 +9,32 @@ using NotificationService.Application.DTOs;
 
 namespace ExpenseService.Tests;
 
-public sealed class LiveDockerIntegrationTests
+public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTestFixture>
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
-    private readonly HttpClient _expenseClient = new() { BaseAddress = new Uri("http://localhost:5001") };
-    private readonly HttpClient _notificationClient = new() { BaseAddress = new Uri("http://localhost:5002") };
+    private readonly HttpClient _expenseClient;
+    private readonly HttpClient _notificationClient;
+
+    public TestcontainersIntegrationTests(IntegrationTestFixture fixture)
+    {
+        _expenseClient = fixture.ExpenseClient;
+        _notificationClient = fixture.NotificationClient;
+    }
 
     [Fact]
-    public async Task Docker_compose_flow_covers_admin_users_tenant_isolation_outbox_and_notifications()
+    public async Task Isolated_flow_covers_admin_users_tenant_isolation_outbox_and_notifications()
     {
-        await EnsureServicesAreReachableAsync();
-
         var admin = await LoginAsync("admin@acme.com", "acme");
         var personnel = await LoginAsync("personel@demo.com", "acme");
         var globexPersonnel = await LoginAsync("personel@demo.com", "globex");
         var hr = await LoginAsync("hr@acme.com", "acme");
 
-        var uniqueEmail = $"case-{Guid.NewGuid():N}@acme.com";
+        var uniqueEmail = $"tc-{Guid.NewGuid():N}@acme.com";
         var createdUser = await SendAsync<UserResponse>(
             HttpMethod.Post,
             "/api/admin/users",
             admin.AccessToken,
-            new CreateUserRequest(uniqueEmail, "Case User", "Pass123!", new[] { "Personnel" }));
+            new CreateUserRequest(uniqueEmail, "TC User", "Pass123!", new[] { "Personnel" }));
         Assert.Contains("Personnel", createdUser.Roles);
 
         var roleUpdate = await SendAsync<UserResponse>(
@@ -67,15 +71,6 @@ public sealed class LiveDockerIntegrationTests
         Assert.Contains(notifications, x => x.ExpenseId == expense.Id && x.EventType == "expense.approved");
     }
 
-    private async Task EnsureServicesAreReachableAsync()
-    {
-        var expenseResponse = await _expenseClient.GetAsync("/swagger/index.html");
-        var notificationResponse = await _notificationClient.GetAsync("/swagger/index.html");
-
-        Assert.True(expenseResponse.IsSuccessStatusCode, "Expense API is not reachable on http://localhost:5001.");
-        Assert.True(notificationResponse.IsSuccessStatusCode, "Notification API is not reachable on http://localhost:5002.");
-    }
-
     private async Task<LoginResponse> LoginAsync(string email, string tenant)
     {
         var response = await _expenseClient.PostAsJsonAsync("/api/auth/login", new LoginRequest(email, "Pass123!", tenant), JsonOptions);
@@ -94,7 +89,7 @@ public sealed class LiveDockerIntegrationTests
     {
         using var request = new HttpRequestMessage(method, path);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        request.Headers.TryAddWithoutValidation("X-Correlation-Id", $"integration-{Guid.NewGuid():N}");
+        request.Headers.TryAddWithoutValidation("X-Correlation-Id", $"tc-{Guid.NewGuid():N}");
         if (body is not null)
         {
             request.Content = JsonContent.Create(body, options: JsonOptions);

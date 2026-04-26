@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using ExpenseManagement.Contracts;
 using NotificationService.Application.Abstractions;
@@ -13,6 +14,7 @@ namespace NotificationService.Infrastructure.Messaging;
 
 public sealed class RabbitMqConsumerWorker : BackgroundService
 {
+    private static readonly ActivitySource ActivitySource = new("NotificationService.Messaging");
     private readonly ILogger<RabbitMqConsumerWorker> _logger;
     private readonly RabbitMqOptions _options;
     private readonly IServiceScopeFactory _scopeFactory;
@@ -67,15 +69,20 @@ public sealed class RabbitMqConsumerWorker : BackgroundService
         consumer.ReceivedAsync += async (_, ea) =>
         {
             var payload = Encoding.UTF8.GetString(ea.Body.ToArray());
+            using var activity = ActivitySource.StartActivity("event.consume", ActivityKind.Consumer);
+            activity?.SetTag("messaging.system", "rabbitmq");
+            activity?.SetTag("messaging.destination", ea.RoutingKey);
             try
             {
                 await using var scope = _scopeFactory.CreateAsyncScope();
                 var handler = scope.ServiceProvider.GetRequiredService<INotificationEventHandler>();
                 await handler.HandleAsync(ea.RoutingKey, payload, cancellationToken);
                 await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken);
+                activity?.SetStatus(ActivityStatusCode.Ok);
             }
             catch (Exception ex)
             {
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                 _logger.LogError(ex, "Failed to process RabbitMQ event {RoutingKey}.", ea.RoutingKey);
                 await using var scope = _scopeFactory.CreateAsyncScope();
                 var deadLetterStore = scope.ServiceProvider.GetRequiredService<NotificationDeadLetterStore>();

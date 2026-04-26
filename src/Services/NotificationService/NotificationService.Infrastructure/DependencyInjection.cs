@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationStore, NotificationStore>();
         services.AddScoped<NotificationDeadLetterStore>();
         services.AddScoped<INotificationQueryService, NotificationQueryService>();
+        services.AddScoped<INotificationDeadLetterAdminService, NotificationDeadLetterQueryService>();
         services.AddSingleton<ServiceTokenFactory>();
         services.AddHttpClient<IExpenseDetailsClient, ExpenseDetailsClient>((sp, client) =>
         {

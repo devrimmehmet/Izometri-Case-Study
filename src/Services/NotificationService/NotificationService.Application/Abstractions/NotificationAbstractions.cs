@@ -17,3 +17,8 @@ public interface INotificationQueryService
 {
     Task<IReadOnlyCollection<NotificationResponse>> GetAsync(Guid? tenantId, CancellationToken cancellationToken);
 }
+
+public interface INotificationDeadLetterAdminService
+{
+    Task<IReadOnlyCollection<NotificationDeadLetterResponse>> GetDeadLettersAsync(CancellationToken cancellationToken);
+}

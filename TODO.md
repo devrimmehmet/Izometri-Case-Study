@@ -73,6 +73,6 @@
 
 ## Case Üzerinden Eklenebilecek Sonraki İyileştirmeler
 
-- [ ] Canlı Docker integration testini tamamen izole Testcontainers altyapısına taşı. Mevcut canlı integration testi çalışıyor ve CI compose ile destekleniyor; Testcontainers geçişi ayrı teknik iş olarak kaldı.
-- [ ] OpenTelemetry collector, trace export ve dağıtık trace görselleştirme ekle. Serilog console logging tamamlandı; tam trace backend entegrasyonu opsiyonel kaldı.
-- [ ] Notification dead-letter kayıtlarını listelemek için NotificationService içinde admin/inspection endpointi ekle. Tablo ve consumer stratejisi tamamlandı; dışarıdan görüntüleme endpointi henüz eklenmedi.
+- [x] Canlı Docker integration testini tamamen izole Testcontainers altyapısına taşı. `IntegrationTestFixture` + `TestcontainersIntegrationTests` eklendi; `LiveDockerIntegrationTests` kaldırıldı; CI compose up/down adımları silindi.
+- [x] OpenTelemetry collector, trace export ve dağıtık trace görselleştirme ekle. Her iki servise AspNetCore + HttpClient enstrümantasyonu ve OTLP exporter eklendi; RabbitMQ worker'larına ActivitySource eklendi; Docker Compose'a Jaeger servisi (port 16686) eklendi.
+- [x] Notification dead-letter kayıtlarını listelemek için NotificationService içinde admin/inspection endpointi ekle. `GET /api/admin/notifications/dead-letters` endpointi eklendi; JWT Bearer auth NotificationService'e entegre edildi; unit testi yazıldı.

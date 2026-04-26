@@ -1,5 +1,5 @@
-using System.Text.Json.Serialization;
 using System.Text;
+using System.Text.Json.Serialization;
 using ExpenseService.Api;
 using ExpenseService.Application;
 using ExpenseService.Infrastructure;
@@ -8,6 +8,8 @@ using ExpenseService.Infrastructure.Contexts;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -58,6 +60,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+var otlpEndpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"];
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("expense-service"))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddAspNetCoreInstrumentation(opts => opts.RecordException = true)
+            .AddHttpClientInstrumentation()
+            .AddSource("ExpenseService.Messaging");
+        if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+        {
+            tracing.AddOtlpExporter(opt => opt.Endpoint = new Uri(otlpEndpoint));
+        }
+    });
+
 var app = builder.Build();
 
 app.UseMiddleware<ApiExceptionMiddleware>();
@@ -71,3 +88,5 @@ app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

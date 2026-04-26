@@ -1,4 +1,14 @@
 services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.62
+    container_name: izometri-jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: izometri-rabbitmq
@@ -70,6 +80,7 @@ services:
       Jwt__Issuer: Izometri.CaseStudy
       Jwt__Audience: Izometri.CaseStudy
       Jwt__Secret: expense-service-development-secret-key-please-change
+      OpenTelemetry__OtlpEndpoint: http://jaeger:4317
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
       interval: 10s
@@ -101,6 +112,7 @@ services:
       Jwt__Issuer: Izometri.CaseStudy
       Jwt__Audience: Izometri.CaseStudy
       Jwt__Secret: expense-service-development-secret-key-please-change
+      OpenTelemetry__OtlpEndpoint: http://jaeger:4317
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
       interval: 10s
