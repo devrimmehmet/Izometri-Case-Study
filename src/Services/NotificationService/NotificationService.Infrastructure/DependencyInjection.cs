@@ -7,6 +7,7 @@ using NotificationService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace NotificationService.Infrastructure;
 
@@ -17,6 +18,8 @@ public static class DependencyInjection
         services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
         services.Configure<ExpenseServiceOptions>(configuration.GetSection("ExpenseService"));
+        services.Configure<SmtpOptions>(configuration.GetSection("Smtp"));
+        services.Configure<NetgsmOptions>(configuration.GetSection("Netgsm"));
 
         services.AddDbContext<NotificationDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("NotificationDb")));
@@ -31,6 +34,8 @@ public static class DependencyInjection
             var options = configuration.GetSection("ExpenseService").Get<ExpenseServiceOptions>() ?? new ExpenseServiceOptions();
             client.BaseAddress = new Uri(options.BaseUrl);
         }).AddStandardResilienceHandler();
+        services.AddTransient<IEmailSender, SmtpEmailSender>();
+        services.AddHttpClient<ISmsService, NetgsmSmsSender>();
         services.AddHostedService<DatabaseMigrationHostedService>();
         services.AddHostedService<RabbitMqConsumerWorker>();
         return services;

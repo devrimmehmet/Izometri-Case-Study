@@ -40,6 +40,7 @@ public sealed class ExpenseDbContext : DbContext
             b.Property(x => x.Email).HasMaxLength(200).IsRequired();
             b.Property(x => x.DisplayName).HasMaxLength(150).IsRequired();
             b.Property(x => x.PasswordHash).HasMaxLength(500).IsRequired();
+            b.Property(x => x.Phone).HasMaxLength(20);
             b.HasIndex(x => new { x.TenantId, x.Email }).IsUnique();
             b.HasMany(x => x.Roles).WithOne(x => x.User).HasForeignKey(x => x.UserId);
             b.HasQueryFilter(x => !x.IsDeleted && (_currentUser == null || !_currentUser.TenantId.HasValue || x.TenantId == _currentUser.TenantId.Value));

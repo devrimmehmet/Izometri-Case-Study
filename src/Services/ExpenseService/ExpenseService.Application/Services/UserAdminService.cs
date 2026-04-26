@@ -56,7 +56,8 @@ public sealed class UserAdminService : IUserAdminService
             TenantId = tenantId,
             Email = normalizedEmail,
             DisplayName = request.DisplayName.Trim(),
-            PasswordHash = _passwordHasher.Hash(request.Password)
+            PasswordHash = _passwordHasher.Hash(request.Password),
+            Phone = request.Phone?.Trim()
         };
 
         var roles = NormalizeRoles(request.Roles)

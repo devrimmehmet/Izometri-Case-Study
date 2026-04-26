@@ -14,7 +14,11 @@ public abstract record ExpenseIntegrationEvent(
     string CorrelationId,
     DateTime OccurredAt,
     Guid TenantId,
-    Guid ExpenseId);
+    Guid ExpenseId)
+{
+    public string RecipientEmail { get; init; } = string.Empty;
+    public string RecipientPhone { get; init; } = string.Empty;
+}
 
 public sealed record ExpenseCreatedEvent(
     Guid EventId,

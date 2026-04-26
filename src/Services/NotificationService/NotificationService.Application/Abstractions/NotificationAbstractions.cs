@@ -22,3 +22,13 @@ public interface INotificationDeadLetterAdminService
 {
     Task<IReadOnlyCollection<NotificationDeadLetterResponse>> GetDeadLettersAsync(CancellationToken cancellationToken);
 }
+
+public interface IEmailSender
+{
+    Task SendAsync(string toEmail, string subject, string body, CancellationToken cancellationToken);
+}
+
+public interface ISmsService
+{
+    Task SendAsync(string phoneNumber, string message, CancellationToken cancellationToken);
+}

@@ -8,17 +8,23 @@ namespace NotificationService.Application.Services;
 
 public sealed class NotificationEventHandler : INotificationEventHandler
 {
+    private readonly IEmailSender _emailSender;
     private readonly IExpenseDetailsClient _expenseDetailsClient;
     private readonly ILogger<NotificationEventHandler> _logger;
+    private readonly ISmsService _smsSender;
     private readonly INotificationStore _store;
 
     public NotificationEventHandler(
         INotificationStore store,
         IExpenseDetailsClient expenseDetailsClient,
+        IEmailSender emailSender,
+        ISmsService smsSender,
         ILogger<NotificationEventHandler> logger)
     {
         _store = store;
         _expenseDetailsClient = expenseDetailsClient;
+        _emailSender = emailSender;
+        _smsSender = smsSender;
         _logger = logger;
     }
 
@@ -37,15 +43,12 @@ public sealed class NotificationEventHandler : INotificationEventHandler
             cancellationToken);
 
         var message = BuildMessage(eventType, integrationEvent, expense);
+        var subject = BuildSubject(eventType, integrationEvent.ExpenseId);
         var recipient = eventType == ExpenseEventNames.ExpenseCreated ? "HR" : "Personnel";
 
         _logger.LogInformation(
-            "Mock notification sent. EventType: {EventType}, TenantId: {TenantId}, ExpenseId: {ExpenseId}, Recipient: {Recipient}, CorrelationId: {CorrelationId}",
-            eventType,
-            integrationEvent.TenantId,
-            integrationEvent.ExpenseId,
-            recipient,
-            integrationEvent.CorrelationId);
+            "Notification dispatched. EventType: {EventType}, TenantId: {TenantId}, ExpenseId: {ExpenseId}, Recipient: {Recipient}, CorrelationId: {CorrelationId}",
+            eventType, integrationEvent.TenantId, integrationEvent.ExpenseId, recipient, integrationEvent.CorrelationId);
 
         await _store.SaveAsync(new Notification
         {
@@ -64,6 +67,16 @@ public sealed class NotificationEventHandler : INotificationEventHandler
             EventType = eventType,
             CorrelationId = integrationEvent.CorrelationId
         }, cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(integrationEvent.RecipientEmail))
+        {
+            await _emailSender.SendAsync(integrationEvent.RecipientEmail, subject, message, cancellationToken);
+        }
+
+        if (!string.IsNullOrWhiteSpace(integrationEvent.RecipientPhone))
+        {
+            await _smsSender.SendAsync(integrationEvent.RecipientPhone, message, cancellationToken);
+        }
     }
 
     private static ExpenseIntegrationEvent? Deserialize(string eventType, string payload)
@@ -77,9 +90,20 @@ public sealed class NotificationEventHandler : INotificationEventHandler
         };
     }
 
+    private static string BuildSubject(string eventType, Guid expenseId)
+    {
+        return eventType switch
+        {
+            ExpenseEventNames.ExpenseCreated => $"Yeni Harcama Talebi: {expenseId}",
+            ExpenseEventNames.ExpenseApproved => $"Harcama Talebi Onaylandı: {expenseId}",
+            ExpenseEventNames.ExpenseRejected => $"Harcama Talebi Reddedildi: {expenseId}",
+            _ => $"Harcama Bildirimi: {expenseId}"
+        };
+    }
+
     private static string BuildMessage(string eventType, ExpenseIntegrationEvent integrationEvent, DTOs.ExpenseDetailResponse? expense)
     {
-        var amount = expense is null ? string.Empty : $" Amount: {expense.Amount} {expense.Currency}.";
+        var amount = expense is null ? string.Empty : $" Tutar: {expense.Amount} {expense.Currency}.";
         return eventType switch
         {
             ExpenseEventNames.ExpenseCreated => $"Expense {integrationEvent.ExpenseId} created and waiting for HR review.{amount}",

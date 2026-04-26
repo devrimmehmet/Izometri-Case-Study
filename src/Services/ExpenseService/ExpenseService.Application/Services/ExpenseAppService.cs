@@ -38,6 +38,12 @@ public sealed class ExpenseAppService : IExpenseAppService
         var tenantId = RequiredTenantId();
         var userId = RequiredUserId();
 
+        var hrContacts = await _unitOfWork.Repository<User>()
+            .Query()
+            .Where(u => u.Roles.Any(r => r.Role == Roles.HR))
+            .Select(u => new { u.Email, u.Phone })
+            .ToListAsync(cancellationToken);
+
         var expense = new Expense
         {
             TenantId = tenantId,
@@ -60,7 +66,11 @@ public sealed class ExpenseAppService : IExpenseAppService
                 expense.Id,
                 userId,
                 expense.Amount,
-                expense.Currency.ToString()), ExpenseEventNames.ExpenseCreated, ct);
+                expense.Currency.ToString())
+            {
+                RecipientEmail = string.Join(",", hrContacts.Select(u => u.Email)),
+                RecipientPhone = hrContacts.Select(u => u.Phone).FirstOrDefault(p => !string.IsNullOrEmpty(p)) ?? string.Empty
+            }, ExpenseEventNames.ExpenseCreated, ct);
         }, cancellationToken);
 
         return Map(expense);
@@ -164,6 +174,12 @@ public sealed class ExpenseAppService : IExpenseAppService
             expense.ApprovedAt = DateTime.UtcNow;
         }
 
+        var requesterContact = await _unitOfWork.Repository<User>()
+            .Query()
+            .Where(u => u.Id == expense.RequestedByUserId)
+            .Select(u => new { u.Email, u.Phone })
+            .FirstOrDefaultAsync(cancellationToken);
+
         await _unitOfWork.ExecuteInTransactionAsync(async ct =>
         {
             if (approval is not null)
@@ -180,7 +196,11 @@ public sealed class ExpenseAppService : IExpenseAppService
                     expense.TenantId,
                     expense.Id,
                     userId,
-                    expense.Status.ToString()), ExpenseEventNames.ExpenseApproved, ct);
+                    expense.Status.ToString())
+                {
+                    RecipientEmail = requesterContact?.Email ?? string.Empty,
+                    RecipientPhone = requesterContact?.Phone ?? string.Empty
+                }, ExpenseEventNames.ExpenseApproved, ct);
             }
         }, cancellationToken);
 
@@ -214,6 +234,12 @@ public sealed class ExpenseAppService : IExpenseAppService
         expense.RejectedAt = DateTime.UtcNow;
         var approval = Approval(expense, userId, step, ApprovalDecision.Rejected, request.Reason);
 
+        var requesterContact = await _unitOfWork.Repository<User>()
+            .Query()
+            .Where(u => u.Id == expense.RequestedByUserId)
+            .Select(u => new { u.Email, u.Phone })
+            .FirstOrDefaultAsync(cancellationToken);
+
         await _unitOfWork.ExecuteInTransactionAsync(async ct =>
         {
             await _unitOfWork.Repository<ExpenseApproval>().AddAsync(approval, ct);
@@ -224,7 +250,11 @@ public sealed class ExpenseAppService : IExpenseAppService
                 expense.TenantId,
                 expense.Id,
                 userId,
-                request.Reason), ExpenseEventNames.ExpenseRejected, ct);
+                request.Reason)
+            {
+                RecipientEmail = requesterContact?.Email ?? string.Empty,
+                RecipientPhone = requesterContact?.Phone ?? string.Empty
+            }, ExpenseEventNames.ExpenseRejected, ct);
         }, cancellationToken);
 
         return Map(expense);

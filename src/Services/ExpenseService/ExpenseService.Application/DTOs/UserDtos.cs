@@ -4,7 +4,8 @@ public sealed record CreateUserRequest(
     string Email,
     string DisplayName,
     string Password,
-    IReadOnlyCollection<string> Roles);
+    IReadOnlyCollection<string> Roles,
+    string? Phone = null);
 
 public sealed record UpdateUserRolesRequest(IReadOnlyCollection<string> Roles);
 
