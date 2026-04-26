@@ -1,4 +1,3 @@
-#pragma warning disable CS0618 // Testcontainers 4.x parameterless builder constructors are deprecated but functional
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,22 +11,19 @@ namespace ExpenseService.Tests;
 
 public sealed class IntegrationTestFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _expenseDb = new PostgreSqlBuilder()
-        .WithImage("postgres:16")
+    private readonly PostgreSqlContainer _expenseDb = new PostgreSqlBuilder("postgres:16")
         .WithDatabase("expense_db")
         .WithUsername("postgres")
         .WithPassword("postgres")
         .Build();
 
-    private readonly PostgreSqlContainer _notificationDb = new PostgreSqlBuilder()
-        .WithImage("postgres:16")
+    private readonly PostgreSqlContainer _notificationDb = new PostgreSqlBuilder("postgres:16")
         .WithDatabase("notification_db")
         .WithUsername("postgres")
         .WithPassword("postgres")
         .Build();
 
-    private readonly RabbitMqContainer _rabbitMq = new RabbitMqBuilder()
-        .WithImage("rabbitmq:3-management")
+    private readonly RabbitMqContainer _rabbitMq = new RabbitMqBuilder("rabbitmq:3-management")
         .WithUsername("guest")
         .WithPassword("guest")
         .Build();
