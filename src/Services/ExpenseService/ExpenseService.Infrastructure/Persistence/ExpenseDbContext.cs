@@ -77,6 +77,7 @@ public sealed class ExpenseDbContext : DbContext
             b.Property(x => x.Payload).IsRequired();
             b.Property(x => x.CorrelationId).HasMaxLength(100).IsRequired();
             b.HasIndex(x => x.ProcessedAt);
+            b.HasIndex(x => x.DeadLetteredAt);
             b.HasQueryFilter(x => !x.IsDeleted);
         });
 

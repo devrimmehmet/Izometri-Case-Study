@@ -22,6 +22,7 @@ public static class DependencyInjection
             options.UseNpgsql(configuration.GetConnectionString("NotificationDb")));
 
         services.AddScoped<INotificationStore, NotificationStore>();
+        services.AddScoped<NotificationDeadLetterStore>();
         services.AddScoped<INotificationQueryService, NotificationQueryService>();
         services.AddSingleton<ServiceTokenFactory>();
         services.AddHttpClient<IExpenseDetailsClient, ExpenseDetailsClient>((sp, client) =>

@@ -47,7 +47,7 @@ public sealed class OutboxPublisherWorker : BackgroundService
         var dbContext = scope.ServiceProvider.GetRequiredService<ExpenseDbContext>();
         var messages = await dbContext.OutboxMessages
             .IgnoreQueryFilters()
-            .Where(x => !x.IsDeleted && x.ProcessedAt == null && x.RetryCount < 10)
+            .Where(x => !x.IsDeleted && x.ProcessedAt == null && x.DeadLetteredAt == null)
             .OrderBy(x => x.CreatedAt)
             .Take(20)
             .ToListAsync(cancellationToken);
@@ -88,6 +88,11 @@ public sealed class OutboxPublisherWorker : BackgroundService
             {
                 message.RetryCount++;
                 message.Error = ex.Message;
+                if (message.RetryCount >= 10)
+                {
+                    message.DeadLetteredAt = DateTime.UtcNow;
+                }
+
                 _logger.LogError(ex, "Failed to publish outbox message {MessageId}.", message.Id);
             }
         }

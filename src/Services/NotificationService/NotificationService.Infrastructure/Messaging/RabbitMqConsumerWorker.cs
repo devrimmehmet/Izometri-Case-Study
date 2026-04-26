@@ -1,6 +1,7 @@
 using System.Text;
 using ExpenseManagement.Contracts;
 using NotificationService.Application.Abstractions;
+using NotificationService.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -76,6 +77,16 @@ public sealed class RabbitMqConsumerWorker : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to process RabbitMQ event {RoutingKey}.", ea.RoutingKey);
+                await using var scope = _scopeFactory.CreateAsyncScope();
+                var deadLetterStore = scope.ServiceProvider.GetRequiredService<NotificationDeadLetterStore>();
+                var retryCount = await deadLetterStore.RecordFailureAsync(ea.RoutingKey, payload, ex.Message, cancellationToken);
+                if (NotificationDeadLetterStore.ShouldDeadLetter(retryCount))
+                {
+                    _logger.LogError("RabbitMQ event {RoutingKey} moved to notification dead-letter table after {RetryCount} retries.", ea.RoutingKey, retryCount);
+                    await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken);
+                    return;
+                }
+
                 await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true, cancellationToken);
             }
         };

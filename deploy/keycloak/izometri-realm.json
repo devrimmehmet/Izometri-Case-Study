@@ -1,0 +1,78 @@
+{
+  "realm": "izometri",
+  "enabled": true,
+  "displayName": "Izometri Case Study",
+  "roles": {
+    "realm": [
+      { "name": "Admin" },
+      { "name": "HR" },
+      { "name": "Personnel" },
+      { "name": "Service" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "expense-service",
+      "name": "Expense Service API",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "expense-service-client-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "protocol": "openid-connect",
+      "redirectUris": [ "*" ],
+      "webOrigins": [ "*" ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin@acme.com",
+      "email": "admin@acme.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Acme",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [ "Admin" ]
+    },
+    {
+      "username": "hr@acme.com",
+      "email": "hr@acme.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Acme",
+      "lastName": "HR",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [ "HR" ]
+    },
+    {
+      "username": "personnel@acme.com",
+      "email": "personnel@acme.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Acme",
+      "lastName": "Personnel",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [ "Personnel" ]
+    }
+  ]
+}

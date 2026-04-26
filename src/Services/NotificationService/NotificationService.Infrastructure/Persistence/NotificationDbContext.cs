@@ -12,6 +12,7 @@ public sealed class NotificationDbContext : DbContext
 
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<ProcessedMessage> ProcessedMessages => Set<ProcessedMessage>();
+    public DbSet<NotificationDeadLetter> NotificationDeadLetters => Set<NotificationDeadLetter>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +34,19 @@ public sealed class NotificationDbContext : DbContext
             b.Property(x => x.EventType).HasMaxLength(200).IsRequired();
             b.Property(x => x.CorrelationId).HasMaxLength(100).IsRequired();
             b.HasIndex(x => x.EventId).IsUnique();
+            b.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<NotificationDeadLetter>(b =>
+        {
+            b.HasKey(x => x.Id);
+            b.Property(x => x.EventType).HasMaxLength(200).IsRequired();
+            b.Property(x => x.RoutingKey).HasMaxLength(200).IsRequired();
+            b.Property(x => x.CorrelationId).HasMaxLength(100).IsRequired();
+            b.Property(x => x.Payload).IsRequired();
+            b.Property(x => x.Error).HasMaxLength(2000).IsRequired();
+            b.HasIndex(x => x.EventId).IsUnique();
+            b.HasIndex(x => x.DeadLetteredAt);
             b.HasQueryFilter(x => !x.IsDeleted);
         });
     }

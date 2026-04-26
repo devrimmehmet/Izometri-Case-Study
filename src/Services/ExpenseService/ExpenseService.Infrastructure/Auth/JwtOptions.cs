@@ -6,4 +6,6 @@ public sealed class JwtOptions
     public string Audience { get; set; } = "Izometri.CaseStudy";
     public string Secret { get; set; } = "change-me-development-secret-at-least-32-characters";
     public int ExpirationMinutes { get; set; } = 120;
+    public string? Authority { get; set; }
+    public bool RequireHttpsMetadata { get; set; } = false;
 }

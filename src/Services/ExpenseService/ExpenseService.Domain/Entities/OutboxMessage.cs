@@ -9,6 +9,7 @@ public sealed class OutboxMessage : BaseEntity
     public string Payload { get; set; } = string.Empty;
     public string CorrelationId { get; set; } = string.Empty;
     public DateTime? ProcessedAt { get; set; }
+    public DateTime? DeadLetteredAt { get; set; }
     public string? Error { get; set; }
     public int RetryCount { get; set; }
 }
