@@ -68,6 +68,13 @@ export interface CreateExpenseRequest {
   description: string;
 }
 
+export interface UpdateExpenseRequest {
+  category: ExpenseCategory;
+  currency: Currency;
+  amount: number;
+  description: string;
+}
+
 export interface RejectExpenseRequest {
   reason: string;
 }

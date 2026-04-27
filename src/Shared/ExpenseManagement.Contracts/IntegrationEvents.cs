@@ -6,6 +6,7 @@ public static class ExpenseEventNames
     public const string ExpenseCreated = "expense.created";
     public const string ExpenseApproved = "expense.approved";
     public const string ExpenseRejected = "expense.rejected";
+    public const string ExpenseRequiresAdminApproval = "expense.requires_admin_approval";
     public const string NotificationQueue = "notification.expense-events";
 }
 

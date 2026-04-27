@@ -63,6 +63,7 @@ const columns = [
 function eventColor(type: string): string {
   const t = type?.toLowerCase() || '';
   if (t.includes('created')) return 'info';
+  if (t.includes('requires_admin_approval')) return 'warning';
   if (t.includes('approved')) return 'positive';
   if (t.includes('rejected')) return 'negative';
   return 'grey';
@@ -71,6 +72,7 @@ function eventColor(type: string): string {
 function eventLabel(type: string): string {
   const t = type?.toLowerCase() || '';
   if (t.includes('created')) return 'Harcama Talebi Oluşturuldu';
+  if (t.includes('requires_admin_approval')) return 'Yönetici Onayı İstendi';
   if (t.includes('approved')) return 'Harcama Onaylandı';
   if (t.includes('rejected')) return 'Harcama Reddedildi';
   return type;

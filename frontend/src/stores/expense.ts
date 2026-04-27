@@ -3,6 +3,7 @@ import { api } from 'src/boot/axios';
 import type {
   ExpenseDto,
   CreateExpenseRequest,
+  UpdateExpenseRequest,
   RejectExpenseRequest,
   ExpenseQueryParams,
 } from 'src/types';
@@ -61,6 +62,12 @@ export const useExpenseStore = defineStore('expense', {
 
     async createExpense(payload: CreateExpenseRequest): Promise<ExpenseDto> {
       const { data } = await api.post<ExpenseDto>('/expenses', payload);
+      await this.fetchExpenses();
+      return data;
+    },
+
+    async updateExpense(id: string, payload: UpdateExpenseRequest): Promise<ExpenseDto> {
+      const { data } = await api.put<ExpenseDto>(`/expenses/${id}`, payload);
       await this.fetchExpenses();
       return data;
     },

@@ -97,6 +97,7 @@ const allNavItems: NavItem[] = [
   { label: 'Gösterge Paneli', icon: 'dashboard', path: '/dashboard' },
   { label: 'Harcamalar', icon: 'receipt_long', path: '/expenses' },
   { label: 'Kullanıcılar', icon: 'people', path: '/admin/users', roles: ['Admin'] },
+  { label: 'Sistem Ayarları', icon: 'settings', path: '/admin/settings', roles: ['Admin'] },
   { label: 'Bildirimler', icon: 'notifications', path: '/notifications' },
   { label: 'Dokümantasyon', icon: 'menu_book', path: '/docs' },
 ];

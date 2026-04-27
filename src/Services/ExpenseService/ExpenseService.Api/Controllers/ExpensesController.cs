@@ -27,6 +27,12 @@ public sealed class ExpensesController : ControllerBase
         });
     }
 
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, UpdateExpenseRequest request, CancellationToken cancellationToken)
+    {
+        return await Execute(async () => Ok(await _expenseAppService.UpdateAsync(id, request, cancellationToken)));
+    }
+
     [HttpGet]
     public async Task<ActionResult<PagedResponse<ExpenseResponse>>> GetList([FromQuery] ExpenseQuery query, CancellationToken cancellationToken)
     {

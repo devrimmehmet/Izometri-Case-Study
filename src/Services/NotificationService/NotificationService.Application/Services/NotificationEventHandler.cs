@@ -111,6 +111,7 @@ public sealed class NotificationEventHandler : INotificationEventHandler
             ExpenseEventNames.ExpenseCreated => JsonSerializer.Deserialize<ExpenseCreatedEvent>(payload),
             ExpenseEventNames.ExpenseApproved => JsonSerializer.Deserialize<ExpenseApprovedEvent>(payload),
             ExpenseEventNames.ExpenseRejected => JsonSerializer.Deserialize<ExpenseRejectedEvent>(payload),
+            ExpenseEventNames.ExpenseRequiresAdminApproval => JsonSerializer.Deserialize<ExpenseRequiresAdminApprovalEvent>(payload),
             _ => null
         };
     }
@@ -122,6 +123,7 @@ public sealed class NotificationEventHandler : INotificationEventHandler
             ExpenseEventNames.ExpenseCreated => $"Yeni Harcama Talebi: {expenseId}",
             ExpenseEventNames.ExpenseApproved => $"Harcama Talebi Onaylandı: {expenseId}",
             ExpenseEventNames.ExpenseRejected => $"Harcama Talebi Reddedildi: {expenseId}",
+            ExpenseEventNames.ExpenseRequiresAdminApproval => $"Yönetici Onayı Bekleyen Harcama Talebi: {expenseId}",
             _ => $"Harcama Bildirimi: {expenseId}"
         };
     }
@@ -134,6 +136,7 @@ public sealed class NotificationEventHandler : INotificationEventHandler
             ExpenseEventNames.ExpenseCreated => $"{integrationEvent.ExpenseId} ID'li harcama talebi oluşturuldu ve onay bekliyor.{amount}",
             ExpenseEventNames.ExpenseApproved => $"{integrationEvent.ExpenseId} ID'li harcama talebiniz onaylandı.{amount}",
             ExpenseEventNames.ExpenseRejected => $"{integrationEvent.ExpenseId} ID'li harcama talebiniz reddedildi.{amount}",
+            ExpenseEventNames.ExpenseRequiresAdminApproval => $"{integrationEvent.ExpenseId} ID'li harcama talebi HR onayından geçti ve yönetici onayınızı bekliyor.{amount}",
             _ => $"{integrationEvent.ExpenseId} ID'li harcama için bildirim alındı.{amount}"
         };
     }

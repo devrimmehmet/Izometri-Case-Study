@@ -11,6 +11,7 @@ namespace ExpenseService.Application.Services;
 public interface IExpenseAppService
 {
     Task<ExpenseResponse> CreateAsync(CreateExpenseRequest request, CancellationToken cancellationToken);
+    Task<ExpenseResponse> UpdateAsync(Guid id, UpdateExpenseRequest request, CancellationToken cancellationToken);
     Task<PagedResponse<ExpenseResponse>> GetListAsync(ExpenseQuery query, CancellationToken cancellationToken);
     Task<ExpenseResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task SubmitAsync(Guid id, CancellationToken cancellationToken);
@@ -24,12 +25,14 @@ public sealed class ExpenseAppService : IExpenseAppService
     private readonly ICorrelationContext _correlationContext;
     private readonly ICurrentUserContext _currentUser;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IExchangeRateService _exchangeRateService;
 
-    public ExpenseAppService(IUnitOfWork unitOfWork, ICurrentUserContext currentUser, ICorrelationContext correlationContext)
+    public ExpenseAppService(IUnitOfWork unitOfWork, ICurrentUserContext currentUser, ICorrelationContext correlationContext, IExchangeRateService exchangeRateService)
     {
         _unitOfWork = unitOfWork;
         _currentUser = currentUser;
         _correlationContext = correlationContext;
+        _exchangeRateService = exchangeRateService;
     }
 
     public async Task<ExpenseResponse> CreateAsync(CreateExpenseRequest request, CancellationToken cancellationToken)
@@ -44,6 +47,8 @@ public sealed class ExpenseAppService : IExpenseAppService
             .Select(u => new { u.Email, u.Phone })
             .ToListAsync(cancellationToken);
 
+        var exchangeRate = request.ExchangeRate ?? await _exchangeRateService.GetExchangeRateAsync(request.Currency.ToString(), cancellationToken);
+
         var expense = new Expense
         {
             TenantId = tenantId,
@@ -51,6 +56,7 @@ public sealed class ExpenseAppService : IExpenseAppService
             Category = request.Category,
             Currency = request.Currency,
             Amount = request.Amount,
+            ExchangeRate = exchangeRate,
             Description = request.Description,
             Status = ExpenseStatus.Draft
         };
@@ -73,6 +79,30 @@ public sealed class ExpenseAppService : IExpenseAppService
             }, ExpenseEventNames.ExpenseCreated, ct);
         }, cancellationToken);
 
+        return Map(expense);
+    }
+
+    public async Task<ExpenseResponse> UpdateAsync(Guid id, UpdateExpenseRequest request, CancellationToken cancellationToken)
+    {
+        var userId = RequiredUserId();
+        var expense = await _unitOfWork.Repository<Expense>().Query().FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
+            ?? throw new KeyNotFoundException("Expense not found.");
+
+        if (expense.RequestedByUserId != userId)
+            throw new UnauthorizedAccessException("Only requester can update the expense.");
+
+        if (expense.Status != ExpenseStatus.Draft)
+            throw new InvalidOperationException("Only draft expenses can be updated.");
+
+        var exchangeRate = request.ExchangeRate ?? await _exchangeRateService.GetExchangeRateAsync(request.Currency.ToString(), cancellationToken);
+
+        expense.Category = request.Category;
+        expense.Currency = request.Currency;
+        expense.Amount = request.Amount;
+        expense.ExchangeRate = exchangeRate;
+        expense.Description = request.Description;
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return Map(expense);
     }
 
@@ -180,6 +210,12 @@ public sealed class ExpenseAppService : IExpenseAppService
             .Select(u => new { u.Email, u.Phone })
             .FirstOrDefaultAsync(cancellationToken);
 
+        var adminContacts = expense.RequiresAdminApproval && !expense.AdminApproved ? await _unitOfWork.Repository<User>()
+            .Query()
+            .Where(u => u.TenantId == expense.TenantId && u.Roles.Any(r => r.Role == Roles.Admin))
+            .Select(u => new { u.Email, u.Phone })
+            .ToListAsync(cancellationToken) : null;
+
         await _unitOfWork.ExecuteInTransactionAsync(async ct =>
         {
             if (approval is not null)
@@ -201,6 +237,23 @@ public sealed class ExpenseAppService : IExpenseAppService
                     RecipientEmail = requesterContact?.Email ?? string.Empty,
                     RecipientPhone = requesterContact?.Phone ?? string.Empty
                 }, ExpenseEventNames.ExpenseApproved, ct);
+            }
+            else if (expense.HrApproved && !expense.AdminApproved && adminContacts != null)
+            {
+                // Send notification to Admin that an expense > 5000 is waiting
+                await AddOutboxAsync(new ExpenseRequiresAdminApprovalEvent(
+                    Guid.NewGuid(),
+                    _correlationContext.CorrelationId,
+                    DateTime.UtcNow,
+                    expense.TenantId,
+                    expense.Id,
+                    userId,
+                    expense.Amount,
+                    expense.Currency.ToString())
+                {
+                    RecipientEmail = string.Join(",", adminContacts.Select(u => u.Email)),
+                    RecipientPhone = adminContacts.Select(u => u.Phone).FirstOrDefault(p => !string.IsNullOrEmpty(p)) ?? string.Empty
+                }, ExpenseEventNames.ExpenseRequiresAdminApproval, ct);
             }
         }, cancellationToken);
 

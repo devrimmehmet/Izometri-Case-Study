@@ -6,6 +6,14 @@ public sealed record CreateExpenseRequest(
     ExpenseCategory Category,
     ExpenseCurrency Currency,
     decimal Amount,
+    decimal? ExchangeRate,
+    string Description);
+
+public sealed record UpdateExpenseRequest(
+    ExpenseCategory Category,
+    ExpenseCurrency Currency,
+    decimal Amount,
+    decimal? ExchangeRate,
     string Description);
 
 public sealed record RejectExpenseRequest(string Reason);

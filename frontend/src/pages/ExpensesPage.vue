@@ -13,7 +13,7 @@
         label="Yeni Harcama"
         rounded
         unelevated
-        @click="showCreateDialog = true"
+        @click="openCreate"
       />
     </div>
 
@@ -181,6 +181,17 @@
               <q-tooltip>Reddet</q-tooltip>
             </q-btn>
             <q-btn
+              v-if="props.row.status === 'Draft' && props.row.requestedByUserId === auth.userId"
+              flat
+              dense
+              round
+              icon="edit"
+              color="primary"
+              @click="openEdit(props.row)"
+            >
+              <q-tooltip>Düzenle</q-tooltip>
+            </q-btn>
+            <q-btn
               v-if="props.row.status === 'Draft'"
               flat
               dense
@@ -200,7 +211,7 @@
     <q-dialog v-model="showCreateDialog" persistent>
       <q-card dark style="min-width: 440px" class="glass-card">
         <q-card-section>
-          <div class="text-h6 text-weight-bold">Yeni Harcama Talebi</div>
+          <div class="text-h6 text-weight-bold">{{ isEditing ? 'Harcamayı Düzenle' : 'Yeni Harcama Talebi' }}</div>
         </q-card-section>
         <q-card-section>
           <q-form @submit.prevent="onCreate" class="q-gutter-md">
@@ -254,7 +265,7 @@
               <q-btn flat label="İptal" color="grey" @click="showCreateDialog = false" />
               <q-btn
                 type="submit"
-                label="Oluştur"
+                :label="isEditing ? 'Güncelle' : 'Oluştur'"
                 color="primary"
                 rounded
                 unelevated
@@ -433,6 +444,28 @@ const createForm = reactive<CreateExpenseRequest>({
   amount: 0,
   description: '',
 });
+const isEditing = ref(false);
+const editTargetId = ref('');
+
+function openCreate() {
+  isEditing.value = false;
+  editTargetId.value = '';
+  createForm.category = 'Travel';
+  createForm.currency = 'TRY';
+  createForm.amount = 0;
+  createForm.description = '';
+  showCreateDialog.value = true;
+}
+
+function openEdit(row: ExpenseDto) {
+  isEditing.value = true;
+  editTargetId.value = row.id;
+  createForm.category = row.category;
+  createForm.currency = row.currency;
+  createForm.amount = row.amount;
+  createForm.description = row.description;
+  showCreateDialog.value = true;
+}
 
 // Reject
 const showRejectDialog = ref(false);
@@ -493,11 +526,15 @@ function onPaginationChange(p: { page: number; rowsPerPage: number }) {
 async function onCreate() {
   creating.value = true;
   try {
-    await expense.createExpense(createForm);
-    showCreateDialog.value = false;
-    createForm.amount = 0;
-    createForm.description = '';
-    $q.notify({ type: 'positive', message: 'Harcama oluşturuldu' });
+    if (isEditing.value) {
+      await expense.updateExpense(editTargetId.value, createForm);
+      showCreateDialog.value = false;
+      $q.notify({ type: 'positive', message: 'Harcama güncellendi' });
+    } else {
+      await expense.createExpense(createForm);
+      showCreateDialog.value = false;
+      $q.notify({ type: 'positive', message: 'Harcama oluşturuldu' });
+    }
   } catch (err: unknown) {
     const error = err as { response?: { data?: { detail?: string } }; message?: string };
     $q.notify({ type: 'negative', message: error.response?.data?.detail ?? 'Hata oluştu' });

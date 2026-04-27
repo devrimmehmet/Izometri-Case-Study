@@ -23,6 +23,8 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
+        
+        services.AddHttpClient<IExchangeRateService, ExpenseService.Infrastructure.Services.TcmbExchangeRateService>();
 
         services.AddDbContext<ExpenseDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("ExpenseDb")));
