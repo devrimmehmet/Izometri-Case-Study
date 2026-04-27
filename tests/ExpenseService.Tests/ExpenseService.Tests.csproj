@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\src\Services\NotificationService\NotificationService.Api\NotificationService.Api.csproj" />
     <ProjectReference Include="..\..\src\Services\NotificationService\NotificationService.Application\NotificationService.Application.csproj" />
     <ProjectReference Include="..\..\src\Services\NotificationService\NotificationService.Domain\NotificationService.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Services\NotificationService\NotificationService.Infrastructure\NotificationService.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -25,8 +25,8 @@ Import edilen ana parçalar:
 - Client secret: `expense-service-client-secret`
 - Roller: `Admin`, `HR`, `Personnel`, `Service`
 - Demo kullanıcılar:
-  - `admin@acme.com`
-  - `hr@acme.com`
+  - `devrimmehmet@gmail.com`
+  - `devrimmehmet@msn.com`
   - `personnel@acme.com`
 
 Tüm demo kullanıcıların şifresi:

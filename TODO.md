@@ -50,6 +50,18 @@
 - [x] Admin outbox controller unit testi eklendi.
 - [x] NotificationService API controller unit testi eklendi.
 - [x] Notification event handler unit testleri eklendi.
+- [x] E-posta teslim durumu `EmailStatus` ve `EmailError` alanlarıyla notification kayıtlarına eklendi.
+- [x] Local e-posta testi için Docker Compose'a Mailpit eklendi.
+- [x] Mail ayarları `Mail` section formatına uyarlandı ve eski `Smtp` section için geriye uyumluluk korundu.
+- [x] Netgsm SMS gönderimi REST v2 JSON POST formatına taşındı.
+- [x] Netgsm SMS gönderici için unit testler eklendi.
+- [x] Canlı local health testi eklendi: Expense API, Notification API, RabbitMQ, Mailpit, PostgreSQL ve AMQP portları doğrulanıyor.
+- [x] Canlı Mailpit e-posta testi eklendi; `Devrimmehmet@gmail.com` adresine `testtir` içerikli test maili gönderiliyor.
+- [x] Canlı Netgsm SMS testi eklendi; `5438194976` numarasına `test sms` göndermeyi deniyor ve provider hatasını test çıktısında görünür kılıyor.
+- [x] Netgsm canlı bakiye API testi yapıldı; hesapta 1000 OTP SMS bakiyesi görüldü.
+- [x] Netgsm canlı SMS gönderimi denendi; hesapta aktif gönderici başlığı olmadığı için API `40 invalidHeader/header problem` döndürdü.
+- [x] Acme Admin seed e-postası `devrimmehmet@gmail.com`, Acme HR seed e-postası `devrimmehmet@msn.com` olarak güncellendi.
+- [x] Personel harcama oluşturduğunda HR/Admin e-posta alıcıları event payloadına eklendi.
 - [x] Validator ve approval-threshold unit testleri eklendi.
 - [x] Canlı Docker integration testi eklendi: API + PostgreSQL + RabbitMQ + Notification consumer.
 - [x] Tenant-crossing negative test canlı integration akışında doğrulandı.
@@ -69,7 +81,7 @@
 - [x] Swagger/OpenAPI artifact üretimi:
   - `Docs/openapi-expense.json`
   - `Docs/openapi-notification.json`
-- [x] Canlı local akış: login, admin kullanıcı/rol yönetimi, harcama oluşturma, submit, HR approve, outbox publish, RabbitMQ consume ve notification kaydı.
+- [x] Canlı local akış: login, admin kullanıcı/rol yönetimi, harcama oluşturma, submit, HR approve, outbox publish, RabbitMQ consume, notification kaydı ve e-posta teslim durumu kontrolü.
 
 ## Case Üzerinden Eklenebilecek Sonraki İyileştirmeler
 

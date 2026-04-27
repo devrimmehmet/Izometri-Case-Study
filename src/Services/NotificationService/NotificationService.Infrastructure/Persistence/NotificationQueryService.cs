@@ -32,6 +32,10 @@ public sealed class NotificationQueryService : INotificationQueryService
                 x.CorrelationId,
                 x.ExpenseId,
                 x.Recipient,
+                x.RecipientEmail,
+                x.RecipientPhone,
+                x.EmailStatus,
+                x.EmailError,
                 x.Message,
                 x.SentAt))
             .ToListAsync(cancellationToken);

@@ -54,7 +54,7 @@
         "url": "{{expenseBaseUrl}}/api/auth/login",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"hr@acme.com\",\n  \"password\": \"Pass123!\",\n  \"tenantCode\": \"acme\"\n}"
+          "raw": "{\n  \"email\": \"devrimmehmet@msn.com\",\n  \"password\": \"Pass123!\",\n  \"tenantCode\": \"acme\"\n}"
         }
       }
     },

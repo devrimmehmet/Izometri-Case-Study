@@ -69,7 +69,7 @@ HR login:
 
 ```json
 {
-  "email": "hr@acme.com",
+  "email": "devrimmehmet@msn.com",
   "password": "Pass123!",
   "tenantCode": "acme"
 }
@@ -135,7 +135,7 @@ Admin login:
 
 ```json
 {
-  "email": "admin@acme.com",
+  "email": "devrimmehmet@gmail.com",
   "password": "Pass123!",
   "tenantCode": "acme"
 }
@@ -200,4 +200,22 @@ Tenant filtresi:
 
 ```http
 GET http://localhost:5002/api/notifications?tenantId={tenantId}
+```
+
+Yanıtta e-posta kontrolü için şu alanlara bakılır:
+
+- `recipientEmail`: Gönderim denenmiş e-posta adresleri.
+- `emailStatus`: `Sent`, `Failed` veya `Skipped`.
+- `emailError`: SMTP hatası varsa kısa hata açıklaması.
+
+Personel Acme tenantında harcama oluşturduğunda `expense.created` bildirimi için beklenen alıcılar:
+
+```text
+devrimmehmet@gmail.com,devrimmehmet@msn.com
+```
+
+Docker local ortamında gönderilen e-postalar Mailpit arayüzünden kontrol edilir:
+
+```text
+http://localhost:8025
 ```

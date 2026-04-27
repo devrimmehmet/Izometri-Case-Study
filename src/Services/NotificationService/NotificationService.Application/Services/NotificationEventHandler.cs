@@ -44,11 +44,42 @@ public sealed class NotificationEventHandler : INotificationEventHandler
 
         var message = BuildMessage(eventType, integrationEvent, expense);
         var subject = BuildSubject(eventType, integrationEvent.ExpenseId);
-        var recipient = eventType == ExpenseEventNames.ExpenseCreated ? "HR" : "Personnel";
+        var recipient = eventType == ExpenseEventNames.ExpenseCreated ? "HR/Admin" : "Personnel";
+
+        var emailStatus = "Skipped";
+        string? emailError = null;
+        if (!string.IsNullOrWhiteSpace(integrationEvent.RecipientEmail))
+        {
+            try
+            {
+                await _emailSender.SendAsync(integrationEvent.RecipientEmail, subject, message, cancellationToken);
+                emailStatus = "Sent";
+            }
+            catch (Exception ex)
+            {
+                emailStatus = "Failed";
+                emailError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+                _logger.LogWarning(ex, "Email delivery failed. To: {ToEmail}, EventType: {EventType}, ExpenseId: {ExpenseId}",
+                    integrationEvent.RecipientEmail, eventType, integrationEvent.ExpenseId);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(integrationEvent.RecipientPhone))
+        {
+            try
+            {
+                await _smsSender.SendAsync(integrationEvent.RecipientPhone, message, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "SMS delivery failed. Phone: {Phone}, EventType: {EventType}, ExpenseId: {ExpenseId}",
+                    integrationEvent.RecipientPhone, eventType, integrationEvent.ExpenseId);
+            }
+        }
 
         _logger.LogInformation(
-            "Notification dispatched. EventType: {EventType}, TenantId: {TenantId}, ExpenseId: {ExpenseId}, Recipient: {Recipient}, CorrelationId: {CorrelationId}",
-            eventType, integrationEvent.TenantId, integrationEvent.ExpenseId, recipient, integrationEvent.CorrelationId);
+            "Notification dispatched. EventType: {EventType}, TenantId: {TenantId}, ExpenseId: {ExpenseId}, Recipient: {Recipient}, EmailStatus: {EmailStatus}, CorrelationId: {CorrelationId}",
+            eventType, integrationEvent.TenantId, integrationEvent.ExpenseId, recipient, emailStatus, integrationEvent.CorrelationId);
 
         await _store.SaveAsync(new Notification
         {
@@ -58,6 +89,10 @@ public sealed class NotificationEventHandler : INotificationEventHandler
             CorrelationId = integrationEvent.CorrelationId,
             ExpenseId = integrationEvent.ExpenseId,
             Recipient = recipient,
+            RecipientEmail = integrationEvent.RecipientEmail,
+            RecipientPhone = integrationEvent.RecipientPhone,
+            EmailStatus = emailStatus,
+            EmailError = emailError,
             Message = message,
             Payload = payload,
             SentAt = DateTime.UtcNow
@@ -67,16 +102,6 @@ public sealed class NotificationEventHandler : INotificationEventHandler
             EventType = eventType,
             CorrelationId = integrationEvent.CorrelationId
         }, cancellationToken);
-
-        if (!string.IsNullOrWhiteSpace(integrationEvent.RecipientEmail))
-        {
-            await _emailSender.SendAsync(integrationEvent.RecipientEmail, subject, message, cancellationToken);
-        }
-
-        if (!string.IsNullOrWhiteSpace(integrationEvent.RecipientPhone))
-        {
-            await _smsSender.SendAsync(integrationEvent.RecipientPhone, message, cancellationToken);
-        }
     }
 
     private static ExpenseIntegrationEvent? Deserialize(string eventType, string payload)

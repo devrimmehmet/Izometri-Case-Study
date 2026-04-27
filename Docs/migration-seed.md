@@ -45,8 +45,8 @@ Tüm kullanıcılar için şifre: `Pass123!`
 
 | Tenant | E-posta | Roller |
 | --- | --- | --- |
-| `acme` | `admin@acme.com` | Admin |
-| `acme` | `hr@acme.com` | HR |
+| `acme` | `devrimmehmet@gmail.com` | Admin |
+| `acme` | `devrimmehmet@msn.com` | HR |
 | `acme` | `personel@demo.com` | Personnel |
 | `globex` | `admin@globex.com` | Admin |
 | `globex` | `hr@globex.com` | HR |

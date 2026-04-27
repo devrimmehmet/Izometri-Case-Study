@@ -22,6 +22,10 @@ public sealed class NotificationDbContext : DbContext
             b.Property(x => x.EventType).HasMaxLength(200).IsRequired();
             b.Property(x => x.CorrelationId).HasMaxLength(100).IsRequired();
             b.Property(x => x.Recipient).HasMaxLength(100).IsRequired();
+            b.Property(x => x.RecipientEmail).HasMaxLength(500).IsRequired();
+            b.Property(x => x.RecipientPhone).HasMaxLength(50).IsRequired();
+            b.Property(x => x.EmailStatus).HasMaxLength(50).IsRequired();
+            b.Property(x => x.EmailError).HasMaxLength(1000);
             b.Property(x => x.Message).HasMaxLength(1000).IsRequired();
             b.Property(x => x.Payload).IsRequired();
             b.HasIndex(x => new { x.TenantId, x.EventId });

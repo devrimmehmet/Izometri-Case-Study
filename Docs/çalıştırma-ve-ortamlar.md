@@ -20,6 +20,8 @@ Portlar:
 - Expense DB: `15433`
 - Notification DB: `15434`
 - Keycloak opsiyonel profil: `18080`
+- Mailpit UI: `8025`
+- Mailpit SMTP: `1025`
 
 Bu portlar mevcut local servislerle çakışmayı azaltmak için varsayılan Docker portlarından farklı seçilmiştir.
 
@@ -44,6 +46,7 @@ Swagger adresleri:
 - Expense API: `http://localhost:5001/swagger`
 - Notification API: `http://localhost:5002/swagger`
 - RabbitMQ UI: `http://localhost:15673`
+- Mailpit UI: `http://localhost:8025`
 
 RabbitMQ kullanıcı bilgileri:
 
@@ -99,7 +102,7 @@ HR kullanıcısı ile login olun:
 
 ```json
 {
-  "email": "hr@acme.com",
+  "email": "devrimmehmet@msn.com",
   "password": "Pass123!",
   "tenantCode": "acme"
 }
@@ -132,7 +135,7 @@ Admin kullanıcısı ile login olun:
 
 ```json
 {
-  "email": "admin@acme.com",
+  "email": "devrimmehmet@gmail.com",
   "password": "Pass123!",
   "tenantCode": "acme"
 }
@@ -241,6 +244,23 @@ Jwt__Issuer=...
 Jwt__Audience=...
 Jwt__Secret=...
 ExpenseService__BaseUrl=http://expense-api:8080
+Mail__FromName=Izometri Expense
+Mail__FromEmail=...
+Mail__Host=mail.devrimmehmet.com
+Mail__Port=587
+Mail__UserName=...
+Mail__Password=...
+Mail__UseSsl=true
+Mail__UsePickupFolder=false
+Mail__IgnoreCertificateErrors=true
+Mail__PickupFolderPath=App_Data/mail-drop
+Netgsm__UserCode=...
+Netgsm__Password=...
+Netgsm__MsgHeader=...
+Netgsm__BaseUrl=https://api.netgsm.com.tr
+Netgsm__Encoding=TR
+Netgsm__AppName=
+Netgsm__UseOtpEndpoint=false
 ```
 
 Prod önerileri:
@@ -249,9 +269,12 @@ Prod önerileri:
 - PostgreSQL ve RabbitMQ kullanıcı/şifreleri secret olarak yönetilmelidir.
 - API containerları arkasına reverse proxy veya ingress konulmalıdır.
 - HTTPS dış katmanda zorunlu olmalıdır.
+- SMTP için üretimde geçerli TLS sertifikası kullanılmalı, mümkünse `Mail__IgnoreCertificateErrors=false` kalmalıdır.
+- Netgsm SMS gönderimi REST v2 JSON POST ile yapılır. `Netgsm__MsgHeader` Netgsm hesabında tanımlı aktif gönderici başlığı olmalıdır; başlık tanımlı değilse canlı API `40 invalidHeader/header problem` döndürür.
 - Migration uygulama stratejisi ekip politikasına göre otomatik startup migration veya ayrı deployment job olarak belirlenmelidir.
 - RabbitMQ ve PostgreSQL volume yedekleme stratejisi tanımlanmalıdır.
 - Loglar merkezi bir log sistemine yönlendirilmelidir.
+- Local Docker ortamındaki Mailpit sadece geliştirme içindir; prod ortamında gerçek SMTP host ve secret değerleri verilmelidir.
 
 ## 8. Durdurma ve Temizlik
 

@@ -80,6 +80,8 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
                         var tokenFactory = sp.GetRequiredService<ServiceTokenFactory>();
                         return new ExpenseDetailsClient(httpClient, tokenFactory);
                     });
+                    services.AddTransient<IEmailSender, NoopEmailSender>();
+                    services.AddTransient<ISmsService, NoopSmsService>();
                 });
             });
 
@@ -97,5 +99,21 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
             _expenseDb.DisposeAsync().AsTask(),
             _notificationDb.DisposeAsync().AsTask(),
             _rabbitMq.DisposeAsync().AsTask());
+    }
+
+    private sealed class NoopEmailSender : IEmailSender
+    {
+        public Task SendAsync(string toEmail, string subject, string body, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class NoopSmsService : ISmsService
+    {
+        public Task SendAsync(string toPhone, string message, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

@@ -24,10 +24,10 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
     [Fact]
     public async Task Isolated_flow_covers_admin_users_tenant_isolation_outbox_and_notifications()
     {
-        var admin = await LoginAsync("admin@acme.com", "acme");
+        var admin = await LoginAsync("devrimmehmet@gmail.com", "acme");
         var personnel = await LoginAsync("personel@demo.com", "acme");
         var globexPersonnel = await LoginAsync("personel@demo.com", "globex");
-        var hr = await LoginAsync("hr@acme.com", "acme");
+        var hr = await LoginAsync("devrimmehmet@msn.com", "acme");
 
         var uniqueEmail = $"tc-{Guid.NewGuid():N}@acme.com";
         var createdUser = await SendAsync<UserResponse>(

@@ -5,6 +5,18 @@
     "version": "1.0"
   },
   "paths": {
+    "/api/admin/notifications/dead-letters": {
+      "get": {
+        "tags": [
+          "AdminNotificationDeadLetters"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/notifications": {
       "get": {
         "tags": [
@@ -87,6 +99,22 @@
             "type": "string",
             "nullable": true
           },
+          "recipientEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "recipientPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailError": {
+            "type": "string",
+            "nullable": true
+          },
           "message": {
             "type": "string",
             "nullable": true
@@ -101,6 +129,9 @@
     }
   },
   "tags": [
+    {
+      "name": "AdminNotificationDeadLetters"
+    },
     {
       "name": "Notifications"
     }

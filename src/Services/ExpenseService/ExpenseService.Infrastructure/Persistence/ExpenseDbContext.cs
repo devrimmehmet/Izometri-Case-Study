@@ -132,12 +132,12 @@ public sealed class ExpenseDbContext : DbContext
         var tenantB = Guid.Parse("10000000-0000-0000-0000-000000000002");
         var users = new[]
         {
-            UserSeed(tenantA, "20000000-0000-0000-0000-000000000001", "admin@acme.com", "Acme Admin", Roles.Admin),
-            UserSeed(tenantA, "20000000-0000-0000-0000-000000000002", "hr@acme.com", "Acme HR", Roles.HR),
-            UserSeed(tenantA, "20000000-0000-0000-0000-000000000003", "personel@demo.com", "Acme Personnel", Roles.Personnel),
-            UserSeed(tenantB, "20000000-0000-0000-0000-000000000004", "admin@globex.com", "Globex Admin", Roles.Admin),
-            UserSeed(tenantB, "20000000-0000-0000-0000-000000000005", "hr@globex.com", "Globex HR", Roles.HR),
-            UserSeed(tenantB, "20000000-0000-0000-0000-000000000006", "personel@demo.com", "Globex Personnel", Roles.Personnel)
+            UserSeed(tenantA, "20000000-0000-0000-0000-000000000001", "devrimmehmet@gmail.com", "Acme Admin", "905438194976", Roles.Admin),
+            UserSeed(tenantA, "20000000-0000-0000-0000-000000000002", "devrimmehmet@msn.com", "Acme HR", "905393649361", Roles.HR),
+            UserSeed(tenantA, "20000000-0000-0000-0000-000000000003", "personel@demo.com", "Acme Personnel", null, Roles.Personnel),
+            UserSeed(tenantB, "20000000-0000-0000-0000-000000000004", "admin@globex.com", "Globex Admin", null, Roles.Admin),
+            UserSeed(tenantB, "20000000-0000-0000-0000-000000000005", "hr@globex.com", "Globex HR", null, Roles.HR),
+            UserSeed(tenantB, "20000000-0000-0000-0000-000000000006", "personel@demo.com", "Globex Personnel", null, Roles.Personnel)
         };
 
         modelBuilder.Entity<Tenant>().HasData(
@@ -148,7 +148,7 @@ public sealed class ExpenseDbContext : DbContext
         modelBuilder.Entity<UserRole>().HasData(users.SelectMany(x => x.Roles));
     }
 
-    private static (User User, UserRole[] Roles) UserSeed(Guid tenantId, string userIdText, string email, string name, params string[] roles)
+    private static (User User, UserRole[] Roles) UserSeed(Guid tenantId, string userIdText, string email, string name, string? phone = null, params string[] roles)
     {
         var userId = Guid.Parse(userIdText);
         var now = new DateTime(2026, 4, 26, 0, 0, 0, DateTimeKind.Utc);
@@ -160,6 +160,7 @@ public sealed class ExpenseDbContext : DbContext
             Email = email,
             DisplayName = name,
             PasswordHash = passwordHash,
+            Phone = phone,
             CreatedAt = now
         };
 

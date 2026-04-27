@@ -18,7 +18,11 @@ public static class DependencyInjection
         services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
         services.Configure<ExpenseServiceOptions>(configuration.GetSection("ExpenseService"));
-        services.Configure<SmtpOptions>(configuration.GetSection("Smtp"));
+        services.Configure<SmtpOptions>(options =>
+        {
+            configuration.GetSection("Smtp").Bind(options);
+            configuration.GetSection("Mail").Bind(options);
+        });
         services.Configure<NetgsmOptions>(configuration.GetSection("Netgsm"));
 
         services.AddDbContext<NotificationDbContext>(options =>

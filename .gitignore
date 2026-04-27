@@ -10,6 +10,27 @@
 *.userosscache
 *.sln.docstates
 *.env
+*.env.*
+!.env.example
+!.env.*.example
+
+# Local secrets and machine-specific application settings
+**/appsettings.Local.json
+**/appsettings.*.Local.json
+**/appsettings.local.json
+**/appsettings.*.local.json
+**/appsettings.Secrets.json
+**/appsettings.*.Secrets.json
+**/appsettings.Production.json
+**/appsettings.Staging.json
+!**/appsettings.Local.example.json
+!**/appsettings.Production.example.json
+!**/appsettings.Staging.example.json
+
+# Local Docker overrides may contain credentials
+docker-compose.override.yml
+docker-compose.*.override.yml
+!docker-compose.override.example.yml
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

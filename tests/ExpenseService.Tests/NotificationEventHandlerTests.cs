@@ -16,7 +16,7 @@ public sealed class NotificationEventHandlerTests
     {
         var tenantId = Guid.NewGuid();
         var expenseId = Guid.NewGuid();
-        var recipientEmail = "hr@acme.com";
+        var recipientEmail = "devrimmehmet@msn.com,devrimmehmet@gmail.com";
         var recipientPhone = "+905551234567";
         var integrationEvent = new ExpenseCreatedEvent(
             Guid.NewGuid(), "corr-1", DateTime.UtcNow, tenantId, expenseId, Guid.NewGuid(), 1000, "TRY")
@@ -47,12 +47,45 @@ public sealed class NotificationEventHandlerTests
                 n.TenantId == tenantId &&
                 n.ExpenseId == expenseId &&
                 n.EventType == ExpenseEventNames.ExpenseCreated &&
-                n.Recipient == "HR"),
+                n.Recipient == "HR/Admin" &&
+                n.RecipientEmail == recipientEmail &&
+                n.RecipientPhone == recipientPhone &&
+                n.EmailStatus == "Sent"),
             It.Is<ProcessedMessage>(m => m.EventId == integrationEvent.EventId),
             It.IsAny<CancellationToken>()), Times.Once);
 
         emailSender.Verify(x => x.SendAsync(recipientEmail, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         smsSender.Verify(x => x.SendAsync(recipientPhone, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_records_failed_email_without_failing_event_processing()
+    {
+        var integrationEvent = new ExpenseCreatedEvent(
+            Guid.NewGuid(), "corr-fail", DateTime.UtcNow, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 1000, "TRY")
+        {
+            RecipientEmail = "devrimmehmet@msn.com"
+        };
+
+        var store = new Mock<INotificationStore>();
+        store.Setup(x => x.IsProcessedAsync(integrationEvent.EventId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var client = new Mock<IExpenseDetailsClient>();
+        var emailSender = new Mock<IEmailSender>();
+        emailSender.Setup(x => x.SendAsync(integrationEvent.RecipientEmail, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TimeoutException("SMTP timeout"));
+        var smsSender = new Mock<ISmsService>();
+        var logger = new Mock<ILogger<NotificationEventHandler>>();
+
+        var handler = new NotificationEventHandler(store.Object, client.Object, emailSender.Object, smsSender.Object, logger.Object);
+
+        await handler.HandleAsync(ExpenseEventNames.ExpenseCreated, JsonSerializer.Serialize(integrationEvent), CancellationToken.None);
+
+        store.Verify(x => x.SaveAsync(
+            It.Is<Notification>(n => n.EmailStatus == "Failed" && n.EmailError!.Contains("SMTP timeout")),
+            It.Is<ProcessedMessage>(m => m.EventId == integrationEvent.EventId),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

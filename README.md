@@ -34,6 +34,7 @@ Servis adresleri:
 - Notification API Swagger: `http://localhost:5002/swagger`
 - RabbitMQ AMQP: `localhost:5673`
 - RabbitMQ Management: `http://localhost:15673` (`guest` / `guest`)
+- Mailpit UI: `http://localhost:8025`
 - Expense PostgreSQL: `localhost:15433`
 - Notification PostgreSQL: `localhost:15434`
 
@@ -63,8 +64,8 @@ Tüm kullanıcılar için şifre: `Pass123!`
 
 | Tenant | E-posta | Roller |
 | --- | --- | --- |
-| `acme` | `admin@acme.com` | Admin |
-| `acme` | `hr@acme.com` | HR |
+| `acme` | `devrimmehmet@gmail.com` | Admin |
+| `acme` | `devrimmehmet@msn.com` | HR |
 | `acme` | `personel@demo.com` | Personnel |
 | `globex` | `admin@globex.com` | Admin |
 | `globex` | `hr@globex.com` | HR |
@@ -126,6 +127,7 @@ NotificationService:
 
 - `GET /api/notifications`
 - `GET /api/notifications?tenantId={tenantId}`
+- `GET /api/admin/notifications/dead-letters`
 - `GET /health`
 
 ## İş Kuralları
@@ -147,6 +149,24 @@ NotificationService:
 - TB-6 Logging/Correlation ID: `X-Correlation-Id` request/response header olarak taşınır, event payloadlarına yazılır ve servisler arası HTTP isteğinde devam eder.
 - TR-7 HTTP Retry: NotificationService -> ExpenseService HTTP client'ı standard resilience/retry pipeline kullanır.
 - TB-8 Operational Readiness: Healthcheck endpointleri, Docker Compose healthcheck tanımları, Serilog console logging, standart hata formatı ve CI pipeline eklendi.
+
+## E-posta Kontrolü
+
+Personel Acme tenantında harcama oluşturduğunda HR/Admin alıcıları `devrimmehmet@gmail.com,devrimmehmet@msn.com` olarak notification kaydına yazılır. Docker local ortamında SMTP hedefi Mailpit’tir; mailler `http://localhost:8025` üzerinden görülebilir. `GET /api/notifications` yanıtında `recipientEmail`, `emailStatus` ve `emailError` alanlarıyla gönderim sonucu da izlenir.
+
+Gerçek SMTP için `Mail` configuration section’ı kullanılır: `FromName`, `FromEmail`, `Host`, `Port`, `UserName`, `Password`, `UseSsl`, `UsePickupFolder`, `IgnoreCertificateErrors`, `PickupFolderPath`.
+
+SMS gönderimi Netgsm REST v2 JSON POST API ile yapılır. Local Docker ortamında gerçek SMS gönderimi kapalıdır; prod veya manuel test için `Netgsm__UserCode`, `Netgsm__Password`, `Netgsm__MsgHeader`, `Netgsm__BaseUrl`, `Netgsm__Encoding`, `Netgsm__AppName` ve gerekiyorsa `Netgsm__UseOtpEndpoint` değerleri ortam değişkeni olarak verilmelidir. Netgsm tarafında aktif gönderici başlığı yoksa API `40 invalidHeader/header problem` döndürür.
+
+## Secret Yönetimi
+
+Gerçek şifreler, API anahtarları ve production bağlantı bilgileri commitlenmemelidir. Repository içinde sadece örnek dosyalar tutulur:
+
+- `.env.example`
+- `src/Services/ExpenseService/ExpenseService.Api/appsettings.Local.example.json`
+- `src/Services/NotificationService/NotificationService.Api/appsettings.Local.example.json`
+
+Gerçek local değerler için `.env`, `.env.local`, `appsettings.Local.json`, `appsettings.Production.json` veya `docker-compose.override.yml` kullanılmalıdır. Bu dosyalar `.gitignore` ile Git dışında bırakılır.
 
 ## Doğrulanan Komutlar
 

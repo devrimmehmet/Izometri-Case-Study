@@ -27,8 +27,8 @@
   ],
   "users": [
     {
-      "username": "admin@acme.com",
-      "email": "admin@acme.com",
+      "username": "devrimmehmet@gmail.com",
+      "email": "devrimmehmet@gmail.com",
       "enabled": true,
       "emailVerified": true,
       "firstName": "Acme",
@@ -43,8 +43,8 @@
       "realmRoles": [ "Admin" ]
     },
     {
-      "username": "hr@acme.com",
-      "email": "hr@acme.com",
+      "username": "devrimmehmet@msn.com",
+      "email": "devrimmehmet@msn.com",
       "enabled": true,
       "emailVerified": true,
       "firstName": "Acme",

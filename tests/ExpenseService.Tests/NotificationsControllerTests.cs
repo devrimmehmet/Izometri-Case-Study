@@ -22,6 +22,10 @@ public sealed class NotificationsControllerTests
                 "corr-1",
                 Guid.NewGuid(),
                 "HR",
+                "devrimmehmet@msn.com",
+                "905393649361",
+                "Sent",
+                null,
                 "Expense created.",
                 DateTime.UtcNow)
         };

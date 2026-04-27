@@ -8,6 +8,10 @@ public sealed record NotificationResponse(
     string CorrelationId,
     Guid ExpenseId,
     string Recipient,
+    string RecipientEmail,
+    string RecipientPhone,
+    string EmailStatus,
+    string? EmailError,
     string Message,
     DateTime SentAt);
 

@@ -38,9 +38,9 @@ public sealed class ExpenseAppService : IExpenseAppService
         var tenantId = RequiredTenantId();
         var userId = RequiredUserId();
 
-        var hrContacts = await _unitOfWork.Repository<User>()
+        var notificationContacts = await _unitOfWork.Repository<User>()
             .Query()
-            .Where(u => u.Roles.Any(r => r.Role == Roles.HR))
+            .Where(u => u.Roles.Any(r => r.Role == Roles.HR || r.Role == Roles.Admin))
             .Select(u => new { u.Email, u.Phone })
             .ToListAsync(cancellationToken);
 
@@ -68,8 +68,8 @@ public sealed class ExpenseAppService : IExpenseAppService
                 expense.Amount,
                 expense.Currency.ToString())
             {
-                RecipientEmail = string.Join(",", hrContacts.Select(u => u.Email)),
-                RecipientPhone = hrContacts.Select(u => u.Phone).FirstOrDefault(p => !string.IsNullOrEmpty(p)) ?? string.Empty
+                RecipientEmail = string.Join(",", notificationContacts.Select(u => u.Email)),
+                RecipientPhone = notificationContacts.Select(u => u.Phone).FirstOrDefault(p => !string.IsNullOrEmpty(p)) ?? string.Empty
             }, ExpenseEventNames.ExpenseCreated, ct);
         }, cancellationToken);
 

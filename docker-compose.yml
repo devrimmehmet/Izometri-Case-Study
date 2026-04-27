@@ -1,6 +1,13 @@
 services:
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: izometri-mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
   jaeger:
-    image: jaegertracing/all-in-one:1.62
+    image: jaegertracing/all-in-one:latest
     container_name: izometri-jaeger
     ports:
       - "16686:16686"
@@ -99,6 +106,8 @@ services:
         condition: service_healthy
       expense-api:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     ports:
       - "5002:8080"
     environment:
@@ -113,16 +122,24 @@ services:
       Jwt__Audience: Izometri.CaseStudy
       Jwt__Secret: expense-service-development-secret-key-please-change
       OpenTelemetry__OtlpEndpoint: http://jaeger:4317
-      Smtp__Host: mail.devrimmehmet.com
-      Smtp__Port: 587
-      Smtp__UseSsl: "true"
-      Smtp__UserName: izometricasestudy@devrimmehmet.com
-      Smtp__Password: izometricasestudy@devrimmehmet.com
-      Smtp__FromAddress: izometricasestudy@devrimmehmet.com
-      Smtp__FromName: Izometri Expense
-      Netgsm__UserCode: "8503080768"
-      Netgsm__Password: "FB*7216"
-      Netgsm__MsgHeader: "8503080768"
+      Mail__FromName: Izometri Expense
+      Mail__FromEmail: no-reply@izometri.local
+      Mail__Host: mailpit
+      Mail__Port: 1025
+      Mail__UseSsl: false
+      Mail__UsePickupFolder: false
+      Mail__IgnoreCertificateErrors: false
+      Mail__TimeoutSeconds: 15
+      Mail__UserName: ""
+      Mail__Password: ""
+      Mail__PickupFolderPath: App_Data/mail-drop
+      Netgsm__UserCode: ""
+      Netgsm__Password: ""
+      Netgsm__MsgHeader: ""
+      Netgsm__BaseUrl: https://api.netgsm.com.tr
+      Netgsm__Encoding: TR
+      Netgsm__AppName: ""
+      Netgsm__UseOtpEndpoint: false
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
       interval: 10s
