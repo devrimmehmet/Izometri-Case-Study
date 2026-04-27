@@ -14,6 +14,7 @@
         dark
         :loading="notification.loading"
         class="bg-transparent"
+        no-data-label="Kayıt bulunamadı"
       >
         <template #body-cell-eventType="props">
           <q-td :props="props">
@@ -34,9 +35,9 @@
             <span v-else class="text-grey-6">—</span>
           </q-td>
         </template>
-        <template #body-cell-createdAt="props">
+        <template #body-cell-sentAt="props">
           <q-td :props="props">
-            {{ formatDateTime(props.row.createdAt) }}
+            {{ formatDateTime(props.row.sentAt) }}
           </q-td>
         </template>
       </q-table>
@@ -56,20 +57,22 @@ const columns = [
   { name: 'message', label: 'Mesaj', field: 'message', align: 'left' as const },
   { name: 'recipientEmail', label: 'Alıcı', field: 'recipientEmail', align: 'left' as const },
   { name: 'emailStatus', label: 'E-posta Durumu', field: 'emailStatus', align: 'center' as const },
-  { name: 'createdAt', label: 'Tarih', field: 'createdAt', align: 'left' as const },
+  { name: 'sentAt', label: 'Tarih', field: 'sentAt', align: 'left' as const },
 ];
 
 function eventColor(type: string): string {
-  if (type?.includes('Created')) return 'info';
-  if (type?.includes('Approved')) return 'positive';
-  if (type?.includes('Rejected')) return 'negative';
+  const t = type?.toLowerCase() || '';
+  if (t.includes('created')) return 'info';
+  if (t.includes('approved')) return 'positive';
+  if (t.includes('rejected')) return 'negative';
   return 'grey';
 }
 
 function eventLabel(type: string): string {
-  if (type?.includes('Created')) return 'Oluşturuldu';
-  if (type?.includes('Approved')) return 'Onaylandı';
-  if (type?.includes('Rejected')) return 'Reddedildi';
+  const t = type?.toLowerCase() || '';
+  if (t.includes('created')) return 'Harcama Talebi Oluşturuldu';
+  if (t.includes('approved')) return 'Harcama Onaylandı';
+  if (t.includes('rejected')) return 'Harcama Reddedildi';
   return type;
 }
 

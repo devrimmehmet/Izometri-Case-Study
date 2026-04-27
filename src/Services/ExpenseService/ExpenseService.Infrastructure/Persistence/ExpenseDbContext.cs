@@ -155,6 +155,20 @@ public sealed class ExpenseDbContext : DbContext
 
         modelBuilder.Entity<User>().HasData(users.Select(x => x.User));
         modelBuilder.Entity<UserRole>().HasData(users.SelectMany(x => x.Roles));
+
+        var test1PersonnelId = Guid.Parse("20000000-0000-0000-0000-000000000006");
+        var test1HrId = Guid.Parse("20000000-0000-0000-0000-000000000005");
+        
+        var expenses = new[]
+        {
+            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000001"), TenantId = tenantTest1, RequestedByUserId = test1PersonnelId, Category = ExpenseCategory.Travel, Amount = 1250.00m, Currency = ExpenseCurrency.TRY, Description = "Ankara Müşteri Ziyareti", Status = ExpenseStatus.Draft, CreatedAt = now.AddDays(-5), CreatedBy = test1PersonnelId },
+            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000002"), TenantId = tenantTest1, RequestedByUserId = test1PersonnelId, Category = ExpenseCategory.Equipment, Amount = 450.00m, Currency = ExpenseCurrency.TRY, Description = "Kırtasiye Malzemeleri", Status = ExpenseStatus.Pending, CreatedAt = now.AddDays(-4), CreatedBy = test1PersonnelId },
+            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000003"), TenantId = tenantTest1, RequestedByUserId = test1PersonnelId, Category = ExpenseCategory.Education, Amount = 5000.00m, Currency = ExpenseCurrency.TRY, Description = "Udemy Eğitim Kursu", Status = ExpenseStatus.Approved, HrApproved = true, AdminApproved = true, CreatedAt = now.AddDays(-3), CreatedBy = test1PersonnelId },
+            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000004"), TenantId = tenantTest1, RequestedByUserId = test1HrId, Category = ExpenseCategory.Other, Amount = 200.00m, Currency = ExpenseCurrency.USD, Description = "Yazılım Lisansı", Status = ExpenseStatus.Rejected, RejectionReason = "Bütçe onayı yok", CreatedAt = now.AddDays(-2), CreatedBy = test1HrId },
+            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000005"), TenantId = tenantTest1, RequestedByUserId = test1PersonnelId, Category = ExpenseCategory.Travel, Amount = 5500.00m, Currency = ExpenseCurrency.TRY, Description = "İstanbul Uçak Bileti", Status = ExpenseStatus.Pending, HrApproved = true, CreatedAt = now.AddDays(-1), CreatedBy = test1PersonnelId }
+        };
+        
+        modelBuilder.Entity<Expense>().HasData(expenses);
     }
 
     private static (User User, UserRole[] Roles) UserSeed(Guid tenantId, string userIdText, string email, string name, string? phone = null, params string[] roles)

@@ -20,5 +20,7 @@ public sealed class Expense : TenantEntity
     public User? RequestedByUser { get; set; }
     public ICollection<ExpenseApproval> Approvals { get; set; } = new List<ExpenseApproval>();
 
-    public bool RequiresAdminApproval => Currency == ExpenseCurrency.TRY && Amount > 5000m;
+    public decimal ExchangeRate { get; set; } = 1m;
+    public decimal AmountInTry => Amount * ExchangeRate;
+    public bool RequiresAdminApproval => AmountInTry > 5000m;
 }

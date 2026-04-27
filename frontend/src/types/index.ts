@@ -33,7 +33,7 @@ export type ExpenseStatus =
   | 'Approved'
   | 'Rejected';
 
-export type ExpenseCategory = 'Travel' | 'Material' | 'Education' | 'Other';
+export type ExpenseCategory = 'Travel' | 'Equipment' | 'Education' | 'Other';
 
 export type Currency = 'TRY' | 'USD' | 'EUR';
 
@@ -44,9 +44,11 @@ export interface ExpenseDto {
   amount: number;
   description: string;
   status: ExpenseStatus;
+  hrApproved: boolean;
+  adminApproved: boolean;
   createdAt: string;
   updatedAt?: string;
-  createdBy: string;
+  requestedByUserId: string;
   createdByEmail?: string;
   approvals?: ExpenseApprovalDto[];
 }
@@ -115,7 +117,7 @@ export interface NotificationDto {
   recipientEmail?: string;
   emailStatus?: string;
   emailError?: string;
-  createdAt: string;
+  sentAt: string;
 }
 
 export interface HealthResponse {

@@ -1,0 +1,20 @@
+Custom Non-Commercial / Educational License
+
+Copyright (c) 2026 Devrim Mehmet Pattabanoğlu
+
+Bu proje, Devrim Mehmet Pattabanoğlu tarafından İzometri Bilişim firmasının "Senior .NET Developer" pozisyonu değerlendirme süreci kapsamında, bir Case Study (Vaka Çalışması) olarak özel olarak geliştirilmiştir.
+
+1. KULLANIM AMACI VE İZİNLER
+- Bu kaynak kodları, mimari tasarımlar ve ilgili dokümantasyonlar sadece İzometri Bilişim yetkilileri tarafından adayın teknik yetkinliklerini değerlendirmek, incelemek ve test etmek amacıyla kullanılabilir.
+- Projenin kişisel bilgisayarlarda, yerel sunucularda (localhost) test edilmesi ve kod incelemesi yapılması tamamen serbesttir.
+
+2. KISITLAMALAR VE YASAKLAR
+- Bu proje hiçbir şekilde ticari amaçlarla KULLANILAMAZ.
+- Projedeki kodların tamamı veya herhangi bir parçası başka bir ticari projeye, ürüne veya açık kaynaklı depoya kopyalanamaz, çoğaltılamaz veya satılamaz.
+- Projenin izinsiz olarak başka şirketlerin işe alım süreçlerinde veya eğitim materyali olarak kullanılması yasaktır.
+
+3. SORUMLULUK REDDİ
+Bu yazılım "olduğu gibi" sağlanmıştır. Geliştirici (Devrim Mehmet Pattabanoğlu), yazılımın kullanımı, derlenmesi veya test edilmesi sırasında oluşabilecek veri kayıpları, sistem hataları veya diğer zararlardan sorumlu tutulamaz. Yazılımın production (canlı) ortamlar için değil, salt test ve mülakat ortamı için üretildiği unutulmamalıdır.
+
+Tüm hakları saklıdır.
+İletişim: devrimmehmet@gmail.com / +905438194976

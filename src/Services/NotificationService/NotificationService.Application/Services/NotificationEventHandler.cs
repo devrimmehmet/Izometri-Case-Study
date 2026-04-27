@@ -128,13 +128,13 @@ public sealed class NotificationEventHandler : INotificationEventHandler
 
     private static string BuildMessage(string eventType, ExpenseIntegrationEvent integrationEvent, DTOs.ExpenseDetailResponse? expense)
     {
-        var amount = expense is null ? string.Empty : $" Tutar: {expense.Amount} {expense.Currency}.";
+        var amount = expense is null ? string.Empty : $" Tutar: {expense.Amount:N2} {expense.Currency}.";
         return eventType switch
         {
-            ExpenseEventNames.ExpenseCreated => $"Expense {integrationEvent.ExpenseId} created and waiting for HR review.{amount}",
-            ExpenseEventNames.ExpenseApproved => $"Expense {integrationEvent.ExpenseId} approved.{amount}",
-            ExpenseEventNames.ExpenseRejected => $"Expense {integrationEvent.ExpenseId} rejected.{amount}",
-            _ => $"Expense event received for {integrationEvent.ExpenseId}.{amount}"
+            ExpenseEventNames.ExpenseCreated => $"{integrationEvent.ExpenseId} ID'li harcama talebi oluşturuldu ve onay bekliyor.{amount}",
+            ExpenseEventNames.ExpenseApproved => $"{integrationEvent.ExpenseId} ID'li harcama talebiniz onaylandı.{amount}",
+            ExpenseEventNames.ExpenseRejected => $"{integrationEvent.ExpenseId} ID'li harcama talebiniz reddedildi.{amount}",
+            _ => $"{integrationEvent.ExpenseId} ID'li harcama için bildirim alındı.{amount}"
         };
     }
 }

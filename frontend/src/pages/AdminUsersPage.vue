@@ -25,6 +25,7 @@
         dark
         :loading="admin.loading"
         class="bg-transparent"
+        no-data-label="Kayıt bulunamadı"
       >
         <template #body-cell-roles="props">
           <q-td :props="props">

@@ -20,7 +20,7 @@ export const statusClasses: Record<ExpenseStatus, string> = {
 
 export const categoryLabels: Record<ExpenseCategory, string> = {
   Travel: 'Seyahat',
-  Material: 'Malzeme',
+  Equipment: 'Malzeme',
   Education: 'Eğitim',
   Other: 'Diğer',
 };

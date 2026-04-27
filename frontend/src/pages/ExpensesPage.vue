@@ -75,14 +75,7 @@
           dense
           @click="applyFilters"
         />
-        <q-btn
-          flat
-          dense
-          icon="clear"
-          label="Temizle"
-          color="grey-5"
-          @click="clearFilters"
-        />
+        <q-btn flat dense icon="clear" label="Temizle" color="grey-5" @click="clearFilters" />
       </div>
     </div>
 
@@ -97,6 +90,7 @@
         :loading="expense.loading"
         :pagination="pagination"
         class="bg-transparent"
+        no-data-label="Kayıt bulunamadı"
         @update:pagination="onPaginationChange"
       >
         <template #body-cell-category="props">
@@ -106,8 +100,8 @@
         </template>
         <template #body-cell-status="props">
           <q-td :props="props">
-            <span :class="['status-badge', statusClass(props.row.status)]">
-              {{ statusLabel(props.row.status) }}
+            <span :class="['status-badge', statusClass(props.row)]">
+              {{ statusLabel(props.row) }}
             </span>
           </q-td>
         </template>
@@ -136,7 +130,7 @@
               <q-tooltip>Detay</q-tooltip>
             </q-btn>
             <q-btn
-              v-if="props.row.status === 'Draft'"
+              v-if="props.row.status === 'Draft' && props.row.requestedByUserId === auth.userId"
               flat
               dense
               round
@@ -144,18 +138,36 @@
               color="info"
               @click="submitExpense(props.row.id)"
             >
-              <q-tooltip>Gönder</q-tooltip>
+              <q-tooltip>Onayla</q-tooltip>
             </q-btn>
             <q-btn
               v-if="canApproveRow(props.row)"
               flat
               dense
               round
-              icon="check"
-              color="positive"
+              :icon="
+                props.row.currency === 'TRY' &&
+                props.row.amount > 5000 &&
+                props.row.status === 'Pending'
+                  ? 'send'
+                  : 'check'
+              "
+              :color="
+                props.row.currency === 'TRY' &&
+                props.row.amount > 5000 &&
+                props.row.status === 'Pending'
+                  ? 'warning'
+                  : 'positive'
+              "
               @click="approveExpense(props.row.id)"
             >
-              <q-tooltip>Onayla</q-tooltip>
+              <q-tooltip>{{
+                props.row.currency === 'TRY' &&
+                props.row.amount > 5000 &&
+                props.row.status === 'Pending'
+                  ? 'Yönetici Onayına Gönder'
+                  : 'Onayla'
+              }}</q-tooltip>
             </q-btn>
             <q-btn
               v-if="canApproveRow(props.row)"
@@ -317,10 +329,8 @@
             <div class="row">
               <div class="col-4 text-grey-5">Durum:</div>
               <div class="col-8">
-                <span
-                  :class="['status-badge', statusClass(detailExpense.status)]"
-                >
-                  {{ statusLabel(detailExpense.status) }}
+                <span :class="['status-badge', statusClass(detailExpense)]">
+                  {{ statusLabel(detailExpense) }}
                 </span>
               </div>
             </div>
@@ -383,7 +393,7 @@ const statusOptions = [
 
 const categoryOptions = [
   { label: 'Seyahat', value: 'Travel' },
-  { label: 'Malzeme', value: 'Material' },
+  { label: 'Malzeme', value: 'Equipment' },
   { label: 'Eğitim', value: 'Education' },
   { label: 'Diğer', value: 'Other' },
 ];
@@ -401,7 +411,13 @@ const pagination = ref({
 });
 
 const columns = [
-  { name: 'category', label: 'Kategori', field: 'category', align: 'left' as const, sortable: true },
+  {
+    name: 'category',
+    label: 'Kategori',
+    field: 'category',
+    align: 'left' as const,
+    sortable: true,
+  },
   { name: 'amount', label: 'Tutar', field: 'amount', align: 'right' as const, sortable: true },
   { name: 'status', label: 'Durum', field: 'status', align: 'center' as const },
   { name: 'createdAt', label: 'Tarih', field: 'createdAt', align: 'left' as const, sortable: true },
@@ -428,17 +444,20 @@ const rejectTargetId = ref('');
 const showDetailDialog = ref(false);
 const detailExpense = ref<ExpenseDto | null>(null);
 
-function statusClass(status: ExpenseStatus): string {
-  return statusClasses[status] ?? 'draft';
+function statusClass(row: ExpenseDto): string {
+  if (row.status === 'Pending' && row.hrApproved) return 'pending-admin';
+  return statusClasses[row.status] ?? 'draft';
 }
 
-function statusLabel(status: ExpenseStatus): string {
-  return translateStatus(status);
+function statusLabel(row: ExpenseDto): string {
+  if (row.status === 'Pending' && row.hrApproved) return 'Yönetici Onayı Bekliyor';
+  return translateStatus(row.status);
 }
 
 function canApproveRow(row: ExpenseDto): boolean {
-  if (row.status === 'Pending' && (auth.isHR || auth.isAdmin)) return true;
-  if (row.status === 'PendingAdminApproval' && auth.isAdmin) return true;
+  if (row.status !== 'Pending') return false;
+  if (auth.isHR && !row.hrApproved) return true;
+  if (auth.isAdmin && row.hrApproved && !row.adminApproved) return true;
   return false;
 }
 

@@ -64,6 +64,7 @@
         hide-pagination
         :rows-per-page-options="[5]"
         class="bg-transparent"
+        no-data-label="Kayıt bulunamadı"
       >
         <template #body-cell-category="props">
           <q-td :props="props">
