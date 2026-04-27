@@ -129,7 +129,7 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
     {
         // 1. Admin sets fixed USD rate to 35
         var admin = await LoginAsync("pattabanoglu@devrimmehmet.com", "test1");
-        await SendRawAsync(HttpMethod.Put, "/api/v1/settings/exchange-rates", admin.AccessToken, new { FixedUsdRate = 35.0m, FixedEurRate = 40.0m });
+        await SendRawAsync(HttpMethod.Put, "/api/settings/exchange-rates", admin.AccessToken, new { FixedUsdRate = 35.0m, FixedEurRate = 40.0m });
 
         // 2. Personnel creates 145 USD expense (145 * 35 = 5075 TRY > 5000)
         var personnel = await LoginAsync("devrimmehmet@msn.com", "test1");
@@ -153,7 +153,7 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
         Assert.False(afterHrApproval.AdminApproved);
 
         // 3. Admin sets USD rate to 33
-        await SendRawAsync(HttpMethod.Put, "/api/v1/settings/exchange-rates", admin.AccessToken, new { FixedUsdRate = 33.0m, FixedEurRate = 38.0m });
+        await SendRawAsync(HttpMethod.Put, "/api/settings/exchange-rates", admin.AccessToken, new { FixedUsdRate = 33.0m, FixedEurRate = 38.0m });
 
         // 4. Personnel creates 150 USD expense (150 * 33 = 4950 TRY < 5000)
         var lowExpense = await SendAsync<ExpenseResponse>(
