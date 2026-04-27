@@ -42,6 +42,8 @@ export interface ExpenseDto {
   category: ExpenseCategory;
   currency: Currency;
   amount: number;
+  exchangeRate: number;
+  amountInTry: number;
   description: string;
   status: ExpenseStatus;
   hrApproved: boolean;

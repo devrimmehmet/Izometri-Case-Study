@@ -25,7 +25,7 @@ public sealed class LiveDeliveryAndHealthTests
         await AssertHealthyAsync(httpClient, "http://localhost:5001/health");
         await AssertHealthyAsync(httpClient, "http://localhost:5002/health");
         await AssertHealthyAsync(httpClient, "http://localhost:8025/api/v1/info");
-        await AssertHealthyAsync(httpClient, "http://localhost:15673/api/overview", "guest", "guest");
+        await AssertHealthyAsync(httpClient, "http://localhost:15673/api/overview", "izometri", "Izometri2026!");
         await AssertTcpOpenAsync("localhost", 15433);
         await AssertTcpOpenAsync("localhost", 15434);
         await AssertTcpOpenAsync("localhost", 5673);

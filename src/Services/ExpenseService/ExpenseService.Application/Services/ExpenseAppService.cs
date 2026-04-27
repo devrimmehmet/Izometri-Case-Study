@@ -391,6 +391,8 @@ public sealed class ExpenseAppService : IExpenseAppService
         x.Category,
         x.Currency,
         x.Amount,
+        x.ExchangeRate,
+        x.Amount * x.ExchangeRate,
         x.Description,
         x.Status,
         x.HrApproved,

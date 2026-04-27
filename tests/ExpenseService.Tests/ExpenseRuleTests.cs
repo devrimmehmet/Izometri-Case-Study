@@ -13,6 +13,7 @@ public sealed class ExpenseRuleTests
         var expense = new Expense
         {
             Amount = amount,
+            ExchangeRate = 1,
             Currency = ExpenseCurrency.TRY
         };
 
@@ -20,14 +21,22 @@ public sealed class ExpenseRuleTests
     }
 
     [Fact]
-    public void Non_try_expense_does_not_trigger_try_threshold_rule()
+    public void Non_try_expense_triggers_threshold_rule_based_on_exchange_rate()
     {
-        var expense = new Expense
+        var expense1 = new Expense
         {
-            Amount = 9000m,
+            Amount = 145m,
+            ExchangeRate = 33m,
             Currency = ExpenseCurrency.USD
         };
+        Assert.False(expense1.RequiresAdminApproval);
 
-        Assert.False(expense.RequiresAdminApproval);
+        var expense2 = new Expense
+        {
+            Amount = 145m,
+            ExchangeRate = 35m,
+            Currency = ExpenseCurrency.USD
+        };
+        Assert.True(expense2.RequiresAdminApproval);
     }
 }

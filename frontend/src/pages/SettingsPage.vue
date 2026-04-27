@@ -28,9 +28,15 @@
                 dense
                 color="primary"
                 clearable
+                :hint="currentRates.usd ? `Şu anki TCMB kuru: ${currentRates.usd} TL` : ''"
               >
                 <template #prepend>
                   <q-icon name="attach_money" color="grey-5" />
+                </template>
+                <template #append v-if="currentRates.usd">
+                  <q-btn flat round dense icon="content_copy" size="sm" @click="form.fixedUsdRate = currentRates.usd">
+                    <q-tooltip>Canlı kuru kopyala</q-tooltip>
+                  </q-btn>
                 </template>
               </q-input>
 
@@ -44,9 +50,15 @@
                 dense
                 color="primary"
                 clearable
+                :hint="currentRates.eur ? `Şu anki TCMB kuru: ${currentRates.eur} TL` : ''"
               >
                 <template #prepend>
                   <q-icon name="euro" color="grey-5" />
+                </template>
+                <template #append v-if="currentRates.eur">
+                  <q-btn flat round dense icon="content_copy" size="sm" @click="form.fixedEurRate = currentRates.eur">
+                    <q-tooltip>Canlı kuru kopyala</q-tooltip>
+                  </q-btn>
                 </template>
               </q-input>
 
@@ -81,11 +93,18 @@ const form = reactive({
   fixedEurRate: null as number | null,
 });
 
+const currentRates = reactive({
+  usd: null as number | null,
+  eur: null as number | null,
+});
+
 async function loadRates() {
   try {
     const { data } = await api.get('/settings/exchange-rates');
     form.fixedUsdRate = data.fixedUsdRate;
     form.fixedEurRate = data.fixedEurRate;
+    currentRates.usd = data.currentUsdRate;
+    currentRates.eur = data.currentEurRate;
   } catch {
     $q.notify({ type: 'negative', message: 'Ayarlar yüklenemedi' });
   }
@@ -107,6 +126,6 @@ async function saveRates() {
 }
 
 onMounted(() => {
-  loadRates();
+  void loadRates();
 });
 </script>

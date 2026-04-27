@@ -33,7 +33,7 @@ Servis adresleri:
 - Expense API Swagger: `http://localhost:5001/swagger`
 - Notification API Swagger: `http://localhost:5002/swagger`
 - RabbitMQ AMQP: `localhost:5673`
-- RabbitMQ Management: `http://localhost:15673` (`guest` / `guest`)
+- RabbitMQ Management: `http://localhost:15673` (`izometri` / `Izometri2026!`)
 - Mailpit UI: `http://localhost:8025`
 - Expense PostgreSQL: `localhost:15433`
 - Notification PostgreSQL: `localhost:15434`

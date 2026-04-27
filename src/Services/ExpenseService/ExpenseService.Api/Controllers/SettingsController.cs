@@ -7,17 +7,19 @@ using Microsoft.EntityFrameworkCore;
 namespace ExpenseService.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/settings")]
+[Route("api/settings")]
 [Authorize(Roles = "Admin")]
 public sealed class SettingsController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserContext _currentUser;
+    private readonly IExchangeRateService _exchangeRateService;
 
-    public SettingsController(IUnitOfWork unitOfWork, ICurrentUserContext currentUser)
+    public SettingsController(IUnitOfWork unitOfWork, ICurrentUserContext currentUser, IExchangeRateService exchangeRateService)
     {
         _unitOfWork = unitOfWork;
         _currentUser = currentUser;
+        _exchangeRateService = exchangeRateService;
     }
 
     [HttpGet("exchange-rates")]
@@ -29,10 +31,15 @@ public sealed class SettingsController : ControllerBase
             
         if (tenant == null) return NotFound();
 
+        var currentUsd = await _exchangeRateService.GetExchangeRateAsync("USD", cancellationToken);
+        var currentEur = await _exchangeRateService.GetExchangeRateAsync("EUR", cancellationToken);
+
         return Ok(new
         {
             FixedUsdRate = tenant.FixedUsdRate,
-            FixedEurRate = tenant.FixedEurRate
+            FixedEurRate = tenant.FixedEurRate,
+            CurrentUsdRate = currentUsd,
+            CurrentEurRate = currentEur
         });
     }
 

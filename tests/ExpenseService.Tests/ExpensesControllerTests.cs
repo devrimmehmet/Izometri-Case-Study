@@ -12,7 +12,7 @@ public sealed class ExpensesControllerTests
     [Fact]
     public async Task Create_returns_created_at_action()
     {
-        var request = new CreateExpenseRequest(ExpenseCategory.Travel, ExpenseCurrency.TRY, 3500, "Valid business trip description");
+        var request = new CreateExpenseRequest(ExpenseCategory.Travel, ExpenseCurrency.TRY, 3500, null, "Valid business trip description");
         var response = ExpenseResponse();
         var service = new Mock<IExpenseAppService>();
         service.Setup(x => x.CreateAsync(request, It.IsAny<CancellationToken>())).ReturnsAsync(response);

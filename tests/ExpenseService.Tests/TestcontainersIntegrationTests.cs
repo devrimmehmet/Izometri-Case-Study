@@ -24,12 +24,12 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
     [Fact]
     public async Task Isolated_flow_covers_admin_users_tenant_isolation_outbox_and_notifications()
     {
-        var admin = await LoginAsync("devrimmehmet@gmail.com", "acme");
-        var personnel = await LoginAsync("personel@demo.com", "acme");
-        var globexPersonnel = await LoginAsync("personel@demo.com", "globex");
-        var hr = await LoginAsync("devrimmehmet@msn.com", "acme");
+        var admin = await LoginAsync("pattabanoglu@devrimmehmet.com", "test1");
+        var hr = await LoginAsync("devrimmehmet@gmail.com", "test1");
+        var personnel = await LoginAsync("devrimmehmet@msn.com", "test1");
+        var otherTenantPersonnel = await LoginAsync("personel@test2.com", "test2");
 
-        var uniqueEmail = $"tc-{Guid.NewGuid():N}@acme.com";
+        var uniqueEmail = $"tc-{Guid.NewGuid():N}@test1.com";
         var createdUser = await SendAsync<UserResponse>(
             HttpMethod.Post,
             "/api/admin/users",
@@ -44,7 +44,7 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
             new UpdateUserRolesRequest(new[] { "Personnel", "HR" }));
         Assert.Contains("HR", roleUpdate.Roles);
 
-        var createdLogin = await LoginAsync(uniqueEmail, "acme");
+        var createdLogin = await LoginAsync(uniqueEmail, "test1");
         Assert.Contains("HR", createdLogin.Roles);
         Assert.Contains("Personnel", createdLogin.Roles);
 
@@ -56,9 +56,10 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
                 ExpenseCategory.Travel,
                 ExpenseCurrency.TRY,
                 3500,
+                null,
                 "Integration test travel expense description"));
 
-        var hiddenFromOtherTenant = await SendRawAsync(HttpMethod.Get, $"/api/expenses/{expense.Id}", globexPersonnel.AccessToken);
+        var hiddenFromOtherTenant = await SendRawAsync(HttpMethod.Get, $"/api/expenses/{expense.Id}", otherTenantPersonnel.AccessToken);
         Assert.Equal(HttpStatusCode.NotFound, hiddenFromOtherTenant.StatusCode);
 
         var submit = await SendRawAsync(HttpMethod.Put, $"/api/expenses/{expense.Id}/submit", personnel.AccessToken);
@@ -121,5 +122,53 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
         options.Converters.Add(new JsonStringEnumConverter());
         return options;
+    }
+
+    [Fact]
+    public async Task Currency_exchange_rate_affects_approval_threshold()
+    {
+        // 1. Admin sets fixed USD rate to 35
+        var admin = await LoginAsync("pattabanoglu@devrimmehmet.com", "test1");
+        await SendRawAsync(HttpMethod.Put, "/api/v1/settings/exchange-rates", admin.AccessToken, new { FixedUsdRate = 35.0m, FixedEurRate = 40.0m });
+
+        // 2. Personnel creates 145 USD expense (145 * 35 = 5075 TRY > 5000)
+        var personnel = await LoginAsync("devrimmehmet@msn.com", "test1");
+        var highExpense = await SendAsync<ExpenseResponse>(
+            HttpMethod.Post,
+            "/api/expenses",
+            personnel.AccessToken,
+            new CreateExpenseRequest(ExpenseCategory.Other, ExpenseCurrency.USD, 145, null, "High USD expense description for integration testing"));
+
+        // Verify it requires admin approval
+        var fetchedHigh = await SendAsync<ExpenseResponse>(HttpMethod.Get, $"/api/expenses/{highExpense.Id}", personnel.AccessToken);
+        // We can't directly see RequiresAdminApproval in DTO yet, but we can check if it's still pending after HR approves
+        
+        await SendRawAsync(HttpMethod.Put, $"/api/expenses/{highExpense.Id}/submit", personnel.AccessToken);
+        var hr = await LoginAsync("devrimmehmet@gmail.com", "test1");
+        var afterHrApproval = await SendAsync<ExpenseResponse>(HttpMethod.Put, $"/api/expenses/{highExpense.Id}/approve", hr.AccessToken);
+        
+        // Since it's > 5000, it should be PENDING (waiting for admin)
+        Assert.Equal(ExpenseStatus.Pending, afterHrApproval.Status);
+        Assert.True(afterHrApproval.HrApproved);
+        Assert.False(afterHrApproval.AdminApproved);
+
+        // 3. Admin sets USD rate to 33
+        await SendRawAsync(HttpMethod.Put, "/api/v1/settings/exchange-rates", admin.AccessToken, new { FixedUsdRate = 33.0m, FixedEurRate = 38.0m });
+
+        // 4. Personnel creates 150 USD expense (150 * 33 = 4950 TRY < 5000)
+        var lowExpense = await SendAsync<ExpenseResponse>(
+            HttpMethod.Post,
+            "/api/expenses",
+            personnel.AccessToken,
+            new CreateExpenseRequest(ExpenseCategory.Other, ExpenseCurrency.USD, 150, null, "Low USD expense description for integration testing"));
+
+        await SendRawAsync(HttpMethod.Put, $"/api/expenses/{lowExpense.Id}/submit", personnel.AccessToken);
+        var afterHrApprovalLow = await SendAsync<ExpenseResponse>(HttpMethod.Put, $"/api/expenses/{lowExpense.Id}/approve", hr.AccessToken);
+
+        // Since it's < 5000, it should be APPROVED directly after HR
+        Assert.Equal(ExpenseStatus.Approved, afterHrApprovalLow.Status);
+        Assert.True(afterHrApprovalLow.HrApproved);
+        // AdminApproved remains false because it wasn't required/done by an Admin
+        Assert.False(afterHrApprovalLow.AdminApproved);
     }
 }

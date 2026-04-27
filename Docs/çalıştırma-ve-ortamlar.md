@@ -50,8 +50,8 @@ Swagger adresleri:
 
 RabbitMQ kullanıcı bilgileri:
 
-- Kullanıcı adı: `guest`
-- Şifre: `guest`
+- Kullanıcı adı: `izometri`
+- Şifre: `Izometri2026!`
 
 API containerları açılışta migrationları otomatik uygular. Bu nedenle localde ayrıca `database update` komutu çalıştırmak zorunlu değildir.
 

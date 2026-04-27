@@ -10,7 +10,7 @@ public sealed class ExpenseValidatorTests
     public void CreateExpenseRequest_requires_minimum_description_length()
     {
         var validator = new CreateExpenseRequestValidator();
-        var request = new CreateExpenseRequest(ExpenseCategory.Travel, ExpenseCurrency.TRY, 100m, "short");
+        var request = new CreateExpenseRequest(ExpenseCategory.Travel, ExpenseCurrency.TRY, 100m, null, "short");
 
         var result = validator.Validate(request);
 

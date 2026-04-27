@@ -147,7 +147,7 @@ const services: ServiceLink[] = [
     url: 'http://localhost:15673',
     icon: 'message',
     color: 'warning',
-    credentials: 'Kullanıcı: guest / Şifre: guest',
+    credentials: 'Kullanıcı: izometri / Şifre: Izometri2026!',
   },
   {
     title: 'Mailpit',

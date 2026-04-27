@@ -24,8 +24,8 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
         .Build();
 
     private readonly RabbitMqContainer _rabbitMq = new RabbitMqBuilder("rabbitmq:3-management")
-        .WithUsername("guest")
-        .WithPassword("guest")
+        .WithUsername("izometri")
+        .WithPassword("Izometri2026!")
         .Build();
 
     private WebApplicationFactory<ExpenseService.Api.ExpenseApiMarker> _expenseFactory = null!;
@@ -50,8 +50,8 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
                 builder.UseSetting("ConnectionStrings:ExpenseDb", _expenseDb.GetConnectionString());
                 builder.UseSetting("RabbitMq:HostName", rabbitHost);
                 builder.UseSetting("RabbitMq:Port", rabbitPort.ToString());
-                builder.UseSetting("RabbitMq:UserName", "guest");
-                builder.UseSetting("RabbitMq:Password", "guest");
+                builder.UseSetting("RabbitMq:UserName", "izometri");
+                builder.UseSetting("RabbitMq:Password", "Izometri2026!");
             });
 
         ExpenseClient = _expenseFactory.CreateClient();
@@ -64,8 +64,8 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
                 builder.UseSetting("ConnectionStrings:NotificationDb", _notificationDb.GetConnectionString());
                 builder.UseSetting("RabbitMq:HostName", rabbitHost);
                 builder.UseSetting("RabbitMq:Port", rabbitPort.ToString());
-                builder.UseSetting("RabbitMq:UserName", "guest");
-                builder.UseSetting("RabbitMq:Password", "guest");
+                builder.UseSetting("RabbitMq:UserName", "izometri");
+                builder.UseSetting("RabbitMq:Password", "Izometri2026!");
                 builder.UseSetting("ExpenseService:BaseUrl", "http://expense-test/");
 
                 builder.ConfigureTestServices(services =>

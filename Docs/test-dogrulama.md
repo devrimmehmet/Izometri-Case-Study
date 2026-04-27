@@ -116,5 +116,5 @@ Son doğrulamada:
 
 RabbitMQ UI giriş bilgisi:
 
-- Kullanıcı adı: `guest`
-- Şifre: `guest`
+- Kullanıcı adı: `izometri`
+- Şifre: `Izometri2026!`

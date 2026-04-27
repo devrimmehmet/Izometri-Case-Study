@@ -33,6 +33,8 @@ public sealed record ExpenseResponse(
     ExpenseCategory Category,
     ExpenseCurrency Currency,
     decimal Amount,
+    decimal ExchangeRate,
+    decimal AmountInTry,
     string Description,
     ExpenseStatus Status,
     bool HrApproved,

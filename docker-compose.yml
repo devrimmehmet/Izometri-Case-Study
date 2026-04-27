@@ -23,8 +23,8 @@ services:
       - "5673:5672"
       - "15673:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: izometri
+      RABBITMQ_DEFAULT_PASS: Izometri2026!
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -82,8 +82,8 @@ services:
       ConnectionStrings__ExpenseDb: Host=expense-db;Port=5432;Database=expense_db;Username=postgres;Password=postgres
       RabbitMq__HostName: rabbitmq
       RabbitMq__Port: 5672
-      RabbitMq__UserName: guest
-      RabbitMq__Password: guest
+      RabbitMq__UserName: izometri
+      RabbitMq__Password: Izometri2026!
       Jwt__Issuer: Izometri.CaseStudy
       Jwt__Audience: Izometri.CaseStudy
       Jwt__Secret: expense-service-development-secret-key-please-change
@@ -115,8 +115,8 @@ services:
       ConnectionStrings__NotificationDb: Host=notification-db;Port=5432;Database=notification_db;Username=postgres;Password=postgres
       RabbitMq__HostName: rabbitmq
       RabbitMq__Port: 5672
-      RabbitMq__UserName: guest
-      RabbitMq__Password: guest
+      RabbitMq__UserName: izometri
+      RabbitMq__Password: Izometri2026!
       ExpenseService__BaseUrl: http://expense-api:8080
       Jwt__Issuer: Izometri.CaseStudy
       Jwt__Audience: Izometri.CaseStudy

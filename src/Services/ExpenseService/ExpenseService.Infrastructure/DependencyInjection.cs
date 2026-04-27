@@ -31,6 +31,7 @@ public static class DependencyInjection
 
         services.AddHostedService<DatabaseMigrationHostedService>();
         services.AddHostedService<OutboxPublisherWorker>();
+        services.AddHostedService<ExpenseService.Infrastructure.Services.ExchangeRateInitializerHostedService>();
         return services;
     }
 }
