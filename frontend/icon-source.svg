@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="88" ry="88" fill="#1a1a2e"/>
+  <text
+    x="256"
+    y="326"
+    font-family="'Arial Black','Arial Bold',Arial,sans-serif"
+    font-size="208"
+    font-weight="900"
+    text-anchor="middle"
+    fill="#ffffff"
+    letter-spacing="-6">DMP</text>
+</svg>

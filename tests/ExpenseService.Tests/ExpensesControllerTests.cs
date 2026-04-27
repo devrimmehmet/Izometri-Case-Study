@@ -117,6 +117,8 @@ public sealed class ExpensesControllerTests
             ExpenseCategory.Travel,
             ExpenseCurrency.TRY,
             3500,
+            1.0m,
+            3500.0m,
             "Valid business trip description",
             status,
             status == ExpenseStatus.Approved,

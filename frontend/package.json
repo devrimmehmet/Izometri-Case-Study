@@ -2,7 +2,7 @@
   "name": "izometri-project",
   "version": "0.0.1",
   "description": "İzometri Case Study",
-  "productName": "İzometri",
+  "productName": "Case Study",
   "author": "devrimmehmet <devrimmehmet@gmail.com>",
   "type": "module",
   "private": true,
@@ -11,7 +11,8 @@
     "format": "prettier --write \"**/*.{js,ts,vue,css,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
-    "build": "quasar build",
+    "build": "quasar build -m pwa",
+    "prebuild": "node generate-icons.mjs",
     "postinstall": "quasar prepare"
   },
   "dependencies": {
@@ -36,6 +37,9 @@
     "globals": "^17.4.0",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
+    "@resvg/resvg-js": "^2.6.2",
+    "register-service-worker": "^1.7.2",
+    "workbox-build": "^7.4.0",
     "vite-plugin-checker": "^0.12.0",
     "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^3.2.6"

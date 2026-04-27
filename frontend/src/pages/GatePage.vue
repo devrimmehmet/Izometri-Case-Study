@@ -2,15 +2,8 @@
   <div class="gate-bg flex flex-center">
     <div class="gate-card q-pa-xl" style="width: 400px; max-width: 90vw">
       <div class="text-center q-mb-lg">
-        <q-icon
-          name="lock"
-          size="48px"
-          color="grey-6"
-          class="q-mb-md"
-        />
-        <div class="text-grey-5 text-body2">
-          Bu sayfa korumalıdır
-        </div>
+        <q-icon name="lock" size="48px" color="grey-6" class="q-mb-md" />
+        <div class="text-grey-5 text-body2">Case Study</div>
       </div>
 
       <q-form @submit.prevent="onSubmit" class="q-gutter-md">
@@ -43,9 +36,7 @@
       </q-form>
 
       <div class="text-center q-mt-lg">
-        <div class="text-grey-7 text-caption">
-          © {{ new Date().getFullYear() }} — Güvenli Erişim
-        </div>
+        <div class="text-grey-7 text-caption">© {{ new Date().getFullYear() }} — DMP</div>
       </div>
     </div>
   </div>
