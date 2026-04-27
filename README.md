@@ -1,5 +1,7 @@
 # İzometri Case Study - Multi-Tenant Expense Management
 
+![CI](https://github.com/devrimmehmet/Izometri-Case-Study/actions/workflows/ci.yml/badge.svg)
+
 Senior .NET Backend case çalışması için hazırlanmış çok kiracılı harcama yönetim sistemi. Çözüm iki bağımsız API, servis başına ayrı veritabanı, RabbitMQ ile asenkron iletişim, EF Core Code First, JWT kimlik doğrulama, soft delete, global tenant filtresi, outbox pattern ve Docker Compose desteği içerir.
 
 ## Mimari Topoloji
@@ -28,15 +30,28 @@ dotnet test Izometri.CaseStudy.slnx
 docker compose up -d --build
 ```
 
-Servis adresleri:
+Servis adresleri (`docker compose up` sonrası):
 
-- Expense API Swagger: `http://localhost:5001/swagger`
-- Notification API Swagger: `http://localhost:5002/swagger`
-- RabbitMQ AMQP: `localhost:5673`
-- RabbitMQ Management: `http://localhost:15673` (`izometri` / `Izometri2026!`)
-- Mailpit UI: `http://localhost:8025`
-- Expense PostgreSQL: `localhost:15433`
-- Notification PostgreSQL: `localhost:15434`
+| Servis | Adres |
+| --- | --- |
+| **Frontend (tam sistem)** | `http://localhost:3000` |
+| Expense API Swagger | `http://localhost:5001/swagger` |
+| Notification API Swagger | `http://localhost:5002/swagger` |
+| RabbitMQ Management | `http://localhost:15673` (`izometri` / `Izometri2026!`) |
+| Mailpit UI | `http://localhost:8025` |
+| Jaeger UI | `http://localhost:16686` |
+| Expense PostgreSQL | `localhost:15433` |
+| Notification PostgreSQL | `localhost:15434` |
+
+**Sadece frontend geliştirmek için** (Docker backend'ler çalışırken):
+
+```bash
+cd frontend
+npm run dev          # http://localhost:9000 — quasar dev server
+```
+
+`quasar dev` (port 9000) proxy'si `localhost:5001` ve `localhost:5002`'ye yönlenir.
+Backend'ler `dotnet run` ile de çalıştırılabilir; `launchSettings.json` portları Docker ile aynıdır (5001/5002).
 
 Detaylı local/prod çalıştırma ve deneme rehberi: [Docs/çalıştırma-ve-ortamlar.md](Docs/çalıştırma-ve-ortamlar.md)
 
@@ -64,14 +79,18 @@ Tüm kullanıcılar için şifre: `Pass123!`
 
 | Tenant | E-posta | Roller |
 | --- | --- | --- |
-| `acme` | `devrimmehmet@gmail.com` | Admin |
-| `acme` | `devrimmehmet@msn.com` | HR |
-| `acme` | `personel@demo.com` | Personnel |
-| `globex` | `admin@globex.com` | Admin |
-| `globex` | `hr@globex.com` | HR |
-| `globex` | `personel@demo.com` | Personnel |
+| `test1` | `pattabanoglu@devrimmehmet.com` | Admin |
+| `test1` | `devrimmehmet@gmail.com` | HR |
+| `test1` | `devrimmehmet@msn.com` | Personnel |
+| `test1` | `personel2@test1.com` | Personnel |
+| `test2` | `admin@test2.com` | Admin |
+| `test2` | `hr@test2.com` | HR |
+| `test2` | `personel@test2.com` | Personnel |
+| `izometri` | `admin@izometri.com` | Admin |
+| `izometri` | `hr@izometri.com` | HR |
+| `izometri` | `personel@izometri.com` | Personnel |
 
-Aynı e-posta (`personel@demo.com`) farklı tenantlarda kullanılabilir. Benzersizlik kuralı `(TenantId, Email)` üzerindedir.
+Aynı e-posta farklı tenantlarda kullanılabilir. Benzersizlik kuralı `(TenantId, Email)` üzerindedir.
 
 ## Örnek İstekler
 
@@ -83,9 +102,9 @@ POST /api/auth/login
 
 ```json
 {
-  "email": "personel@demo.com",
+  "email": "devrimmehmet@msn.com",
   "password": "Pass123!",
-  "tenantCode": "acme"
+  "tenantCode": "test1"
 }
 ```
 
@@ -115,12 +134,15 @@ ExpenseService:
 - `PUT /api/admin/users/{userId}/roles`
 - `GET /api/admin/outbox/dead-letters`
 - `POST /api/expenses`
+- `PUT /api/expenses/{id}`
 - `GET /api/expenses?dateFrom=&dateTo=&status=&category=&pageNumber=&pageSize=`
 - `GET /api/expenses/{id}`
 - `PUT /api/expenses/{id}/submit`
 - `PUT /api/expenses/{id}/approve`
 - `PUT /api/expenses/{id}/reject`
 - `DELETE /api/expenses/{id}`
+- `GET /api/settings/exchange-rates`
+- `PUT /api/settings/exchange-rates`
 - `GET /health`
 
 NotificationService:
@@ -128,6 +150,7 @@ NotificationService:
 - `GET /api/notifications`
 - `GET /api/notifications?tenantId={tenantId}`
 - `GET /api/admin/notifications/dead-letters`
+- `POST /api/admin/notifications/probe-email`
 - `GET /health`
 
 ## İş Kuralları
@@ -135,9 +158,10 @@ NotificationService:
 - Personnel harcama oluşturabilir ve yalnızca kendi kayıtlarını görebilir.
 - HR/Admin kendi tenantındaki tüm harcamaları görebilir.
 - `5000 TRY` ve altı için HR onayı yeterlidir.
-- `5000 TRY` üzeri için önce HR, sonra Admin onayı gerekir.
+- `5000 TRY` üzeri için önce HR, sonra Admin onayı gerekir. Onay eşiği döviz kuru üzerinden TRY karşılığı ile hesaplanır.
 - Ret işleminde en az 10 karakterlik açıklama zorunludur.
-- Delete işlemleri fiziksel silme yapmaz; soft delete uygulanır.
+- Harcama açıklaması en az 20 karakter olmalıdır.
+- Delete işlemleri fiziksel silme yapmaz; soft delete uygulanır. Personnel yalnızca kendi harcamalarını silebilir. HR ve Admin, görünürlük kapsamlarındaki tüm harcamaları silebilir.
 
 ## Bonus Kapsamı
 

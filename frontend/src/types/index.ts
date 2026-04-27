@@ -26,12 +26,7 @@ export interface JwtPayload {
 
 export type UserRole = 'Admin' | 'HR' | 'Personnel';
 
-export type ExpenseStatus =
-  | 'Draft'
-  | 'Pending'
-  | 'PendingAdminApproval'
-  | 'Approved'
-  | 'Rejected';
+export type ExpenseStatus = 'Draft' | 'Pending' | 'Approved' | 'Rejected';
 
 export type ExpenseCategory = 'Travel' | 'Equipment' | 'Education' | 'Other';
 
@@ -48,6 +43,8 @@ export interface ExpenseDto {
   status: ExpenseStatus;
   hrApproved: boolean;
   adminApproved: boolean;
+  requiresAdminApproval: boolean;
+  rejectionReason?: string;
   createdAt: string;
   updatedAt?: string;
   requestedByUserId: string;

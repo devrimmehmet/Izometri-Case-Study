@@ -43,9 +43,19 @@ Son doğrulanan komutlar:
 
 ```bash
 dotnet build Izometri.CaseStudy.slnx
-dotnet test Izometri.CaseStudy.slnx
+dotnet test Izometri.CaseStudy.slnx   # 34 test, 0 hata
 docker compose config
 docker compose up -d --build
 ```
 
 Canlı local testte login, admin kullanıcı/rol yönetimi, harcama oluşturma, submit, HR approve, outbox publish, RabbitMQ consume ve notification kaydı doğrulanmıştır.
+
+## Son Düzeltmeler
+
+- README test kullanıcı tablosu seed data ile senkronize edildi (`test1`, `test2`, `izometri`).
+- `GET /api/notifications` endpointine `[Authorize]` eklendi.
+- Controller try/catch wrapper'ları kaldırıldı; global `ApiExceptionMiddleware` tüm hata yollarını `application/problem+json` formatında işliyor.
+- `AdminNotificationTestController` → `AdminEmailProbeController`; hardcode kişisel veriler temizlendi.
+- `UpdateExpenseRequestValidator` eklendi.
+- `ExpenseResponse` DTO'suna `RequiresAdminApproval` eklendi.
+- `SettingsController` Application servisine taşındı; Onion Architecture korundu.

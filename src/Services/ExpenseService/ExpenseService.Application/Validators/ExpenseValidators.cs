@@ -24,6 +24,17 @@ public sealed class CreateExpenseRequestValidator : AbstractValidator<CreateExpe
     }
 }
 
+public sealed class UpdateExpenseRequestValidator : AbstractValidator<UpdateExpenseRequest>
+{
+    public UpdateExpenseRequestValidator()
+    {
+        RuleFor(x => x.Category).IsInEnum();
+        RuleFor(x => x.Currency).IsInEnum();
+        RuleFor(x => x.Amount).GreaterThan(0);
+        RuleFor(x => x.Description).NotEmpty().MinimumLength(20);
+    }
+}
+
 public sealed class RejectExpenseRequestValidator : AbstractValidator<RejectExpenseRequest>
 {
     public RejectExpenseRequestValidator()

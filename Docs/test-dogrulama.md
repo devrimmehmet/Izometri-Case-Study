@@ -98,7 +98,7 @@ Son doğrulamada:
 
 - `dotnet build Izometri.CaseStudy.slnx` geçti.
 - `dotnet test Izometri.CaseStudy.slnx --no-build` geçti.
-- Normal test sayısı: 32.
+- Normal test sayısı: 34.
 - `docker compose down` ile ortam indirildi.
 - `docker compose up -d --build` ile ortam yeniden kaldırıldı.
 - Expense API, Notification API, PostgreSQL, RabbitMQ, Mailpit ve Jaeger containerları çalışır durumda.

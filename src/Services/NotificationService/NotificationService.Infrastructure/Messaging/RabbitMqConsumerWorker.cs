@@ -64,6 +64,7 @@ public sealed class RabbitMqConsumerWorker : BackgroundService
         await channel.QueueBindAsync(ExpenseEventNames.NotificationQueue, ExpenseEventNames.Exchange, ExpenseEventNames.ExpenseCreated, cancellationToken: cancellationToken);
         await channel.QueueBindAsync(ExpenseEventNames.NotificationQueue, ExpenseEventNames.Exchange, ExpenseEventNames.ExpenseApproved, cancellationToken: cancellationToken);
         await channel.QueueBindAsync(ExpenseEventNames.NotificationQueue, ExpenseEventNames.Exchange, ExpenseEventNames.ExpenseRejected, cancellationToken: cancellationToken);
+        await channel.QueueBindAsync(ExpenseEventNames.NotificationQueue, ExpenseEventNames.Exchange, ExpenseEventNames.ExpenseRequiresAdminApproval, cancellationToken: cancellationToken);
 
         var consumer = new AsyncEventingBasicConsumer(channel);
         consumer.ReceivedAsync += async (_, ea) =>

@@ -57,17 +57,15 @@ public sealed class AdminUsersControllerTests
     }
 
     [Fact]
-    public async Task CreateUser_returns_bad_request_for_duplicate_email()
+    public async Task CreateUser_propagates_duplicate_email_exception()
     {
-        var request = new CreateUserRequest("new@acme.com", "New User", "Pass123!", new[] { "Personnel" });
+        var request = new CreateUserRequest("new@test1.com", "New User", "Pass123!", new[] { "Personnel" });
         var service = new Mock<IUserAdminService>();
         service.Setup(x => x.CreateUserAsync(request, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Email already exists in this tenant."));
         var controller = new AdminUsersController(service.Object);
 
-        var result = await controller.CreateUser(request, CancellationToken.None);
-
-        Assert.IsType<BadRequestObjectResult>(result);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => controller.CreateUser(request, CancellationToken.None));
     }
 
     private static UserResponse UserResponse(IReadOnlyCollection<string> roles)

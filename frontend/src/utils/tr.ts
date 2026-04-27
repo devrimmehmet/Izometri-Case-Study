@@ -5,7 +5,6 @@ import type { ExpenseStatus, ExpenseCategory, Currency } from 'src/types';
 export const statusLabels: Record<ExpenseStatus, string> = {
   Draft: 'Taslak',
   Pending: 'Onay Bekliyor',
-  PendingAdminApproval: 'Yönetici Onayı',
   Approved: 'Onaylandı',
   Rejected: 'Reddedildi',
 };
@@ -13,7 +12,6 @@ export const statusLabels: Record<ExpenseStatus, string> = {
 export const statusClasses: Record<ExpenseStatus, string> = {
   Draft: 'draft',
   Pending: 'pending',
-  PendingAdminApproval: 'pending-admin',
   Approved: 'approved',
   Rejected: 'rejected',
 };

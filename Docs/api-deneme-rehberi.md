@@ -16,11 +16,13 @@ POST http://localhost:5001/api/auth/login
 Content-Type: application/json
 ```
 
+Personnel girişi (`test1` tenant):
+
 ```json
 {
-  "email": "personel@demo.com",
+  "email": "devrimmehmet@msn.com",
   "password": "Pass123!",
-  "tenantCode": "acme"
+  "tenantCode": "test1"
 }
 ```
 
@@ -65,13 +67,13 @@ Beklenen durum:
 
 ## 5. HR Onayı
 
-HR login:
+HR login (`test1` tenant):
 
 ```json
 {
-  "email": "devrimmehmet@msn.com",
+  "email": "devrimmehmet@gmail.com",
   "password": "Pass123!",
-  "tenantCode": "acme"
+  "tenantCode": "test1"
 }
 ```
 
@@ -106,7 +108,7 @@ Beklenen akış:
 
 1. Personnel create eder.
 2. Personnel submit eder.
-3. HR approve eder; kayıt hâlâ `Pending` kalır.
+3. HR approve eder; kayıt hâlâ `Pending` kalır (`hrApproved: true`, `requiresAdminApproval: true`).
 4. Admin approve eder; kayıt `Approved` olur.
 
 ## 7. Reject
@@ -131,13 +133,13 @@ Beklenen durum:
 
 ## 8. Admin Kullanıcı Yönetimi
 
-Admin login:
+Admin login (`test1` tenant):
 
 ```json
 {
-  "email": "devrimmehmet@gmail.com",
+  "email": "pattabanoglu@devrimmehmet.com",
   "password": "Pass123!",
-  "tenantCode": "acme"
+  "tenantCode": "test1"
 }
 ```
 
@@ -158,7 +160,7 @@ Content-Type: application/json
 
 ```json
 {
-  "email": "new.user@acme.com",
+  "email": "new.user@test1.com",
   "displayName": "New User",
   "password": "Pass123!",
   "roles": ["Personnel"]
@@ -181,9 +183,9 @@ Content-Type: application/json
 
 ## 9. Tenant İzolasyonu Denemesi
 
-1. `acme` tenant ile harcama oluşturun.
-2. `globex` tenant kullanıcısı ile login olun.
-3. `GET /api/expenses/{acmeExpenseId}` çağırın.
+1. `test1` tenant ile harcama oluşturun.
+2. `test2` tenant kullanıcısı (`personel@test2.com`) ile login olun.
+3. `GET /api/expenses/{test1ExpenseId}` çağırın.
 
 Beklenen sonuç:
 
@@ -192,14 +194,18 @@ Beklenen sonuç:
 
 ## 10. Notification Kontrolü
 
+`GET /api/notifications` artık JWT Bearer gerektirir:
+
 ```http
 GET http://localhost:5002/api/notifications
+Authorization: Bearer {anyValidToken}
 ```
 
 Tenant filtresi:
 
 ```http
 GET http://localhost:5002/api/notifications?tenantId={tenantId}
+Authorization: Bearer {anyValidToken}
 ```
 
 Yanıtta e-posta kontrolü için şu alanlara bakılır:
@@ -208,10 +214,10 @@ Yanıtta e-posta kontrolü için şu alanlara bakılır:
 - `emailStatus`: `Sent`, `Failed` veya `Skipped`.
 - `emailError`: SMTP hatası varsa kısa hata açıklaması.
 
-Personel Acme tenantında harcama oluşturduğunda `expense.created` bildirimi için beklenen alıcılar:
+`test1` tenantında Personnel harcama oluşturduğunda `expense.created` bildirimi için beklenen alıcılar:
 
 ```text
-devrimmehmet@gmail.com,devrimmehmet@msn.com
+pattabanoglu@devrimmehmet.com,devrimmehmet@gmail.com
 ```
 
 Docker local ortamında gönderilen e-postalar Mailpit arayüzünden kontrol edilir:

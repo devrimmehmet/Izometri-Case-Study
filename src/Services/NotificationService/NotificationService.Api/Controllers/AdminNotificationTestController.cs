@@ -7,42 +7,24 @@ namespace NotificationService.Api.Controllers;
 [ApiController]
 [Authorize(Roles = "Admin")]
 [Route("api/admin/notifications")]
-public sealed class AdminNotificationTestController : ControllerBase
+[Produces("application/json")]
+public sealed class AdminEmailProbeController : ControllerBase
 {
     private readonly IEmailSender _emailSender;
 
-    public AdminNotificationTestController(IEmailSender emailSender)
+    public AdminEmailProbeController(IEmailSender emailSender)
     {
         _emailSender = emailSender;
     }
 
-    [HttpPost("test-email")]
-    public async Task<IActionResult> SendTestEmail([FromBody] SendTestEmailRequest? request, CancellationToken cancellationToken)
+    [HttpPost("probe-email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SendProbeEmail([FromBody] SendProbeEmailRequest request, CancellationToken cancellationToken)
     {
-        var toEmail = string.IsNullOrWhiteSpace(request?.ToEmail)
-            ? "devrimmehmet@gmail.com"
-            : request.ToEmail;
-        var subject = string.IsNullOrWhiteSpace(request?.Subject)
-            ? "testtir"
-            : request.Subject;
-        var body = string.IsNullOrWhiteSpace(request?.Body)
-            ? "testtir"
-            : request.Body;
-
-        await _emailSender.SendAsync(toEmail, subject, body, cancellationToken);
-
-        return Ok(new
-        {
-            toEmail,
-            subject,
-            status = "Sent"
-        });
+        await _emailSender.SendAsync(request.ToEmail, request.Subject, request.Body, cancellationToken);
+        return Ok(new { request.ToEmail, request.Subject, status = "Sent" });
     }
 }
 
-public sealed class SendTestEmailRequest
-{
-    public string? ToEmail { get; set; }
-    public string? Subject { get; set; }
-    public string? Body { get; set; }
-}
+public sealed record SendProbeEmailRequest(string ToEmail, string Subject, string Body);

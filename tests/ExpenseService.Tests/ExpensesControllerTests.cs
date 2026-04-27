@@ -41,16 +41,14 @@ public sealed class ExpensesControllerTests
     }
 
     [Fact]
-    public async Task GetById_returns_not_found_when_missing()
+    public async Task GetById_propagates_not_found_exception()
     {
         var service = new Mock<IExpenseAppService>();
         service.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException("Expense not found."));
         var controller = new ExpensesController(service.Object);
 
-        var result = await controller.GetById(Guid.NewGuid(), CancellationToken.None);
-
-        Assert.IsType<NotFoundObjectResult>(result);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => controller.GetById(Guid.NewGuid(), CancellationToken.None));
     }
 
     [Fact]
@@ -81,7 +79,7 @@ public sealed class ExpensesControllerTests
     }
 
     [Fact]
-    public async Task Reject_returns_bad_request_for_invalid_state()
+    public async Task Reject_propagates_invalid_state_exception()
     {
         var request = new RejectExpenseRequest("valid reason");
         var service = new Mock<IExpenseAppService>();
@@ -89,23 +87,18 @@ public sealed class ExpensesControllerTests
             .ThrowsAsync(new InvalidOperationException("Only pending expenses can be rejected."));
         var controller = new ExpensesController(service.Object);
 
-        var result = await controller.Reject(Guid.NewGuid(), request, CancellationToken.None);
-
-        Assert.IsType<BadRequestObjectResult>(result);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => controller.Reject(Guid.NewGuid(), request, CancellationToken.None));
     }
 
     [Fact]
-    public async Task Delete_returns_forbidden_when_user_is_not_allowed()
+    public async Task Delete_propagates_unauthorized_exception()
     {
         var service = new Mock<IExpenseAppService>();
         service.Setup(x => x.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new UnauthorizedAccessException("Forbidden."));
         var controller = new ExpensesController(service.Object);
 
-        var result = await controller.Delete(Guid.NewGuid(), CancellationToken.None);
-
-        var forbidden = Assert.IsType<ObjectResult>(result);
-        Assert.Equal(403, forbidden.StatusCode);
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => controller.Delete(Guid.NewGuid(), CancellationToken.None));
     }
 
     private static ExpenseResponse ExpenseResponse(ExpenseStatus status = ExpenseStatus.Draft)
@@ -122,6 +115,7 @@ public sealed class ExpensesControllerTests
             "Valid business trip description",
             status,
             status == ExpenseStatus.Approved,
+            false,
             false,
             null,
             DateTime.UtcNow,

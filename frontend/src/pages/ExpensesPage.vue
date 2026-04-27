@@ -157,27 +157,13 @@
               flat
               dense
               round
-              :icon="
-                props.row.currency === 'TRY' &&
-                props.row.amount > 5000 &&
-                props.row.status === 'Pending'
-                  ? 'send'
-                  : 'check'
-              "
-              :color="
-                props.row.currency === 'TRY' &&
-                props.row.amount > 5000 &&
-                props.row.status === 'Pending'
-                  ? 'warning'
-                  : 'positive'
-              "
+              :icon="props.row.requiresAdminApproval && !props.row.hrApproved ? 'send' : 'check'"
+              :color="props.row.requiresAdminApproval && !props.row.hrApproved ? 'warning' : 'positive'"
               @click="approveExpense(props.row.id)"
             >
               <q-tooltip>{{
-                props.row.currency === 'TRY' &&
-                props.row.amount > 5000 &&
-                props.row.status === 'Pending'
-                  ? 'Yönetici Onayına Gönder'
+                props.row.requiresAdminApproval && !props.row.hrApproved
+                  ? 'Yönetici Onayına İlet'
                   : 'Onayla'
               }}</q-tooltip>
             </q-btn>
@@ -371,6 +357,10 @@
               <div class="col-4 text-grey-5">Açıklama:</div>
               <div class="col-8">{{ detailExpense.description }}</div>
             </div>
+            <div class="row" v-if="detailExpense.rejectionReason">
+              <div class="col-4 text-grey-5">Red Nedeni:</div>
+              <div class="col-8 text-negative">{{ detailExpense.rejectionReason }}</div>
+            </div>
             <div class="row">
               <div class="col-4 text-grey-5">Oluşturulma:</div>
               <div class="col-8">{{ formatDate(detailExpense.createdAt) }}</div>
@@ -419,7 +409,6 @@ const filters = reactive({
 const statusOptions = [
   { label: 'Taslak', value: 'Draft' },
   { label: 'Onay Bekliyor', value: 'Pending' },
-  { label: 'Yönetici Onayı', value: 'PendingAdminApproval' },
   { label: 'Onaylandı', value: 'Approved' },
   { label: 'Reddedildi', value: 'Rejected' },
 ];
@@ -508,19 +497,19 @@ const showDetailDialog = ref(false);
 const detailExpense = ref<ExpenseDto | null>(null);
 
 function statusClass(row: ExpenseDto): string {
-  if (row.status === 'Pending' && row.hrApproved) return 'pending-admin';
+  if (row.status === 'Pending' && row.requiresAdminApproval && row.hrApproved) return 'pending-admin';
   return statusClasses[row.status] ?? 'draft';
 }
 
 function statusLabel(row: ExpenseDto): string {
-  if (row.status === 'Pending' && row.hrApproved) return 'Yönetici Onayı Bekliyor';
+  if (row.status === 'Pending' && row.requiresAdminApproval && row.hrApproved) return 'Yönetici Onayı Bekliyor';
   return translateStatus(row.status);
 }
 
 function canApproveRow(row: ExpenseDto): boolean {
   if (row.status !== 'Pending') return false;
   if (auth.isHR && !row.hrApproved) return true;
-  if (auth.isAdmin && row.hrApproved && !row.adminApproved) return true;
+  if (auth.isAdmin && row.requiresAdminApproval && row.hrApproved && !row.adminApproved) return true;
   return false;
 }
 

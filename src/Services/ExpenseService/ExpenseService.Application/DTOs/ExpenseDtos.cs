@@ -39,6 +39,7 @@ public sealed record ExpenseResponse(
     ExpenseStatus Status,
     bool HrApproved,
     bool AdminApproved,
+    bool RequiresAdminApproval,
     string? RejectionReason,
     DateTime? SubmittedAt,
     DateTime? ApprovedAt,

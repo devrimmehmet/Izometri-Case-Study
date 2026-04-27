@@ -53,6 +53,7 @@ export default defineConfig((ctx) => {
     },
 
     devServer: {
+      port: 9000,
       open: true,
       proxy: {
         '/api': {

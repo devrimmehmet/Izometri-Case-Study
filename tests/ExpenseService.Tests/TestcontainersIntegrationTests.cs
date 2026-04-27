@@ -68,7 +68,7 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
         var approved = await SendAsync<ExpenseResponse>(HttpMethod.Put, $"/api/expenses/{expense.Id}/approve", hr.AccessToken);
         Assert.Equal(ExpenseStatus.Approved, approved.Status);
 
-        var notifications = await WaitForNotificationAsync(expense.Id, "expense.approved");
+        var notifications = await WaitForNotificationAsync(expense.Id, "expense.approved", hr.AccessToken);
         Assert.Contains(notifications, x => x.ExpenseId == expense.Id && x.EventType == "expense.approved");
     }
 
@@ -99,11 +99,15 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
         return await _expenseClient.SendAsync(request);
     }
 
-    private async Task<IReadOnlyCollection<NotificationResponse>> WaitForNotificationAsync(Guid expenseId, string eventType)
+    private async Task<IReadOnlyCollection<NotificationResponse>> WaitForNotificationAsync(Guid expenseId, string eventType, string token)
     {
         for (var attempt = 1; attempt <= 20; attempt++)
         {
-            var notifications = await _notificationClient.GetFromJsonAsync<IReadOnlyCollection<NotificationResponse>>("/api/notifications", JsonOptions)
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/notifications");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await _notificationClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var notifications = await response.Content.ReadFromJsonAsync<IReadOnlyCollection<NotificationResponse>>(JsonOptions)
                 ?? Array.Empty<NotificationResponse>();
 
             if (notifications.Any(x => x.ExpenseId == expenseId && x.EventType == eventType))

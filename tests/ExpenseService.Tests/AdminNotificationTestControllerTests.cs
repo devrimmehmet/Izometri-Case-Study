@@ -5,43 +5,23 @@ using NotificationService.Application.Abstractions;
 
 namespace ExpenseService.Tests;
 
-public sealed class AdminNotificationTestControllerTests
+public sealed class AdminEmailProbeControllerTests
 {
     [Fact]
-    public async Task SendTestEmail_sends_default_test_email()
+    public async Task SendProbeEmail_returns_ok_and_delegates_to_sender()
     {
         var emailSender = new Mock<IEmailSender>();
-        var controller = new AdminNotificationTestController(emailSender.Object);
+        var controller = new AdminEmailProbeController(emailSender.Object);
+        var request = new SendProbeEmailRequest("ops@example.com", "Probe subject", "Probe body");
 
-        var result = await controller.SendTestEmail(null, CancellationToken.None);
+        var result = await controller.SendProbeEmail(request, CancellationToken.None);
 
         var ok = Assert.IsType<OkObjectResult>(result);
         Assert.NotNull(ok.Value);
         emailSender.Verify(x => x.SendAsync(
-            "devrimmehmet@gmail.com",
-            "testtir",
-            "testtir",
-            It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task SendTestEmail_uses_request_values_when_provided()
-    {
-        var emailSender = new Mock<IEmailSender>();
-        var controller = new AdminNotificationTestController(emailSender.Object);
-        var request = new SendTestEmailRequest
-        {
-            ToEmail = "ops@example.com",
-            Subject = "subject",
-            Body = "body"
-        };
-
-        await controller.SendTestEmail(request, CancellationToken.None);
-
-        emailSender.Verify(x => x.SendAsync(
             "ops@example.com",
-            "subject",
-            "body",
+            "Probe subject",
+            "Probe body",
             It.IsAny<CancellationToken>()), Times.Once);
     }
 }

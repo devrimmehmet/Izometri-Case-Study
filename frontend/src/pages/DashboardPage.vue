@@ -125,9 +125,7 @@ const stats = computed(() => {
   const list = expense.expenses;
   return {
     total: list.length,
-    pending: list.filter(
-      (e: ExpenseDto) => e.status === 'Pending' || e.status === 'PendingAdminApproval',
-    ).length,
+    pending: list.filter((e: ExpenseDto) => e.status === 'Pending').length,
     approved: list.filter((e: ExpenseDto) => e.status === 'Approved').length,
     rejected: list.filter((e: ExpenseDto) => e.status === 'Rejected').length,
   };

@@ -8,6 +8,7 @@ namespace ExpenseService.Api.Controllers;
 [ApiController]
 [Authorize(Roles = "Admin")]
 [Route("api/admin/users")]
+[Produces("application/json")]
 public sealed class AdminUsersController : ControllerBase
 {
     private readonly IUserAdminService _userAdminService;
@@ -18,44 +19,27 @@ public sealed class AdminUsersController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyCollection<UserResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUsers(CancellationToken cancellationToken)
     {
-        return await Execute(async () => Ok(await _userAdminService.GetUsersAsync(cancellationToken)));
+        return Ok(await _userAdminService.GetUsersAsync(cancellationToken));
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateUser(CreateUserRequest request, CancellationToken cancellationToken)
     {
-        return await Execute(async () =>
-        {
-            var response = await _userAdminService.CreateUserAsync(request, cancellationToken);
-            return CreatedAtAction(nameof(GetUsers), new { id = response.Id }, response);
-        });
+        var response = await _userAdminService.CreateUserAsync(request, cancellationToken);
+        return CreatedAtAction(nameof(GetUsers), new { id = response.Id }, response);
     }
 
     [HttpPut("{userId:guid}/roles")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateRoles(Guid userId, UpdateUserRolesRequest request, CancellationToken cancellationToken)
     {
-        return await Execute(async () => Ok(await _userAdminService.UpdateRolesAsync(userId, request, cancellationToken)));
-    }
-
-    private async Task<IActionResult> Execute(Func<Task<IActionResult>> action)
-    {
-        try
-        {
-            return await action();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { ex.Message });
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return StatusCode(StatusCodes.Status403Forbidden, new { ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { ex.Message });
-        }
+        return Ok(await _userAdminService.UpdateRolesAsync(userId, request, cancellationToken));
     }
 }

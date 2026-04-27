@@ -1,63 +1,36 @@
-using ExpenseService.Application.Abstractions;
-using ExpenseService.Domain.Entities;
+using ExpenseService.Application.DTOs;
+using ExpenseService.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseService.Api.Controllers;
 
 [ApiController]
 [Route("api/settings")]
 [Authorize(Roles = "Admin")]
+[Produces("application/json")]
 public sealed class SettingsController : ControllerBase
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ICurrentUserContext _currentUser;
-    private readonly IExchangeRateService _exchangeRateService;
+    private readonly IExchangeRateAdminService _exchangeRateAdminService;
 
-    public SettingsController(IUnitOfWork unitOfWork, ICurrentUserContext currentUser, IExchangeRateService exchangeRateService)
+    public SettingsController(IExchangeRateAdminService exchangeRateAdminService)
     {
-        _unitOfWork = unitOfWork;
-        _currentUser = currentUser;
-        _exchangeRateService = exchangeRateService;
+        _exchangeRateAdminService = exchangeRateAdminService;
     }
 
     [HttpGet("exchange-rates")]
+    [ProducesResponseType(typeof(ExchangeRateResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetExchangeRates(CancellationToken cancellationToken)
     {
-        var tenantId = _currentUser.TenantId;
-        var tenant = await _unitOfWork.Repository<Tenant>().Query()
-            .FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
-            
-        if (tenant == null) return NotFound();
-
-        var currentUsd = await _exchangeRateService.GetExchangeRateAsync("USD", cancellationToken);
-        var currentEur = await _exchangeRateService.GetExchangeRateAsync("EUR", cancellationToken);
-
-        return Ok(new
-        {
-            FixedUsdRate = tenant.FixedUsdRate,
-            FixedEurRate = tenant.FixedEurRate,
-            CurrentUsdRate = currentUsd,
-            CurrentEurRate = currentEur
-        });
+        return Ok(await _exchangeRateAdminService.GetAsync(cancellationToken));
     }
 
     [HttpPut("exchange-rates")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateExchangeRates([FromBody] UpdateRatesRequest request, CancellationToken cancellationToken)
     {
-        var tenantId = _currentUser.TenantId;
-        var tenant = await _unitOfWork.Repository<Tenant>().Query()
-            .FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
-            
-        if (tenant == null) return NotFound();
-
-        tenant.FixedUsdRate = request.FixedUsdRate;
-        tenant.FixedEurRate = request.FixedEurRate;
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _exchangeRateAdminService.UpdateAsync(request, cancellationToken);
         return NoContent();
     }
 }
-
-public sealed record UpdateRatesRequest(decimal? FixedUsdRate, decimal? FixedEurRate);

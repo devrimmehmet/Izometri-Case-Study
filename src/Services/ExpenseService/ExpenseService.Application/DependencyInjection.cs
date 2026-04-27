@@ -13,6 +13,7 @@ public static class DependencyInjection
         services.AddScoped<IExpenseAppService, ExpenseAppService>();
         services.AddScoped<IUserAdminService, UserAdminService>();
         services.AddScoped<IOutboxAdminService, OutboxAdminService>();
+        services.AddScoped<IExchangeRateAdminService, ExchangeRateAdminService>();
         return services;
     }
 }

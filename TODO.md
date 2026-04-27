@@ -37,7 +37,7 @@
 - [x] Keycloak import rehberi eklendi: `Docs/keycloak-import-rehberi.md`.
 - [x] Outbox dead-letter mesajlarını görüntülemek için admin endpointi eklendi: `GET /api/admin/outbox/dead-letters`.
 - [x] NotificationService için `NotificationDeadLetters` tablosu ve consumer retry/dead-letter stratejisi eklendi.
-- [x] API response modeline standart `application/problem+json` hata formatı ve global exception middleware eklendi.
+- [x] Global exception middleware eklendi (`ApiExceptionMiddleware`, iki API'de de mevcut).
 - [x] Serilog console logging eklendi.
 - [x] Health check endpointleri eklendi: `GET /health`.
 - [x] Docker Compose healthcheck tanımları eklendi.
@@ -52,24 +52,52 @@
 - [x] Notification event handler unit testleri eklendi.
 - [x] E-posta teslim durumu `EmailStatus` ve `EmailError` alanlarıyla notification kayıtlarına eklendi.
 - [x] Local e-posta testi için Docker Compose'a Mailpit eklendi.
-- [x] Mail ayarları `Mail` section formatına uyarlandı ve eski `Smtp` section için geriye uyumluluk korundu.
 - [x] Netgsm SMS gönderimi REST v2 JSON POST formatına taşındı.
 - [x] Netgsm SMS gönderici için unit testler eklendi.
-- [x] Canlı local health testi eklendi: Expense API, Notification API, RabbitMQ, Mailpit, PostgreSQL ve AMQP portları doğrulanıyor.
-- [x] Canlı Mailpit e-posta testi eklendi; `Devrimmehmet@gmail.com` adresine `testtir` içerikli test maili gönderiliyor.
-- [x] Canlı Netgsm SMS testi eklendi; `5438194976` numarasına `test sms` göndermeyi deniyor ve provider hatasını test çıktısında görünür kılıyor.
-- [x] Netgsm canlı bakiye API testi yapıldı; hesapta 1000 OTP SMS bakiyesi görüldü.
-- [x] Netgsm canlı SMS gönderimi denendi; hesapta aktif gönderici başlığı olmadığı için API `40 invalidHeader/header problem` döndürdü.
-- [x] Acme Admin seed e-postası `devrimmehmet@gmail.com`, Acme HR seed e-postası `devrimmehmet@msn.com` olarak güncellendi.
-- [x] Personel harcama oluşturduğunda HR/Admin e-posta alıcıları event payloadına eklendi.
+- [x] Canlı local health testi eklendi.
+- [x] Canlı Mailpit e-posta testi eklendi.
+- [x] Canlı Netgsm SMS testi eklendi; provider `40 invalidHeader` döndürdü (hesap sorunu, kod hatası değil).
 - [x] Validator ve approval-threshold unit testleri eklendi.
-- [x] Canlı Docker integration testi eklendi: API + PostgreSQL + RabbitMQ + Notification consumer.
+- [x] Canlı Docker integration testi tamamen izole Testcontainers altyapısına taşındı.
 - [x] Tenant-crossing negative test canlı integration akışında doğrulandı.
 - [x] Multi-role kullanıcı oluşturma ve rol güncelleme canlı integration akışında doğrulandı.
-- [x] README güncellendi.
-- [x] `Docs/project-plan.md` güncellendi.
-- [x] `Docs/çalıştırma-ve-ortamlar.md` eklendi.
-- [x] `Docs/case-sonraki-iyileştirmeler.md` eklendi.
+- [x] OpenTelemetry collector, trace export ve dağıtık trace görselleştirme eklendi; Jaeger UI `localhost:16686`.
+- [x] Notification dead-letter kayıtlarını listelemek için `GET /api/admin/notifications/dead-letters` endpointi eklendi.
+
+## Gönderim Öncesi Zorunlu Düzeltmeler
+
+- [x] **README test kullanıcıları ve tenant tablosu güncellendi.** `acme`/`globex` kaldırıldı; seed data'daki gerçek `test1`, `test2`, `izometri` tenant kodları ve kullanıcılar eklendi. Giriş örneği de düzeltildi.
+- [x] **`NotificationsController` üzerindeki `[Authorize]` eksikliği giderildi.** `GET /api/notifications` artık JWT Bearer gerektiriyor; integration testi de token gönderecek şekilde güncellendi.
+- [x] **Controller'lardaki `Execute()` try/catch kaldırıldı.** `ExpensesController` ve `AdminUsersController` artık exception'ları `ApiExceptionMiddleware`'e iletiyor; tüm hata yanıtları tutarlı `application/problem+json` formatında. İlgili unit testler `Assert.ThrowsAsync` ile güncellendi.
+- [x] **`AdminNotificationTestController` → `AdminEmailProbeController` olarak yeniden adlandırıldı.** Hardcode kişisel e-posta ve `"testtir"` subject kaldırıldı; endpoint `POST /api/admin/notifications/probe-email` oldu ve tüm alanlar zorunlu hale getirildi.
+- [x] **`UpdateExpenseRequestValidator` eklendi.** Kategori, para birimi, tutar ve açıklama (min. 20 karakter) kuralları uygulandı.
+- [x] **`ExpenseResponse` DTO'suna `RequiresAdminApproval` alanı eklendi.** İstemci artık onay akışını DTO'dan okuyabiliyor.
+- [x] **`SettingsController` Onion Architecture uyumuna getirildi.** `IExchangeRateAdminService` application servisi oluşturuldu; controller artık yalnızca bu servisi çağırıyor, `IUnitOfWork`/domain entity referansı API katmanından kaldırıldı.
+- [x] **README API Scope bölümüne eksik endpointler eklendi.** `PUT /api/expenses/{id}`, `GET/PUT /api/settings/exchange-rates` ve `POST /api/admin/notifications/probe-email` belgelendi.
+
+## Profesyonel Kalite İyileştirmeleri
+
+- [x] **Tüm controller action'larına `[ProducesResponseType]` ve `[Produces("application/json")]` attribute'ları eklendi.** Her endpoint başarı ve hata durum kodlarını Swagger'da doğru şekilde raporluyor.
+- [x] **`AuthController.Login` `ProblemDetails` formatına getirildi.** Geçersiz kimlik bilgisi 401 + `ProblemDetails` döndürüyor; login hatası artık tüm API ile tutarlı format kullanıyor.
+- [x] **`DELETE /api/expenses/{id}` davranışı README İş Kuralları bölümüne belgelendi.** Personnel yalnızca kendi harcamalarını, HR/Admin görünürlük kapsamlarındaki tüm harcamaları silebilir.
+- [x] **README'ye GitHub Actions CI badge eklendi.**
+- [x] **`Docs/gereksinim-uyumluluk-matrisi.md` güncellendi.** Auth ve mimari düzeltmeler, test sayısı (34) yansıtıldı.
+- [x] **`Docs/api-deneme-rehberi.md` seed veri ile senkronize edildi.** `acme`/`globex` ve var olmayan kullanıcılar kaldırıldı; `test1`/`test2` gerçek tenant kodları ve kullanıcıları eklendi. Notification endpoint auth gereksinimi de belgelendi.
+
+## Frontend Düzeltmeleri
+
+- [x] **`notifyApi` axios instance'ına JWT Bearer interceptor eklendi.** `GET /api/notifications` artık `[Authorize]` gerektirdiğinden `notifyApi` de localStorage'dan token okuyarak Authorization header gönderiyor.
+- [x] **`ExpenseDto` type'ına `requiresAdminApproval` ve `rejectionReason` eklendi.**
+- [x] **`PendingAdminApproval` sahte status türü kaldırıldı.** `types/index.ts`, `utils/tr.ts`, `ExpensesPage.vue` ve `DashboardPage.vue` güncellendi; filtre ve dashboard istatistiği gerçek backend enum değerlerini kullanıyor.
+- [x] **`canApproveRow`, `statusClass`, `statusLabel` ve onay butonu logic'i `requiresAdminApproval` DTO alanını kullanacak şekilde güncellendi.** Önceki `currency === 'TRY' && amount > 5000` kontrolü exchange rate'i dikkate almıyordu.
+- [x] **Harcama detail dialog'una `rejectionReason` alanı eklendi.**
+
+## Outbox Pattern ve Bonus Geliştirmeleri
+
+- [x] **[BUG FIX] `ExpenseRequiresAdminApproval` routing key'i RabbitMQ kuyruğuna bind edilmedi.** `RabbitMqConsumerWorker` üç event için binding yapıyordu; HR onayından geçen >5000 TRY harcamalar için Admin'e gönderilen `expense.requires_admin_approval` event'i hiç consume edilmiyordu. Binding eklendi; canlı E2E testte doğrulandı.
+- [x] **OutboxPublisherWorker — persistent RabbitMQ connection.** Eski kod her 5 saniyede yeni TCP bağlantısı açıp kapıyordu (12 connection/dakika). Bağlantı worker lifecycle'ına taşındı; kanal açık olduğu sürece yeniden kullanılıyor, hata durumunda reconnect yapılıyor.
+- [x] **OutboxPublisherWorker — PostgreSQL `SELECT FOR UPDATE SKIP LOCKED`.** Birden fazla publisher instance çalışırken (horizontal scale) aynı mesajın çift publish edilmesini önler. Her poll, `BeginTransactionAsync` + raw SQL ile row-level lock alır; kilitsiz satırları atlar, diğer worker'ları bloklamaz.
+- [x] **Swagger JWT SecurityDefinition eklendi (TB-5 tamamlandı).** `AddSwaggerGen` içinde `AddSecurityDefinition("Bearer")` ve `AddSecurityRequirement` yapılandırıldı. Swagger UI'da "Authorize" butonu aktif; değerlendirici login token'ını girerek tüm endpoint'leri doğrudan test edebilir. Microsoft.OpenApi 2.4.1 API uyumluluğu sağlandı.
 
 ## Doğrulanan Komutlar
 
@@ -82,9 +110,3 @@
   - `Docs/openapi-expense.json`
   - `Docs/openapi-notification.json`
 - [x] Canlı local akış: login, admin kullanıcı/rol yönetimi, harcama oluşturma, submit, HR approve, outbox publish, RabbitMQ consume, notification kaydı ve e-posta teslim durumu kontrolü.
-
-## Case Üzerinden Eklenebilecek Sonraki İyileştirmeler
-
-- [x] Canlı Docker integration testini tamamen izole Testcontainers altyapısına taşı. `IntegrationTestFixture` + `TestcontainersIntegrationTests` eklendi; `LiveDockerIntegrationTests` kaldırıldı; CI compose up/down adımları silindi.
-- [x] OpenTelemetry collector, trace export ve dağıtık trace görselleştirme ekle. Her iki servise AspNetCore + HttpClient enstrümantasyonu ve OTLP exporter eklendi; RabbitMQ worker'larına ActivitySource eklendi; Docker Compose'a Jaeger servisi (port 16686) eklendi.
-- [x] Notification dead-letter kayıtlarını listelemek için NotificationService içinde admin/inspection endpointi ekle. `GET /api/admin/notifications/dead-letters` endpointi eklendi; JWT Bearer auth NotificationService'e entegre edildi; unit testi yazıldı.

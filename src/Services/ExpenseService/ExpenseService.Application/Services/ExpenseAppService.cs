@@ -397,6 +397,7 @@ public sealed class ExpenseAppService : IExpenseAppService
         x.Status,
         x.HrApproved,
         x.AdminApproved,
+        x.RequiresAdminApproval,
         x.RejectionReason,
         x.SubmittedAt,
         x.ApprovedAt,
