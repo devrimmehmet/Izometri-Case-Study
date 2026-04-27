@@ -1,56 +1,58 @@
 # Gereksinim Uyumluluk Matrisi
 
-Bu doküman `Docs/backend_case.md` içindeki gereksinimlerin projede nerede karşılandığını gösterir.
+Bu dokuman `Docs/backend_case.md` icindeki gereksinimlerin projede nerede karsilandigini gosterir.
 
-## İş Gereksinimleri
+## Is Gereksinimleri
 
-| Kod | Gereksinim | Durum | Karşılık |
+| Kod | Gereksinim | Durum | Karsilik |
 | --- | --- | --- | --- |
-| BR-1 | Multi-tenant izolasyon | Tamamlandı | JWT `TenantId`, `ICurrentUserContext`, EF Core global query filter |
-| BR-2 | Rol tabanlı yetkilendirme | Tamamlandı | Admin, HR, Personnel rolleri ve endpoint authorization |
-| BR-3 | Harcama talebi oluşturma | Tamamlandı | `POST /api/expenses`, kategori, para birimi, açıklama validasyonu |
-| BR-4 | Onay süreci | Tamamlandı | HR/Admin sıralı onay, ret açıklaması zorunluluğu |
-| BR-5 | Asenkron bildirim sistemi | Tamamlandı | RabbitMQ eventleri ve NotificationService consumer |
-| BR-6 | Sorgulama | Tamamlandı | Filtreleme, pagination, role göre görünürlük |
+| BR-1 | Multi-tenant izolasyon | Tamamlandi | JWT `TenantId`, `ICurrentUserContext`, EF Core global query filter |
+| BR-2 | Rol tabanli yetkilendirme | Tamamlandi | Admin, HR, Personnel rolleri ve endpoint authorization |
+| BR-3 | Harcama talebi olusturma | Tamamlandi | `POST /api/expenses`, kategori, para birimi, aciklama validasyonu |
+| BR-4 | Onay sureci | Tamamlandi | HR/Admin sirali onay, ret aciklamasi zorunlulugu |
+| BR-5 | Asenkron bildirim sistemi | Tamamlandi | RabbitMQ eventleri ve NotificationService consumer |
+| BR-6 | Sorgulama | Tamamlandi | Filtreleme, pagination, role gore gorunurluk |
 
 ## Teknik Gereksinimler
 
-| Kod | Gereksinim | Durum | Karşılık |
+| Kod | Gereksinim | Durum | Karsilik |
 | --- | --- | --- | --- |
-| TR-1 | Mikroservis mimarisi | Tamamlandı | `ExpenseService.Api`, `NotificationService.Api` |
-| TR-2 | Multi-tenancy | Tamamlandı | TenantId claim, query filter, tenant-scoped entityler |
-| TR-3 | Soft delete | Tamamlandı | `BaseEntity`, `IsDeleted`, `DeletedAt`, `DeletedBy`, global filter |
-| TR-4 | Role-based authorization | Tamamlandı | JWT role claimleri, `[Authorize]`, Admin endpointleri |
-| TR-5 | Onion Architecture | Tamamlandı | Domain, Application, Infrastructure, Api, Shared/Contracts |
-| TR-6 | Repository & UnitOfWork | Tamamlandı | Generic repository ve UnitOfWork |
-| TR-7 | Servisler arası iletişim | Tamamlandı | RabbitMQ async, HTTP sync, retry policy |
-| TR-8 | Validasyon | Tamamlandı | FluentValidation ve business rule kontrolleri |
-| TR-9 | ORM & Database | Tamamlandı | EF Core, Code First migration, PostgreSQL |
-| TR-10 | Authentication | Tamamlandı | JWT login endpointi, UserId/TenantId/role claimleri |
+| TR-1 | Mikroservis mimarisi | Tamamlandi | `ExpenseService.Api`, `NotificationService.Api` |
+| TR-2 | Multi-tenancy | Tamamlandi | TenantId claim, query filter, tenant-scoped entityler |
+| TR-3 | Soft delete | Tamamlandi | `BaseEntity`, `IsDeleted`, `DeletedAt`, `DeletedBy`, global filter |
+| TR-4 | Role-based authorization | Tamamlandi | JWT `role` claimleri, `[Authorize]`, Admin endpointleri |
+| TR-5 | Onion Architecture | Tamamlandi | Domain, Application, Infrastructure, Api, Shared/Contracts |
+| TR-6 | Repository & UnitOfWork | Tamamlandi | Generic repository ve UnitOfWork |
+| TR-7 | Servisler arasi iletisim | Tamamlandi | RabbitMQ async, HTTP sync, retry policy |
+| TR-8 | Validasyon | Tamamlandi | FluentValidation ve business rule kontrolleri |
+| TR-9 | ORM & Database | Tamamlandi | EF Core, Code First migration, PostgreSQL |
+| TR-10 | Authentication | Tamamlandi | Keycloak access token, JWT Bearer dogrulama, UserId/TenantId/role claimleri; local login sadece fallback |
 
 ## Bonus Maddeler
 
-| Kod | Bonus | Durum | Karşılık |
+| Kod | Bonus | Durum | Karsilik |
 | --- | --- | --- | --- |
-| TB-1 | Outbox Pattern | Tamamlandı | `OutboxMessages`, publisher worker, retry/dead-letter |
-| TB-2 | OAuth 2.0 entegrasyonu | Tamamlandı / opsiyonel mod | `Jwt:Authority` desteği, Keycloak compose profili ve realm/client/role/user import dosyası var |
-| TB-3 | Unit Testing | Tamamlandı | xUnit + Moq, 34 test |
-| TB-4 | Docker Support | Tamamlandı | `docker-compose.yml`, Dockerfile dosyaları |
-| TB-5 | API Documentation | Tamamlandı | Swagger/OpenAPI |
-| TB-6 | Logging | Tamamlandı | Correlation ID, Serilog, OpenTelemetry/Jaeger trace export, mock notification logları |
+| TB-1 | Outbox Pattern | Tamamlandi | `OutboxMessages`, publisher worker, retry/dead-letter |
+| TB-2 | OAuth 2.0 entegrasyonu | Tamamlandi | Keycloak ana Docker Compose akisinda otomatik baslar; kullanici tokenlarini Keycloak uretir, API'ler JWT Bearer dogrular |
+| TB-3 | Unit Testing | Tamamlandi | xUnit + Moq, controller/validator/token/event/integration testleri |
+| TB-4 | Docker Support | Tamamlandi | `docker-compose.yml`, Dockerfile dosyalari |
+| TB-5 | API Documentation | Tamamlandi | Swagger/OpenAPI |
+| TB-6 | Logging | Tamamlandi | Correlation ID, Serilog, OpenTelemetry/Jaeger trace export, mock notification loglari |
 
-## Güvenlik ve Mimari Düzeltmeler
+## Guvenlik ve Mimari Duzeltmeler
 
-| Alan | Düzeltme |
+| Alan | Duzeltme |
 | --- | --- |
-| NotificationsController auth | `[Authorize]` eklendi; endpoint artık JWT Bearer gerektiriyor |
-| Global exception middleware | Controller `Execute()` wrapper'ları kaldırıldı; tüm hatalar `ApiExceptionMiddleware` üzerinden `application/problem+json` formatında dönüyor |
-| Onion Architecture | `SettingsController` `IExchangeRateAdminService` application servisi üzerinden çalışıyor; API katmanında `IUnitOfWork`/domain entity referansı yok |
+| Keycloak/OAuth2 | Authentication Keycloak tarafinda, authorization API tarafinda JWT claimleriyle yapilir |
+| Local login | Docker/prod akista kapali; gelistirme ve test fallback'i olarak tutulur |
+| NotificationsController auth | `[Authorize]` eklendi; endpoint JWT Bearer ve token tenant izolasyonu gerektiriyor |
+| Global exception middleware | Controller `Execute()` wrapper'lari kaldirildi; hatalar `ApiExceptionMiddleware` uzerinden `application/problem+json` formatinda donuyor |
+| Onion Architecture | `SettingsController` `IExchangeRateAdminService` application servisi uzerinden calisiyor |
 | UpdateExpenseRequest validasyon | `UpdateExpenseRequestValidator` eklendi |
-| ExpenseResponse DTO | `RequiresAdminApproval` alanı eklendi |
+| ExpenseResponse DTO | `RequiresAdminApproval` alani eklendi |
 
-## Bilinçli Bırakılan Geliştirme Alanları
+## Bilincli Birakilan Gelistirme Alanlari
 
-- Local e-posta teslimi Docker Compose içindeki Mailpit ile test edilir. Gerçek SMTP teslimi sunucunun kimlik doğrulama ve sertifika yapılandırmasına bağlıdır. Uygulama teslim sonucunu `EmailStatus` ve `EmailError` alanlarıyla görünür kılar.
-- Üretim ortamında `Mail:IgnoreCertificateErrors=false` tutulmalı ve geçerli TLS sertifikası kullanılmalıdır.
-- SMS gönderimi Netgsm REST v2 JSON POST ile desteklenir. Canlı testte bakiye API’si başarılı dönmüş, SMS gönderimi ise hesapta aktif gönderici başlığı olmadığı için `40 invalidHeader/header problem` sonucu vermiştir.
+- Local e-posta teslimi Docker Compose icindeki Mailpit ile test edilir.
+- Uretim ortaminda `Mail:IgnoreCertificateErrors=false` tutulmali ve gecerli TLS sertifikasi kullanilmalidir.
+- SMS gonderimi Netgsm REST v2 JSON POST ile desteklenir. Canli testte bakiye API'si basarili donmus, SMS gonderimi ise hesapta aktif gonderici basligi olmadigi icin `40 invalidHeader/header problem` sonucu vermistir.

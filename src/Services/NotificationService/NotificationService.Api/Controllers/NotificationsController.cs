@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using NotificationService.Application.Abstractions;
 using NotificationService.Application.DTOs;
@@ -20,8 +21,21 @@ public sealed class NotificationsController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyCollection<NotificationResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<IReadOnlyCollection<NotificationResponse>>> Get([FromQuery] Guid? tenantId, CancellationToken cancellationToken)
     {
-        return Ok(await _queryService.GetAsync(tenantId, cancellationToken));
+        var tokenTenantId = GetTenantId();
+        if (!tokenTenantId.HasValue || (tenantId.HasValue && tenantId.Value != tokenTenantId.Value))
+        {
+            return Forbid();
+        }
+
+        return Ok(await _queryService.GetAsync(tokenTenantId.Value, cancellationToken));
+    }
+
+    private Guid? GetTenantId()
+    {
+        var value = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenantId")?.Value;
+        return Guid.TryParse(value, out var tenantId) ? tenantId : null;
     }
 }

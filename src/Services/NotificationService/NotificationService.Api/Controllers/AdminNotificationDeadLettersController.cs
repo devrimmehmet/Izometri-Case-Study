@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Application.Abstractions;
@@ -20,8 +21,21 @@ public sealed class AdminNotificationDeadLettersController : ControllerBase
 
     [HttpGet("dead-letters")]
     [ProducesResponseType(typeof(IReadOnlyCollection<NotificationDeadLetterResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetDeadLetters(CancellationToken cancellationToken)
     {
-        return Ok(await _service.GetDeadLettersAsync(cancellationToken));
+        var tenantId = GetTenantId();
+        if (!tenantId.HasValue)
+        {
+            return Forbid();
+        }
+
+        return Ok(await _service.GetDeadLettersAsync(tenantId.Value, cancellationToken));
+    }
+
+    private Guid? GetTenantId()
+    {
+        var value = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenantId")?.Value;
+        return Guid.TryParse(value, out var tenantId) ? tenantId : null;
     }
 }

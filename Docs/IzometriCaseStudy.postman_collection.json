@@ -18,7 +18,7 @@
         "url": "{{expenseBaseUrl}}/api/auth/login",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"personel@demo.com\",\n  \"password\": \"Pass123!\",\n  \"tenantCode\": \"acme\"\n}"
+          "raw": "{\n  \"email\": \"devrimmehmet@msn.com\",\n  \"password\": \"Pass123!\",\n  \"tenantCode\": \"test1\"\n}"
         }
       }
     },
@@ -54,7 +54,7 @@
         "url": "{{expenseBaseUrl}}/api/auth/login",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"devrimmehmet@msn.com\",\n  \"password\": \"Pass123!\",\n  \"tenantCode\": \"acme\"\n}"
+          "raw": "{\n  \"email\": \"devrimmehmet@gmail.com\",\n  \"password\": \"Pass123!\",\n  \"tenantCode\": \"test1\"\n}"
         }
       }
     },
@@ -93,6 +93,7 @@
       "name": "List Notifications",
       "request": {
         "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
         "url": "{{notificationBaseUrl}}/api/notifications"
       }
     },

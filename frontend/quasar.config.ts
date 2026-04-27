@@ -30,6 +30,18 @@ export default defineConfig((ctx) => {
 
       vueRouterMode: 'hash',
 
+      extendViteConf(config) {
+        const build = (config.build ??= {});
+        const typedBuild = build as typeof build & {
+          rolldownOptions?: { checks?: Record<string, boolean> };
+        };
+        typedBuild.rolldownOptions ??= {};
+        typedBuild.rolldownOptions.checks = {
+          ...(typedBuild.rolldownOptions.checks ?? {}),
+          pluginTimings: false,
+        };
+      },
+
       vitePlugins: [
         [
           '@intlify/unplugin-vue-i18n/vite',

@@ -38,6 +38,7 @@ Servis adresleri (`docker compose up` sonrası):
 | Expense API Swagger | `http://localhost:5001/swagger` |
 | Notification API Swagger | `http://localhost:5002/swagger` |
 | RabbitMQ Management | `http://localhost:15673` (`izometri` / `Izometri2026!`) |
+| Keycloak | `http://localhost:18080` (`admin` / `admin`) |
 | Mailpit UI | `http://localhost:8025` |
 | Jaeger UI | `http://localhost:16686` |
 | Expense PostgreSQL | `localhost:15433` |
@@ -86,26 +87,31 @@ Tüm kullanıcılar için şifre: `Pass123!`
 | `test2` | `admin@test2.com` | Admin |
 | `test2` | `hr@test2.com` | HR |
 | `test2` | `personel@test2.com` | Personnel |
+| `test2` | `personel2@test2.com` | Personnel |
 | `izometri` | `admin@izometri.com` | Admin |
 | `izometri` | `hr@izometri.com` | HR |
 | `izometri` | `personel@izometri.com` | Personnel |
+| `izometri` | `personel2@izometri.com` | Personnel |
 
 Aynı e-posta farklı tenantlarda kullanılabilir. Benzersizlik kuralı `(TenantId, Email)` üzerindedir.
 
 ## Örnek İstekler
 
-Login:
+Docker/production akışında kullanıcı tokenı Keycloak tarafından üretilir. Local fallback login endpointi geliştirme/test için kodda durur ancak Docker Compose ortamında kapalıdır.
+
+Keycloak token alma:
 
 ```http
-POST /api/auth/login
+POST http://localhost:18080/realms/izometri/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
 ```
 
-```json
-{
-  "email": "devrimmehmet@msn.com",
-  "password": "Pass123!",
-  "tenantCode": "test1"
-}
+```text
+client_id=expense-service&
+client_secret=expense-service-client-secret&
+grant_type=password&
+username=devrimmehmet@msn.com&
+password=Pass123!
 ```
 
 Harcama oluşturma:
@@ -166,8 +172,8 @@ NotificationService:
 ## Bonus Kapsamı
 
 - TB-1 Outbox Pattern: Harcama transactionı içinde outbox mesajı yazılır, background worker RabbitMQ'ya publish eder.
-- TB-2 OAuth2: Basit JWT login korunur; `Jwt:Authority` verilirse Keycloak/Auth0/IdentityServer gibi dış IdP tokenları doğrulanabilir. Docker Compose içinde Keycloak için `oauth` profili vardır.
-- TB-3 Unit Testing: `tests/ExpenseService.Tests` içinde xUnit + Moq altyapısı, controller, validator, event handler ve canlı Docker entegrasyon testleri vardır.
+- TB-2 OAuth2: Keycloak ana Docker Compose akışına dahildir. Kullanıcı tokenlarını Keycloak üretir; API'ler JWT Bearer doğrular ve local login Docker'da kapalıdır.
+- TB-3 Unit Testing: `tests/ExpenseService.Tests` içinde xUnit + Moq altyapısı, controller, validator, token contract, event handler ve canlı Docker entegrasyon testleri vardır.
 - TB-4 Docker Support: RabbitMQ, iki PostgreSQL DB ve iki API `docker-compose.yml` ile çalışır.
 - TB-5 API Documentation: İki API'de Swagger/OpenAPI aktiftir.
 - TB-6 Logging/Correlation ID: `X-Correlation-Id` request/response header olarak taşınır, event payloadlarına yazılır ve servisler arası HTTP isteğinde devam eder.

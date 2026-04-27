@@ -111,4 +111,4 @@ Repository `Delete` çağrısı EF SaveChanges sırasında soft delete'e çevril
 - Varsayılan mod basit JWT login endpointidir.
 - Token içinde `UserId`, `TenantId` ve role claimleri bulunur.
 - Admin endpointleri `[Authorize(Roles = "Admin")]` ile korunur.
-- OAuth2/Keycloak opsiyonel mod olarak desteklenir. `Jwt:Authority` verildiğinde dış IdP token doğrulaması açılır.
+- OAuth2/Keycloak ana Docker Compose akışına dahildir. Authentication Keycloak tarafında, authorization API tarafında JWT claimleriyle yapılır. API kullanıcı tokenı üretmez.

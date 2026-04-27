@@ -20,7 +20,7 @@ public interface INotificationQueryService
 
 public interface INotificationDeadLetterAdminService
 {
-    Task<IReadOnlyCollection<NotificationDeadLetterResponse>> GetDeadLettersAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<NotificationDeadLetterResponse>> GetDeadLettersAsync(Guid tenantId, CancellationToken cancellationToken);
 }
 
 public interface IEmailSender

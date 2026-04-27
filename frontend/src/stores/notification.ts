@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { notifyApi } from 'src/boot/axios';
+import { notifyApi } from 'src/services/http';
 import { useAuthStore } from './auth';
 import type { NotificationDto } from 'src/types';
 

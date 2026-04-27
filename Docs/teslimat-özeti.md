@@ -5,7 +5,7 @@ Bu doküman case çalışması için teslim edilen dosyaları ve her dosyanın n
 ## Ana Teslim Dosyaları
 
 - [README.md](../README.md): Proje özeti, hızlı başlangıç, servis adresleri, API kapsamı ve doğrulanan komutlar.
-- [docker-compose.yml](../docker-compose.yml): RabbitMQ, Expense DB, Notification DB, Expense API, Notification API ve opsiyonel Keycloak profili.
+- [docker-compose.yml](../docker-compose.yml): RabbitMQ, Expense DB, Notification DB, Expense API, Notification API, Keycloak, Mailpit ve Jaeger.
 - [Izometri.CaseStudy.slnx](../Izometri.CaseStudy.slnx): .NET 10 solution dosyası.
 - [TODO.md](../TODO.md): Tamamlanan işler, doğrulanan komutlar ve case üzerinden eklenebilecek sonraki iyileştirmeler.
 
@@ -35,7 +35,7 @@ Bu doküman case çalışması için teslim edilen dosyaları ve her dosyanın n
 - Soft delete: BaseEntity audit alanları ve EF SaveChanges davranışı.
 - Outbox Pattern: ExpenseService içinde `OutboxMessages` tablosu ve publisher worker.
 - Unit testing: xUnit + Moq test projesi ve canlı Docker integration testi.
-- OAuth2 bonus: Keycloak opsiyonel profil ve `Jwt:Authority` tabanlı external IdP doğrulama desteği.
+- OAuth2 bonus: Keycloak ana Docker Compose akışında otomatik başlar; `Jwt:Authority` tabanlı external IdP doğrulama local JWT login ile birlikte çalışır.
 
 ## Doğrulanmış Durum
 

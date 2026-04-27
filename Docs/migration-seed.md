@@ -1,6 +1,6 @@
 # Migration ve Seed Bilgileri
 
-## Migration Komutları
+## Migration Komutlari
 
 Expense DB migration uygulama:
 
@@ -14,9 +14,9 @@ Notification DB migration uygulama:
 dotnet ef database update --project src/Services/NotificationService/NotificationService.Infrastructure/NotificationService.Infrastructure.csproj --startup-project src/Services/NotificationService/NotificationService.Api/NotificationService.Api.csproj
 ```
 
-Docker Compose ile çalıştırıldığında API containerları migrationları startup sırasında otomatik uygular.
+Docker Compose ile calistirildiginda API containerlari migrationlari startup sirasinda otomatik uygular.
 
-## Expense DB Tabloları
+## Expense DB Tablolari
 
 - `Tenants`
 - `Users`
@@ -26,45 +26,57 @@ Docker Compose ile çalıştırıldığında API containerları migrationları s
 - `OutboxMessages`
 - `__EFMigrationsHistory`
 
-## Notification DB Tabloları
+## Notification DB Tablolari
 
 - `Notifications`
 - `ProcessedMessages`
+- `NotificationDeadLetters`
 - `__EFMigrationsHistory`
 
 ## Seed Tenantlar
 
-| Tenant | Açıklama |
+| TenantId | Tenant |
 | --- | --- |
-| `acme` | Birinci test şirketi |
-| `globex` | İkinci test şirketi |
+| `10000000-0000-0000-0000-000000000001` | `izometri` |
+| `10000000-0000-0000-0000-000000000002` | `test1` |
+| `10000000-0000-0000-0000-000000000003` | `test2` |
 
-## Seed Kullanıcılar
+## Seed Kullanicilar
 
-Tüm kullanıcılar için şifre: `Pass123!`
+Tum kullanicilar icin sifre: `Pass123!`
 
-| Tenant | E-posta | Roller |
-| --- | --- | --- |
-| `acme` | `devrimmehmet@gmail.com` | Admin |
-| `acme` | `devrimmehmet@msn.com` | HR |
-| `acme` | `personel@demo.com` | Personnel |
-| `globex` | `admin@globex.com` | Admin |
-| `globex` | `hr@globex.com` | HR |
-| `globex` | `personel@demo.com` | Personnel |
+| Tenant | UserId | E-posta | Roller |
+| --- | --- | --- | --- |
+| `izometri` | `20000000-0000-0000-0000-000000000001` | `admin@izometri.com` | Admin |
+| `izometri` | `20000000-0000-0000-0000-000000000002` | `hr@izometri.com` | HR |
+| `izometri` | `20000000-0000-0000-0000-000000000003` | `personel@izometri.com` | Personnel |
+| `izometri` | `20000000-0000-0000-0000-000000000010` | `personel2@izometri.com` | Personnel |
+| `test1` | `20000000-0000-0000-0000-000000000004` | `pattabanoglu@devrimmehmet.com` | Admin |
+| `test1` | `20000000-0000-0000-0000-000000000005` | `devrimmehmet@gmail.com` | HR |
+| `test1` | `20000000-0000-0000-0000-000000000006` | `devrimmehmet@msn.com` | Personnel |
+| `test1` | `20000000-0000-0000-0000-000000000011` | `personel2@test1.com` | Personnel |
+| `test2` | `20000000-0000-0000-0000-000000000007` | `admin@test2.com` | Admin |
+| `test2` | `20000000-0000-0000-0000-000000000008` | `hr@test2.com` | HR |
+| `test2` | `20000000-0000-0000-0000-000000000009` | `personel@test2.com` | Personnel |
+| `test2` | `20000000-0000-0000-0000-000000000012` | `personel2@test2.com` | Personnel |
 
-## E-posta Benzersizliği
+Bu liste `deploy/keycloak/izometri-realm.json` icindeki Keycloak kullanicilariyla ayni `UserId`, `TenantId`, email ve rol degerlerini kullanir.
 
-E-posta adresi uygulama genelinde benzersiz değildir. Benzersizlik tenant bazlıdır:
+## E-posta Benzersizligi
+
+E-posta adresi uygulama genelinde benzersiz degildir. Benzersizlik tenant bazlidir:
 
 ```text
 (TenantId, Email)
 ```
 
-Bu nedenle `personel@demo.com` hem `acme` hem de `globex` tenantında seed edilmiştir.
+## Seed Harcamalar
 
-## Outbox Migrationları
+`test1` tenantinda farkli status, kategori ve approval threshold senaryolarini gosteren ornek harcamalar seed edilir.
 
-`OutboxMessages` tablosu event publish işlemini transaction dışına güvenli şekilde taşır.
+## Outbox Migrationlari
+
+`OutboxMessages` tablosu event publish islemini transaction disina guvenli sekilde tasir.
 
 Alanlar:
 
@@ -77,4 +89,4 @@ Alanlar:
 - `RetryCount`
 - `Error`
 
-Mesaj 10 başarısız publish denemesinden sonra `DeadLetteredAt` alanı doldurularak dead-letter durumuna alınır.
+Mesaj 10 basarisiz publish denemesinden sonra `DeadLetteredAt` alani doldurularak dead-letter durumuna alinir.

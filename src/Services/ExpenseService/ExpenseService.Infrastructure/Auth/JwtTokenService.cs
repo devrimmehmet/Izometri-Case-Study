@@ -43,7 +43,7 @@ public sealed class JwtTokenService : IJwtTokenService
             claims.Add(new Claim("CorrelationId", correlationId));
         }
 
-        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        claims.AddRange(roles.Select(role => new Claim("role", role)));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

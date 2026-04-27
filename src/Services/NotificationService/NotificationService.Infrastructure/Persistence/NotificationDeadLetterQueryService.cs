@@ -13,11 +13,11 @@ public sealed class NotificationDeadLetterQueryService : INotificationDeadLetter
         _dbContext = dbContext;
     }
 
-    public async Task<IReadOnlyCollection<NotificationDeadLetterResponse>> GetDeadLettersAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<NotificationDeadLetterResponse>> GetDeadLettersAsync(Guid tenantId, CancellationToken cancellationToken)
     {
         return await _dbContext.NotificationDeadLetters
             .IgnoreQueryFilters()
-            .Where(x => x.DeadLetteredAt != null)
+            .Where(x => x.DeadLetteredAt != null && x.TenantId == tenantId)
             .OrderByDescending(x => x.DeadLetteredAt)
             .Select(x => new NotificationDeadLetterResponse(
                 x.Id,

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { api } from 'src/boot/axios';
+import { api } from 'src/services/http';
 import type { UserDto, CreateUserRequest, UpdateRolesRequest } from 'src/types';
 
 export const useAdminStore = defineStore('admin', {

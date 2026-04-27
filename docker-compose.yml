@@ -14,7 +14,7 @@ services:
       notification-api:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost/health/frontend || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/health/frontend || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -95,6 +95,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      keycloak:
+        condition: service_started
     ports:
       - "5001:8080"
     environment:
@@ -105,8 +107,12 @@ services:
       RabbitMq__UserName: izometri
       RabbitMq__Password: Izometri2026!
       Jwt__Issuer: Izometri.CaseStudy
-      Jwt__Audience: Izometri.CaseStudy
+      Jwt__Audience: expense-service
       Jwt__Secret: expense-service-development-secret-key-please-change
+      Jwt__Authority: http://keycloak:8080/realms/izometri
+      Jwt__PublicAuthority: http://localhost:18080/realms/izometri
+      Jwt__RequireHttpsMetadata: false
+      Authentication__EnableLocalLogin: false
       OpenTelemetry__OtlpEndpoint: http://jaeger:4317
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
@@ -139,8 +145,12 @@ services:
       RabbitMq__Password: Izometri2026!
       ExpenseService__BaseUrl: http://expense-api:8080
       Jwt__Issuer: Izometri.CaseStudy
-      Jwt__Audience: Izometri.CaseStudy
+      Jwt__Audience: expense-service
       Jwt__Secret: expense-service-development-secret-key-please-change
+      Jwt__Authority: http://keycloak:8080/realms/izometri
+      Jwt__PublicAuthority: http://localhost:18080/realms/izometri
+      Jwt__RequireHttpsMetadata: false
+      Authentication__EnableLocalLogin: false
       OpenTelemetry__OtlpEndpoint: http://jaeger:4317
       Mail__FromName: Izometri Expense
       Mail__FromEmail: no-reply@izometri.local
@@ -169,8 +179,6 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:25.0
     container_name: izometri-keycloak
-    profiles:
-      - oauth
     command: start-dev --import-realm
     ports:
       - "18080:8080"

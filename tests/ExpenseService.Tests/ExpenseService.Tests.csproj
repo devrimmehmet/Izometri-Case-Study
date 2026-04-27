@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Services\ExpenseService\ExpenseService.Application\ExpenseService.Application.csproj" />
     <ProjectReference Include="..\..\src\Services\ExpenseService\ExpenseService.Domain\ExpenseService.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Services\ExpenseService\ExpenseService.Infrastructure\ExpenseService.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Services\ExpenseService\ExpenseService.Api\ExpenseService.Api.csproj" />
     <ProjectReference Include="..\..\src\Services\NotificationService\NotificationService.Api\NotificationService.Api.csproj" />
     <ProjectReference Include="..\..\src\Services\NotificationService\NotificationService.Application\NotificationService.Application.csproj" />

@@ -6,6 +6,7 @@ using ExpenseService.Infrastructure;
 using ExpenseService.Infrastructure.Auth;
 using ExpenseService.Infrastructure.Contexts;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Resources;
@@ -52,15 +53,13 @@ builder.Services.AddExpenseApplication();
 builder.Services.AddExpenseInfrastructure(builder.Configuration);
 
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+var localLoginEnabled = builder.Configuration.GetValue("Authentication:EnableLocalLogin", true);
+const string localJwtScheme = "LocalJwt";
+const string externalJwtScheme = "ExternalJwt";
+var authenticationBuilder = builder.Services.AddAuthentication(localJwtScheme)
+    .AddJwtBearer(localJwtScheme, options =>
     {
-        if (!string.IsNullOrWhiteSpace(jwtOptions.Authority))
-        {
-            options.Authority = jwtOptions.Authority;
-            options.RequireHttpsMetadata = jwtOptions.RequireHttpsMetadata;
-        }
-
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -69,13 +68,59 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidIssuer = jwtOptions.Issuer,
             ValidAudience = jwtOptions.Audience,
-            IssuerSigningKey = string.IsNullOrWhiteSpace(jwtOptions.Authority)
-                ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret))
-                : null
+            RoleClaimType = "role",
+            NameClaimType = "UserId",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret))
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                if (!localLoginEnabled &&
+                    context.Principal?.Claims.Any(x => x.Type == "role" && x.Value == "Service") != true)
+                {
+                    context.Fail("Local user JWTs are disabled. Use Keycloak access tokens.");
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 
-builder.Services.AddAuthorization();
+if (!string.IsNullOrWhiteSpace(jwtOptions.Authority))
+{
+    authenticationBuilder.AddJwtBearer(externalJwtScheme, options =>
+    {
+        options.MapInboundClaims = false;
+        options.Authority = jwtOptions.Authority;
+        options.RequireHttpsMetadata = jwtOptions.RequireHttpsMetadata;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ValidIssuers = new[]
+            {
+                jwtOptions.Authority.TrimEnd('/'),
+                jwtOptions.PublicAuthority?.TrimEnd('/')
+            }.Where(x => !string.IsNullOrWhiteSpace(x)),
+            ValidAudience = jwtOptions.Audience,
+            RoleClaimType = "role",
+            NameClaimType = "UserId"
+        };
+    });
+}
+
+var authSchemes = string.IsNullOrWhiteSpace(jwtOptions.Authority)
+    ? new[] { localJwtScheme }
+    : new[] { localJwtScheme, externalJwtScheme };
+builder.Services.AddAuthorization(options =>
+{
+    options.DefaultPolicy = new AuthorizationPolicyBuilder(authSchemes)
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 var otlpEndpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"];
 builder.Services.AddOpenTelemetry()

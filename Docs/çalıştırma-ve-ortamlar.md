@@ -19,7 +19,7 @@ Portlar:
 - RabbitMQ Management: `15673`
 - Expense DB: `15433`
 - Notification DB: `15434`
-- Keycloak opsiyonel profil: `18080`
+- Keycloak: `18080`
 - Mailpit UI: `8025`
 - Mailpit SMTP: `1025`
 
@@ -66,9 +66,9 @@ Content-Type: application/json
 
 ```json
 {
-  "email": "personel@demo.com",
+  "email": "devrimmehmet@msn.com",
   "password": "Pass123!",
-  "tenantCode": "acme"
+  "tenantCode": "test1"
 }
 ```
 
@@ -102,9 +102,9 @@ HR kullanıcısı ile login olun:
 
 ```json
 {
-  "email": "devrimmehmet@msn.com",
+  "email": "devrimmehmet@gmail.com",
   "password": "Pass123!",
-  "tenantCode": "acme"
+  "tenantCode": "test1"
 }
 ```
 
@@ -135,9 +135,9 @@ Admin kullanıcısı ile login olun:
 
 ```json
 {
-  "email": "devrimmehmet@gmail.com",
+  "email": "pattabanoglu@devrimmehmet.com",
   "password": "Pass123!",
-  "tenantCode": "acme"
+  "tenantCode": "test1"
 }
 ```
 
@@ -158,7 +158,7 @@ Content-Type: application/json
 
 ```json
 {
-  "email": "new.user@acme.com",
+  "email": "new.user@test1.com",
   "displayName": "New User",
   "password": "Pass123!",
   "roles": ["Personnel"]
@@ -202,14 +202,14 @@ Test kapsamı:
 
 Canlı entegrasyon testi için `docker compose up -d --build` ile servislerin açık olması gerekir.
 
-## 6. OAuth2 / Keycloak Opsiyonel Modu
+## 6. OAuth2 / Keycloak Modu
 
-Basit JWT login endpointi varsayılan moddur. OAuth2 artı puanı için dış IdP doğrulama modu desteklenir.
+Docker akışında kullanıcı authentication kaynağı Keycloak'tur. API'ler kullanıcı tokenı üretmez; JWT Bearer access token doğrular. Local JWT login endpointi sadece geliştirme/test fallback'i olarak kodda durur ve Docker'da kapalıdır.
 
-Keycloak containerını başlatma:
+Tum sistemi baslatma:
 
 ```bash
-docker compose --profile oauth up -d keycloak
+docker compose up -d --build
 ```
 
 Keycloak UI:
@@ -218,16 +218,17 @@ Keycloak UI:
 - Kullanıcı adı: `admin`
 - Şifre: `admin`
 
-Expense API'nin dış IdP tokenlarını doğrulaması için prod veya local override ortam değişkenleri:
+Expense API ve Notification API'nin dış IdP tokenlarını doğrulaması için prod veya local override ortam değişkenleri:
 
 ```bash
 Jwt__Authority=http://keycloak:8080/realms/izometri
-Jwt__Issuer=http://keycloak:8080/realms/izometri
+Jwt__PublicAuthority=http://localhost:18080/realms/izometri
 Jwt__Audience=expense-service
 Jwt__RequireHttpsMetadata=false
+Authentication__EnableLocalLogin=false
 ```
 
-Bu mod basit login endpointini kaldırmaz. Case demosunda hızlı kullanım için seed kullanıcıları ve local JWT login korunur.
+`Jwt__Authority` container icinden metadata almak, `Jwt__PublicAuthority` hosttan alinan token issuer degerini kabul etmek icindir. Keycloak import dosyası Expense DB seed kullanıcılarının tamamını aynı `UserId`, `TenantId`, email ve rol değerleriyle içerir. Token içinde `UserId`, `TenantId`, `role` ve `aud=expense-service` claimleri bulunur.
 
 ## 7. Prod Benzeri Çalıştırma
 

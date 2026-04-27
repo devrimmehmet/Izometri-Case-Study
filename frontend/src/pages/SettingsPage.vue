@@ -83,7 +83,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
-import { api } from 'src/boot/axios';
+import { api } from 'src/services/http';
 
 const $q = useQuasar();
 const saving = ref(false);

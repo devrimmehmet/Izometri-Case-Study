@@ -22,56 +22,249 @@
       "directAccessGrantsEnabled": true,
       "protocol": "openid-connect",
       "redirectUris": [ "*" ],
-      "webOrigins": [ "*" ]
+      "webOrigins": [ "*" ],
+      "protocolMappers": [
+        {
+          "name": "realm-roles-as-role",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "role",
+            "jsonType.label": "String",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "tenant-id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "aggregate.attrs": "false",
+            "userinfo.token.claim": "true",
+            "user.attribute": "tenantId",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "TenantId",
+            "jsonType.label": "String",
+            "multivalued": "false"
+          }
+        },
+        {
+          "name": "user-id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "aggregate.attrs": "false",
+            "userinfo.token.claim": "true",
+            "user.attribute": "userId",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "UserId",
+            "jsonType.label": "String",
+            "multivalued": "false"
+          }
+        },
+        {
+          "name": "expense-service-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "expense-service",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
     }
   ],
   "users": [
     {
+      "id": "20000000-0000-0000-0000-000000000001",
+      "username": "admin@izometri.com",
+      "email": "admin@izometri.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Izometri",
+      "lastName": "Admin",
+      "attributes": {
+        "userId": [ "20000000-0000-0000-0000-000000000001" ],
+        "tenantId": [ "10000000-0000-0000-0000-000000000001" ]
+      },
+      "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
+      "realmRoles": [ "Admin" ]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000002",
+      "username": "hr@izometri.com",
+      "email": "hr@izometri.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Izometri",
+      "lastName": "HR",
+      "attributes": {
+        "userId": [ "20000000-0000-0000-0000-000000000002" ],
+        "tenantId": [ "10000000-0000-0000-0000-000000000001" ]
+      },
+      "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
+      "realmRoles": [ "HR" ]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000003",
+      "username": "personel@izometri.com",
+      "email": "personel@izometri.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Izometri",
+      "lastName": "Personel",
+      "attributes": {
+        "userId": [ "20000000-0000-0000-0000-000000000003" ],
+        "tenantId": [ "10000000-0000-0000-0000-000000000001" ]
+      },
+      "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
+      "realmRoles": [ "Personnel" ]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000010",
+      "username": "personel2@izometri.com",
+      "email": "personel2@izometri.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Izometri",
+      "lastName": "Personel 2",
+      "attributes": {
+        "userId": [ "20000000-0000-0000-0000-000000000010" ],
+        "tenantId": [ "10000000-0000-0000-0000-000000000001" ]
+      },
+      "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
+      "realmRoles": [ "Personnel" ]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000004",
+      "username": "pattabanoglu@devrimmehmet.com",
+      "email": "pattabanoglu@devrimmehmet.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Test1",
+      "lastName": "Admin",
+      "attributes": {
+        "userId": [ "20000000-0000-0000-0000-000000000004" ],
+        "tenantId": [ "10000000-0000-0000-0000-000000000002" ],
+        "phone": [ "905438194976" ]
+      },
+      "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
+      "realmRoles": [ "Admin" ]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000005",
       "username": "devrimmehmet@gmail.com",
       "email": "devrimmehmet@gmail.com",
       "enabled": true,
       "emailVerified": true,
-      "firstName": "Acme",
-      "lastName": "Admin",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "Passw0rd!",
-          "temporary": false
-        }
-      ],
-      "realmRoles": [ "Admin" ]
+      "firstName": "Test1",
+      "lastName": "HR",
+      "attributes": {
+        "userId": [ "20000000-0000-0000-0000-000000000005" ],
+        "tenantId": [ "10000000-0000-0000-0000-000000000002" ],
+        "phone": [ "905393649361" ]
+      },
+      "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
+      "realmRoles": [ "HR" ]
     },
     {
+      "id": "20000000-0000-0000-0000-000000000006",
       "username": "devrimmehmet@msn.com",
       "email": "devrimmehmet@msn.com",
       "enabled": true,
       "emailVerified": true,
-      "firstName": "Acme",
+      "firstName": "Test1",
+      "lastName": "Personel",
+      "attributes": {
+        "userId": [ "20000000-0000-0000-0000-000000000006" ],
+        "tenantId": [ "10000000-0000-0000-0000-000000000002" ]
+      },
+      "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
+      "realmRoles": [ "Personnel" ]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000011",
+      "username": "personel2@test1.com",
+      "email": "personel2@test1.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Test1",
+      "lastName": "Personel 2",
+      "attributes": {
+        "userId": [ "20000000-0000-0000-0000-000000000011" ],
+        "tenantId": [ "10000000-0000-0000-0000-000000000002" ]
+      },
+      "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
+      "realmRoles": [ "Personnel" ]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000007",
+      "username": "admin@test2.com",
+      "email": "admin@test2.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Test2",
+      "lastName": "Admin",
+      "attributes": {
+        "userId": [ "20000000-0000-0000-0000-000000000007" ],
+        "tenantId": [ "10000000-0000-0000-0000-000000000003" ]
+      },
+      "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
+      "realmRoles": [ "Admin" ]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000008",
+      "username": "hr@test2.com",
+      "email": "hr@test2.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Test2",
       "lastName": "HR",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "Passw0rd!",
-          "temporary": false
-        }
-      ],
+      "attributes": {
+        "userId": [ "20000000-0000-0000-0000-000000000008" ],
+        "tenantId": [ "10000000-0000-0000-0000-000000000003" ]
+      },
+      "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
       "realmRoles": [ "HR" ]
     },
     {
-      "username": "personnel@acme.com",
-      "email": "personnel@acme.com",
+      "id": "20000000-0000-0000-0000-000000000009",
+      "username": "personel@test2.com",
+      "email": "personel@test2.com",
       "enabled": true,
       "emailVerified": true,
-      "firstName": "Acme",
-      "lastName": "Personnel",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "Passw0rd!",
-          "temporary": false
-        }
-      ],
+      "firstName": "Test2",
+      "lastName": "Personel",
+      "attributes": {
+        "userId": [ "20000000-0000-0000-0000-000000000009" ],
+        "tenantId": [ "10000000-0000-0000-0000-000000000003" ]
+      },
+      "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
+      "realmRoles": [ "Personnel" ]
+    },
+    {
+      "id": "20000000-0000-0000-0000-000000000012",
+      "username": "personel2@test2.com",
+      "email": "personel2@test2.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Test2",
+      "lastName": "Personel 2",
+      "attributes": {
+        "userId": [ "20000000-0000-0000-0000-000000000012" ],
+        "tenantId": [ "10000000-0000-0000-0000-000000000003" ]
+      },
+      "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
       "realmRoles": [ "Personnel" ]
     }
   ]

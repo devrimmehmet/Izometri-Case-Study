@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { api } from 'src/boot/axios';
+import axios, { isAxiosError } from 'axios';
+import { api } from 'src/services/http';
 import type { UserRole } from 'src/types';
 
 interface LoginPayload {
@@ -17,6 +18,14 @@ interface LoginApiResponse {
   roles: string[];
 }
 
+interface KeycloakTokenResponse {
+  access_token: string;
+}
+
+const keycloakTokenUrl =
+  import.meta.env.VITE_KEYCLOAK_TOKEN_URL ??
+  'http://localhost:18080/realms/izometri/protocol/openid-connect/token';
+
 function parseJwtClaims(token: string): Record<string, unknown> {
   try {
     const base64 = token.split('.')[1];
@@ -26,6 +35,17 @@ function parseJwtClaims(token: string): Record<string, unknown> {
   } catch {
     return {};
   }
+}
+
+function claimString(claims: Record<string, unknown>, ...keys: string[]): string {
+  for (const key of keys) {
+    const value = claims[key];
+    if (typeof value === 'string') {
+      return value;
+    }
+  }
+
+  return '';
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -66,22 +86,42 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async login(payload: LoginPayload): Promise<void> {
-      const { data } = await api.post<LoginApiResponse>(
-        '/auth/login',
-        payload,
+      let accessToken: string;
+      let fallbackData: LoginApiResponse | null = null;
+
+      try {
+        const { data } = await api.post<LoginApiResponse>('/auth/login', payload);
+        accessToken = data.accessToken;
+        fallbackData = data;
+      } catch (error) {
+        if (!isAxiosError(error) || error.response?.status !== 404) {
+          throw error;
+        }
+
+        accessToken = await loginWithKeycloak(payload.email, payload.password);
+      }
+
+      const claims = parseJwtClaims(accessToken);
+      const role = claims.role ?? claims.roles;
+      const roles = Array.isArray(role)
+        ? (role as UserRole[])
+        : role
+          ? ([role] as UserRole[])
+          : (fallbackData?.roles as UserRole[] | undefined) ?? [];
+
+      this.token = accessToken;
+      this.userId = claimString(claims, 'UserId', 'sub') || fallbackData?.userId || '';
+      this.email = claimString(claims, 'email') || fallbackData?.email || payload.email;
+      this.displayName = String(
+        claimString(claims, 'name', 'preferred_username') || fallbackData?.displayName || payload.email,
       );
-
-      this.token = data.accessToken;
-      this.userId = data.userId;
-      this.email = data.email;
-      this.displayName = data.displayName;
-      this.tenantId = data.tenantId;
+      this.tenantId = claimString(claims, 'TenantId', 'tenantId') || fallbackData?.tenantId || '';
       this.tenantCode = payload.tenantCode;
-      this.roles = data.roles as UserRole[];
+      this.roles = roles;
 
-      localStorage.setItem('jwt', data.accessToken);
+      localStorage.setItem('jwt', accessToken);
       localStorage.setItem('tenantCode', payload.tenantCode);
-      api.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
     },
 
     logout() {
@@ -110,12 +150,13 @@ export const useAuthStore = defineStore('auth', {
         }
 
         this.token = token;
-        this.userId = (claims.sub as string) ?? '';
-        this.email = (claims.email as string) ?? '';
-        this.tenantId = (claims.tenantId as string) ?? '';
+        this.userId = claimString(claims, 'UserId', 'sub');
+        this.email = claimString(claims, 'email');
+        this.displayName = claimString(claims, 'name', 'preferred_username', 'email');
+        this.tenantId = claimString(claims, 'TenantId', 'tenantId');
         this.tenantCode = localStorage.getItem('tenantCode') ?? '';
 
-        const role = claims.role ?? claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+        const role = claims.role ?? claims.roles ?? claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
         this.roles = Array.isArray(role)
           ? (role as UserRole[])
           : role
@@ -131,3 +172,19 @@ export const useAuthStore = defineStore('auth', {
     },
   },
 });
+
+async function loginWithKeycloak(email: string, password: string): Promise<string> {
+  const body = new URLSearchParams({
+    client_id: 'expense-service',
+    client_secret: 'expense-service-client-secret',
+    grant_type: 'password',
+    username: email,
+    password,
+  });
+
+  const { data } = await axios.post<KeycloakTokenResponse>(keycloakTokenUrl, body, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  });
+
+  return data.access_token;
+}

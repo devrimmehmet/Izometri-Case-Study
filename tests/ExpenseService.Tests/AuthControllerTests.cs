@@ -1,6 +1,7 @@
 using ExpenseService.Api.Controllers;
 using ExpenseService.Application.DTOs;
 using ExpenseService.Application.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -45,5 +46,24 @@ public sealed class AuthControllerTests
         var result = await controller.Login(request, CancellationToken.None);
 
         Assert.IsType<UnauthorizedObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task Login_returns_not_found_when_local_login_is_disabled()
+    {
+        var request = new LoginRequest("personel@test1.com", "Pass123!", "test1");
+        var authService = new Mock<IAuthService>();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Authentication:EnableLocalLogin"] = "false"
+            })
+            .Build();
+        var controller = new AuthController(authService.Object, configuration);
+
+        var result = await controller.Login(request, CancellationToken.None);
+
+        Assert.IsType<NotFoundObjectResult>(result.Result);
+        authService.Verify(x => x.LoginAsync(It.IsAny<LoginRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

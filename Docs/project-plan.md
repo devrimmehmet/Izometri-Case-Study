@@ -91,7 +91,7 @@ RabbitMQ:
 - NotificationService HTTP client'ı standard resilience/retry policy kullanıyor.
 - xUnit + Moq test projesi eklendi.
 - Canlı Docker entegrasyon testi API + PostgreSQL + RabbitMQ akışını doğruluyor.
-- OAuth2/Keycloak modu `Jwt:Authority` ayarı ve `oauth` compose profili ile destekleniyor.
+- OAuth2/Keycloak modu ana Docker Compose akışına dahil edildi; local JWT ve Keycloak tokenları birlikte destekleniyor.
 
 ## Local Portlar
 
@@ -101,4 +101,4 @@ RabbitMQ:
 - RabbitMQ Management: `15673`
 - Expense DB: `15433`
 - Notification DB: `15434`
-- Keycloak opsiyonel profil: `18080`
+- Keycloak: `18080`

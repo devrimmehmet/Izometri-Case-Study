@@ -21,7 +21,7 @@ public sealed class ServiceTokenFactory
         {
             new Claim("UserId", Guid.Empty.ToString()),
             new Claim("TenantId", tenantId.ToString()),
-            new Claim(ClaimTypes.Role, "Service"),
+            new Claim("role", "Service"),
             new Claim("CorrelationId", correlationId),
             new Claim(JwtRegisteredClaimNames.Sub, "notification-service"),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())

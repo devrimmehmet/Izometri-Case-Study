@@ -4,7 +4,7 @@ Bu doküman, temel case gereksinimlerinden sonra ek puan için tamamlanan iyile�
 
 ## Kimlik Doğrulama Genişletmesi
 
-- Keycloak için opsiyonel `oauth` Docker Compose profili bulunur.
+- Keycloak ana Docker Compose akışına dahil edildi; ayrı profil gerektirmez.
 - `deploy/keycloak/izometri-realm.json` dosyası realm, client, rol ve demo kullanıcı import eder.
 - Detaylı kullanım: [Keycloak Import Rehberi](keycloak-import-rehberi.md)
 
