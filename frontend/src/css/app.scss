@@ -1,0 +1,157 @@
+// İzometri Case Study — Global Styles
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+// Gate screen
+.gate-bg {
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  min-height: 100vh;
+}
+
+.gate-card {
+  background: rgba(30, 27, 46, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 16px;
+}
+
+// Glass card component
+.glass-card {
+  background: rgba(30, 27, 46, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(99, 102, 241, 0.35);
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+  }
+}
+
+// Status badges
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.draft {
+    background: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
+  }
+
+  &.pending {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+  }
+
+  &.pending-admin {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+  }
+
+  &.approved {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+  }
+
+  &.rejected {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+  }
+}
+
+// Premium stat card
+.stat-card {
+  background: rgba(30, 27, 46, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15);
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+}
+
+// Scrollbar
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(30, 27, 46, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.4);
+  border-radius: 3px;
+}
+
+// Animations
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+// Doc hub link cards
+.doc-link-card {
+  background: rgba(30, 27, 46, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(99, 102, 241, 0.5);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.2);
+  }
+
+  .doc-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  .doc-title {
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .doc-desc {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+}

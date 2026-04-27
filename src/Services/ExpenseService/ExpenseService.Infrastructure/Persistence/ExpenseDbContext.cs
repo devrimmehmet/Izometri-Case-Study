@@ -128,21 +128,30 @@ public sealed class ExpenseDbContext : DbContext
     private static void Seed(ModelBuilder modelBuilder)
     {
         var now = new DateTime(2026, 4, 26, 0, 0, 0, DateTimeKind.Utc);
-        var tenantA = Guid.Parse("10000000-0000-0000-0000-000000000001");
-        var tenantB = Guid.Parse("10000000-0000-0000-0000-000000000002");
+        var tenantIzometri = Guid.Parse("10000000-0000-0000-0000-000000000001");
+        var tenantTest1    = Guid.Parse("10000000-0000-0000-0000-000000000002");
+        var tenantTest2    = Guid.Parse("10000000-0000-0000-0000-000000000003");
+
         var users = new[]
         {
-            UserSeed(tenantA, "20000000-0000-0000-0000-000000000001", "devrimmehmet@gmail.com", "Acme Admin", "905438194976", Roles.Admin),
-            UserSeed(tenantA, "20000000-0000-0000-0000-000000000002", "devrimmehmet@msn.com", "Acme HR", "905393649361", Roles.HR),
-            UserSeed(tenantA, "20000000-0000-0000-0000-000000000003", "personel@demo.com", "Acme Personnel", null, Roles.Personnel),
-            UserSeed(tenantB, "20000000-0000-0000-0000-000000000004", "admin@globex.com", "Globex Admin", null, Roles.Admin),
-            UserSeed(tenantB, "20000000-0000-0000-0000-000000000005", "hr@globex.com", "Globex HR", null, Roles.HR),
-            UserSeed(tenantB, "20000000-0000-0000-0000-000000000006", "personel@demo.com", "Globex Personnel", null, Roles.Personnel)
+            // İzometri
+            UserSeed(tenantIzometri, "20000000-0000-0000-0000-000000000001", "admin@izometri.com",    "İzometri Admin",    null, Roles.Admin),
+            UserSeed(tenantIzometri, "20000000-0000-0000-0000-000000000002", "hr@izometri.com",       "İzometri İK",       null, Roles.HR),
+            UserSeed(tenantIzometri, "20000000-0000-0000-0000-000000000003", "personel@izometri.com", "İzometri Personel", null, Roles.Personnel),
+            // TEST1
+            UserSeed(tenantTest1, "20000000-0000-0000-0000-000000000004", "pattabanoglu@devrimmehmet.com", "Test1 Admin",    "905438194976", Roles.Admin),
+            UserSeed(tenantTest1, "20000000-0000-0000-0000-000000000005", "devrimmehmet@gmail.com",        "Test1 İK",       "905393649361", Roles.HR),
+            UserSeed(tenantTest1, "20000000-0000-0000-0000-000000000006", "devrimmehmet@msn.com",          "Test1 Personel", null,           Roles.Personnel),
+            // TEST2
+            UserSeed(tenantTest2, "20000000-0000-0000-0000-000000000007", "admin@test2.com",    "Test2 Admin",    null, Roles.Admin),
+            UserSeed(tenantTest2, "20000000-0000-0000-0000-000000000008", "hr@test2.com",       "Test2 İK",       null, Roles.HR),
+            UserSeed(tenantTest2, "20000000-0000-0000-0000-000000000009", "personel@test2.com", "Test2 Personel", null, Roles.Personnel),
         };
 
         modelBuilder.Entity<Tenant>().HasData(
-            new Tenant { Id = tenantA, Name = "acme", CreatedAt = now },
-            new Tenant { Id = tenantB, Name = "globex", CreatedAt = now });
+            new Tenant { Id = tenantIzometri, Name = "izometri", CreatedAt = now },
+            new Tenant { Id = tenantTest1,    Name = "test1",    CreatedAt = now },
+            new Tenant { Id = tenantTest2,    Name = "test2",    CreatedAt = now });
 
         modelBuilder.Entity<User>().HasData(users.Select(x => x.User));
         modelBuilder.Entity<UserRole>().HasData(users.SelectMany(x => x.Roles));
