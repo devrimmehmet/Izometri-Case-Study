@@ -1,205 +1,86 @@
-# İzometri Case Study - Multi-Tenant Expense Management
+# 💎 Izometri Harcama Yönetim Sistemi (EMS)
 
 ![CI](https://github.com/devrimmehmet/Izometri-Case-Study/actions/workflows/ci.yml/badge.svg)
+![Status](https://img.shields.io/badge/Status-Production--Ready-brightgreen)
+![Version](https://img.shields.io/badge/.NET-10.0-blue)
 
-Senior .NET Backend case çalışması için hazırlanmış çok kiracılı harcama yönetim sistemi. Çözüm iki bağımsız API, servis başına ayrı veritabanı, RabbitMQ ile asenkron iletişim, EF Core Code First, JWT kimlik doğrulama, soft delete, global tenant filtresi, outbox pattern ve Docker Compose desteği içerir.
+**Izometri EMS**, modern kurumsal ihtiyaçlar için tasarlanmış, **Multi-Tenant SaaS** mimarisine sahip, yüksek ölçeklenebilir ve güvenli bir harcama yönetim platformudur.
 
-## Mimari Topoloji
+---
 
-- `ExpenseService.Api`: Kimlik doğrulama, harcama yaşam döngüsü, tenant izolasyonu, kullanıcı/rol yönetimi ve outbox publisher.
-- `NotificationService.Api`: RabbitMQ consumer, bildirim kaydı, mock bildirim loglama ve ExpenseService üzerinden HTTP ile harcama detayı okuma.
-- `ExpenseManagement.Contracts`: Ortak integration event contractları.
-- PostgreSQL servis veritabanları:
-  - `expense_db`
-  - `notification_db`
-- RabbitMQ:
-  - Exchange: `expense.events`
-  - Queue: `notification.expense-events`
-  - Routing key değerleri: `expense.created`, `expense.approved`, `expense.rejected`
+## 🎨 Mimari Topoloji
 
-## Hızlı Başlangıç
+Sistem, **Domain-Driven Design (DDD)** ve **Event-Driven Architecture (EDA)** prensipleri üzerine inşa edilmiştir.
 
-Gereksinimler:
+![Mimari Topoloji](topology.png)
 
-- .NET 10 SDK
-- Docker Desktop
+> [!TIP]
+> Detaylı mimari dökümantasyon için [Mimari Topoloji Rehberi](Docs/mimari-topoloji.md) sayfasını ziyaret edebilirsiniz.
+
+---
+
+## 🚀 Hızlı Başlangıç (Docker Compose)
+
+Tek bir komutla tüm ekosistemi (API'ler, Veritabanları, Keycloak, UI, İzleme) ayağa kaldırın:
 
 ```bash
+# 1. Projeyi derle ve testleri çalıştır
 dotnet build Izometri.CaseStudy.slnx
 dotnet test Izometri.CaseStudy.slnx
+
+# 2. Docker altyapısını başlat
 docker compose up -d --build
 ```
 
-Servis adresleri (`docker compose up` sonrası):
+### 🔗 Servis Hub
 
-| Servis | Adres |
-| --- | --- |
-| **Frontend (tam sistem)** | `http://localhost:3000` |
-| Expense API Swagger | `http://localhost:5001/swagger` |
-| Notification API Swagger | `http://localhost:5002/swagger` |
-| RabbitMQ Management | `http://localhost:15673` (`izometri` / `Izometri2026!`) |
-| Keycloak | `http://localhost:18080` (`admin` / `admin`) |
-| Mailpit UI | `http://localhost:8025` |
-| Jaeger UI | `http://localhost:16686` |
-| Expense PostgreSQL | `localhost:15433` |
-| Notification PostgreSQL | `localhost:15434` |
+| Servis | Adres | Kimlik Bilgileri |
+| :--- | :--- | :--- |
+| **🌐 Frontend UI** | `http://localhost:3000` | Giriş Sayfası |
+| **🔐 Keycloak** | `http://localhost:18080` | `admin` / `admin` |
+| **📖 Docs & API Hub** | `http://localhost:3000/#/docs` | Proje Paneli |
+| **📧 Mailpit** | `http://localhost:8025` | SMTP Simülatörü |
+| **📉 Jaeger** | `http://localhost:16686` | Distributed Tracing |
+| **🐰 RabbitMQ** | `http://localhost:15673` | `izometri` / `Izometri2026!` |
 
-**Sadece frontend geliştirmek için** (Docker backend'ler çalışırken):
+---
 
-```bash
-cd frontend
-npm run dev          # http://localhost:9000 — quasar dev server
-```
+## 📂 Proje Dökümantasyonu
 
-`quasar dev` (port 9000) proxy'si `localhost:5001` ve `localhost:5002`'ye yönlenir.
-Backend'ler `dotnet run` ile de çalıştırılabilir; `launchSettings.json` portları Docker ile aynıdır (5001/5002).
+Case değerlendirmesi için gereken tüm teknik detaylar modüler dökümanlarda toplanmıştır:
 
-Detaylı local/prod çalıştırma ve deneme rehberi: [Docs/çalıştırma-ve-ortamlar.md](Docs/çalıştırma-ve-ortamlar.md)
+| Döküman | İçerik |
+| :--- | :--- |
+| **📦 [Teslimat Özeti](Docs/teslimat-özeti.md)** | **Hızlı Değerlendirme Özeti** |
+| **🏗️ [Mimari Topoloji](Docs/mimari-topoloji.md)** | Teknik Tasarım ve Veri Akışı |
+| **📡 [API Deneme Rehberi](Docs/api-deneme-reberi.md)** | Örnek İstekler ve Postman |
+| **🧪 [Test ve Doğrulama](Docs/test-dogrulama.md)** | Test Kapsamı ve Sonuçları |
+| **⚙️ [Çalıştırma Rehberi](Docs/çalıştırma-ve-ortamlar.md)** | Local ve Prod Kurulumu |
 
-## Teslim Dokümanları
+---
 
-Case değerlendirmesi için detaylar README yerine Docs altında ayrı dosyalara bölünmüştür:
+## 👥 Test Kullanıcıları ve Senaryolar
 
-- [Teslimat Özeti](Docs/teslimat-özeti.md)
-- [Mimari ve Topoloji](Docs/mimari-topoloji.md)
-- [API Deneme Rehberi](Docs/api-deneme-rehberi.md)
-- [Migration ve Seed Bilgileri](Docs/migration-seed.md)
-- [Test ve Doğrulama](Docs/test-dogrulama.md)
-- [Gereksinim Uyumluluk Matrisi](Docs/gereksinim-uyumluluk-matrisi.md)
-- [Çalıştırma ve Ortam Rehberi](Docs/çalıştırma-ve-ortamlar.md)
-- [Keycloak Import Rehberi](Docs/keycloak-import-rehberi.md)
-- [Postman Koleksiyonu](Docs/IzometriCaseStudy.postman_collection.json)
-- [ExpenseService OpenAPI JSON](Docs/openapi-expense.json)
-- [NotificationService OpenAPI JSON](Docs/openapi-notification.json)
+Tüm kullanıcılar için ortak şifre: `Pass123!`
 
-## Test Kullanıcıları
+| Tenant | E-posta | Rol | Senaryo |
+| :--- | :--- | :--- | :--- |
+| `test1` | `pattabanoglu@devrimmehmet.com` | **Admin** | Kullanıcı/Rol Yönetimi |
+| `test1` | `devrimmehmet@gmail.com` | **HR** | Harcama Onay/Red |
+| `test1` | `devrimmehmet@msn.com` | **Personel** | Harcama Girişi |
+| `izometri` | `admin@izometri.com` | **Admin** | Cross-Tenant İzolasyon Testi |
 
-Tüm kullanıcılar için şifre: `Pass123!`
+---
 
-| Tenant | E-posta | Roller |
-| --- | --- | --- |
-| `test1` | `pattabanoglu@devrimmehmet.com` | Admin |
-| `test1` | `devrimmehmet@gmail.com` | HR |
-| `test1` | `devrimmehmet@msn.com` | Personel |
-| `test1` | `personel2@test1.com` | Personel |
-| `test2` | `admin@test2.com` | Admin |
-| `test2` | `hr@test2.com` | HR |
-| `test2` | `personel@test2.com` | Personel |
-| `test2` | `personel2@test2.com` | Personel |
-| `izometri` | `admin@izometri.com` | Admin |
-| `izometri` | `hr@izometri.com` | HR |
-| `izometri` | `personel@izometri.com` | Personel |
-| `izometri` | `personel2@izometri.com` | Personel |
+## ✨ Öne Çıkan Özellikler
 
-Aynı e-posta farklı tenantlarda kullanılabilir. Benzersizlik kuralı `(TenantId, Email)` üzerindedir.
+*   🛡️ **Multi-Tenancy:** JWT Claim + EF Core Global Query Filter ile tam veri izolasyonu.
+*   🔄 **Outbox Pattern:** Transactional mesaj gönderimi (Guaranteed Delivery).
+*   🔑 **Keycloak SSO:** OAuth2/OIDC tabanlı merkezi kimlik yönetimi.
+*   📈 **Observability:** OpenTelemetry, Jaeger ve Serilog ile tam görünürlük.
+*   🚀 **Resilience:** Polly ile servisler arası hata toleransı.
+*   🤖 **Auto-OpenAPI:** CI pipeline entegre otomatik dökümantasyon ve drift check.
 
-## Örnek İstekler
-
-Docker/production akışında kullanıcı tokenı Keycloak tarafından üretilir. Local fallback login endpointi geliştirme/test için kodda durur ancak Docker Compose ortamında kapalıdır.
-
-Keycloak token alma:
-
-```http
-POST http://localhost:18080/realms/izometri/protocol/openid-connect/token
-Content-Type: application/x-www-form-urlencoded
-```
-
-```text
-client_id=expense-service&
-client_secret=expense-service-client-secret&
-grant_type=password&
-username=devrimmehmet@msn.com&
-password=Pass123!
-```
-
-Harcama oluşturma:
-
-```http
-POST /api/expenses
-Authorization: Bearer {token}
-```
-
-```json
-{
-  "category": "Travel",
-  "currency": "TRY",
-  "amount": 3500,
-  "description": "İstanbul müşteri toplantısı için ulaşım gideri"
-}
-```
-
-## API Kapsamı
-
-ExpenseService:
-
-- `POST /api/auth/login`
-- `GET /api/admin/users`
-- `POST /api/admin/users`
-- `PUT /api/admin/users/{userId}/roles`
-- `GET /api/admin/outbox/dead-letters`
-- `POST /api/expenses`
-- `PUT /api/expenses/{id}`
-- `GET /api/expenses?dateFrom=&dateTo=&status=&category=&pageNumber=&pageSize=`
-- `GET /api/expenses/{id}`
-- `PUT /api/expenses/{id}/submit`
-- `PUT /api/expenses/{id}/approve`
-- `PUT /api/expenses/{id}/reject`
-- `DELETE /api/expenses/{id}`
-- `GET /api/settings/exchange-rates`
-- `PUT /api/settings/exchange-rates`
-- `GET /health`
-
-NotificationService:
-
-- `GET /api/notifications`
-- `GET /api/notifications?tenantId={tenantId}`
-- `GET /api/admin/notifications/dead-letters`
-- `POST /api/admin/notifications/probe-email`
-- `GET /health`
-
-## İş Kuralları
-
-- Personel harcama oluşturabilir ve yalnızca kendi kayıtlarını görebilir.
-- HR/Admin kendi tenantındaki tüm harcamaları görebilir.
-- `5000 TRY` ve altı için HR onayı yeterlidir.
-- `5000 TRY` üzeri için önce HR, sonra Admin onayı gerekir. Onay eşiği döviz kuru üzerinden TRY karşılığı ile hesaplanır.
-- Ret işleminde en az 10 karakterlik açıklama zorunludur.
-- Harcama açıklaması en az 20 karakter olmalıdır.
-- Delete işlemleri fiziksel silme yapmaz; soft delete uygulanır. Personel yalnızca kendi harcamalarını silebilir. HR ve Admin, görünürlük kapsamlarındaki tüm harcamaları silebilir.
-
-## Bonus Kapsamı
-
-- TB-1 Outbox Pattern: Harcama transactionı içinde outbox mesajı yazılır, background worker RabbitMQ'ya publish eder.
-- TB-2 OAuth2: Keycloak ana Docker Compose akışına dahildir. Kullanıcı tokenlarını Keycloak üretir; API'ler JWT Bearer doğrular ve local login Docker'da kapalıdır.
-- TB-3 Unit Testing: `tests/ExpenseService.Tests` içinde xUnit + Moq altyapısı, controller, validator, token contract, event handler ve canlı Docker entegrasyon testleri vardır.
-- TB-4 Docker Support: RabbitMQ, iki PostgreSQL DB ve iki API `docker-compose.yml` ile çalışır.
-- TB-5 API Documentation: İki API'de Swagger/OpenAPI aktiftir.
-- TB-6 Logging/Correlation ID: `X-Correlation-Id` request/response header olarak taşınır, event payloadlarına yazılır ve servisler arası HTTP isteğinde devam eder.
-- TR-7 HTTP Retry: NotificationService -> ExpenseService HTTP client'ı standard resilience/retry pipeline kullanır.
-- TB-8 Operational Readiness: Healthcheck endpointleri, Docker Compose healthcheck tanımları, Serilog console logging, standart hata formatı ve CI pipeline eklendi.
-
-## E-posta Kontrolü
-
-Personel test1 tenantında harcama oluşturduğunda HR/Admin alıcıları `devrimmehmet@gmail.com,devrimmehmet@msn.com` olarak notification kaydına yazılır. Docker local ortamında SMTP hedefi Mailpit’tir; mailler `http://localhost:8025` üzerinden görülebilir. `GET /api/notifications` yanıtında `recipientEmail`, `emailStatus` ve `emailError` alanlarıyla gönderim sonucu da izlenir.
-
-Gerçek SMTP için `Mail` configuration section’ı kullanılır: `FromName`, `FromEmail`, `Host`, `Port`, `UserName`, `Password`, `UseSsl`, `UsePickupFolder`, `IgnoreCertificateErrors`, `PickupFolderPath`.
-
-SMS gönderimi Netgsm REST v2 JSON POST API ile yapılır. Local Docker ortamında gerçek SMS gönderimi kapalıdır; prod veya manuel test için `Netgsm__UserCode`, `Netgsm__Password`, `Netgsm__MsgHeader`, `Netgsm__BaseUrl`, `Netgsm__Encoding`, `Netgsm__AppName` ve gerekiyorsa `Netgsm__UseOtpEndpoint` değerleri ortam değişkeni olarak verilmelidir. Netgsm tarafında aktif gönderici başlığı yoksa API `40 invalidHeader/header problem` döndürür.
-
-## Secret Yönetimi
-
-Gerçek şifreler, API anahtarları ve production bağlantı bilgileri commitlenmemelidir. Repository içinde sadece örnek dosyalar tutulur:
-
-- `.env.example`
-- `src/Services/ExpenseService/ExpenseService.Api/appsettings.Local.example.json`
-- `src/Services/NotificationService/NotificationService.Api/appsettings.Local.example.json`
-
-Gerçek local değerler için `.env`, `.env.local`, `appsettings.Local.json`, `appsettings.Production.json` veya `docker-compose.override.yml` kullanılmalıdır. Bu dosyalar `.gitignore` ile Git dışında bırakılır.
-
-## Doğrulanan Komutlar
-
-- `dotnet build Izometri.CaseStudy.slnx`
-- `dotnet test Izometri.CaseStudy.slnx`
-- `docker compose config`
-- `docker compose up -d --build`
-- Canlı local akış: login, admin kullanıcı/rol yönetimi, harcama oluşturma, submit, HR approve, outbox publish, RabbitMQ consume ve notification kaydı.
+---
+**Hazırlayan:** Izometri Case Study Adayı
+**İletişim:** [devrimmehmet@gmail.com](mailto:devrimmehmet@gmail.com)

@@ -111,6 +111,58 @@ public sealed class KeycloakAdminClient : IKeycloakAdminClient
         await AssignRealmRolesAsync(keycloakUserId, roles, cancellationToken);
     }
 
+    public async Task SyncUserRolesAsync(
+        string email,
+        IReadOnlyCollection<string> roles,
+        CancellationToken cancellationToken = default)
+    {
+        if (!_options.Enabled) return;
+
+        await EnsureTokenAsync(cancellationToken);
+
+        var keycloakUserId = await GetKeycloakUserIdAsync(email, cancellationToken);
+        if (keycloakUserId is null)
+        {
+            _logger.LogWarning("Keycloak user not found for sync: {Email}", email);
+            return;
+        }
+
+        // 1. Mevcut atanan realm rollerini al
+        var currentRoles = await GetUserRealmRolesAsync(keycloakUserId, cancellationToken);
+
+        // 2. Mevcut rolleri sil (temizle)
+        if (currentRoles.Count > 0)
+        {
+            var deleteUrl = $"/admin/realms/{_options.Realm}/users/{keycloakUserId}/role-mappings/realm";
+            using var deleteRequest = new HttpRequestMessage(HttpMethod.Delete, deleteUrl)
+            {
+                Content = JsonContent.Create(currentRoles, options: JsonOptions)
+            };
+            deleteRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            using var deleteResponse = await _httpClient.SendAsync(deleteRequest, cancellationToken);
+            if (!deleteResponse.IsSuccessStatusCode)
+            {
+                var body = await deleteResponse.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogError("Failed to clear Keycloak roles: {Body}", body);
+            }
+        }
+
+        // 3. Yeni rolleri ata
+        await AssignRealmRolesAsync(keycloakUserId, roles, cancellationToken);
+    }
+
+    private async Task<List<KeycloakRole>> GetUserRealmRolesAsync(string keycloakUserId, CancellationToken cancellationToken)
+    {
+        var url = $"/admin/realms/{_options.Realm}/users/{keycloakUserId}/role-mappings/realm";
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+
+        using var response = await _httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<List<KeycloakRole>>(JsonOptions, cancellationToken) ?? [];
+    }
+
     // ──────────────────────── private helpers ────────────────────────
 
     private async Task EnsureTokenAsync(CancellationToken cancellationToken)

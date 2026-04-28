@@ -24,4 +24,15 @@ public interface IKeycloakAdminClient
         string password,
         IReadOnlyCollection<string> roles,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Keycloak'ta mevcut bir kullanıcının rollerini günceller (eskileri siler, yenileri ekler).
+    /// </summary>
+    /// <param name="email">Kullanıcının e-posta adresi.</param>
+    /// <param name="roles">Atanacak yeni realm rolleri.</param>
+    /// <param name="cancellationToken">İptal belirteci.</param>
+    Task SyncUserRolesAsync(
+        string email,
+        IReadOnlyCollection<string> roles,
+        CancellationToken cancellationToken = default);
 }

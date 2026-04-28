@@ -117,6 +117,21 @@
         </q-expansion-item>
       </q-list>
     </div>
+
+    <div class="text-h6 text-weight-bold q-mb-md">
+      <q-icon name="map" class="q-mr-sm" />Sistem Topolojisi
+    </div>
+    <div class="glass-card q-pa-md q-mb-xl text-center">
+      <q-img
+        src="topology.png"
+        spinner-color="primary"
+        style="max-width: 1000px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);"
+        class="shadow-10"
+      />
+      <div class="q-mt-md text-grey-4 text-body2">
+        Mikroservisler, Mesaj Kuyrukları ve Monitoring Altyapısı Genel Görünümü
+      </div>
+    </div>
   </q-page>
 </template>
 

@@ -145,6 +145,16 @@ public sealed class UserAdminService : IUserAdminService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        // Keycloak senkronizasyonu
+        try
+        {
+            await _keycloakAdminClient.SyncUserRolesAsync(user.Email, requestedRoles, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Keycloak role sync failed for user {Email}", user.Email);
+        }
+
         user.Roles = await _unitOfWork.Repository<UserRole>().Query()
             .Where(x => x.UserId == user.Id)
             .ToListAsync(cancellationToken);

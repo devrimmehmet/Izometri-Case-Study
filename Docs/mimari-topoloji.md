@@ -1,114 +1,95 @@
-# Mimari ve Topoloji
+# 🏗️ Mimari Topoloji ve Sistem Tasarımı
 
-## Genel Yaklaşım
+Bu belge, **Izometri Harcama Yönetim Sistemi**'nin teknik mimarisini, veri akışını ve bileşenler arası iletişim modellerini detaylandırmaktadır.
 
-Proje, iki bağımsız API ve servis başına ayrı veritabanı yaklaşımıyla tasarlanmıştır. ExpenseService harcama ve kullanıcı verisinin sahibidir. NotificationService yalnızca bildirim verisini saklar ve ihtiyaç duyduğunda ExpenseService üzerinden HTTP ile harcama detayını okur.
+## 📐 Sistem Mimarisi
 
-## Servisler
+Sistem, modern bulut tabanlı SaaS prensiplerine uygun olarak **Mikroservis Mimarisi** ve **Event-Driven Architecture (EDA)** yaklaşımlarıyla tasarlanmıştır.
 
-### ExpenseService.Api
+```mermaid
+graph TB
+    subgraph "Frontend Layer"
+        UI["Vue.js / Quasar SPA"]
+    end
 
-Sorumluluklar:
+    subgraph "Gateway / Proxy"
+        NGX["Nginx Gateway"]
+    end
 
-- JWT login
-- Tenant bazlı kullanıcı ve rol yönetimi
-- Harcama oluşturma, listeleme, detay okuma, submit, approve, reject ve delete
-- Soft delete
-- Outbox mesajı üretme
-- RabbitMQ publish işlemi
+    subgraph "Identity Provider"
+        KC["Keycloak (OIDC/OAuth2)"]
+    end
 
-Veritabanı:
+    subgraph "Service Layer"
+        subgraph "Expense Service (BC1)"
+            EA["Expense.Api"]
+            ED["Expense.Domain"]
+            EI["Expense.Infrastructure"]
+            EPB["Outbox Publisher Worker"]
+            EDB[(PostgreSQL - expense_db)]
+        end
 
-- `expense_db`
+        subgraph "Notification Service (BC2)"
+            NA["Notification.Api"]
+            NI["Notification.Infrastructure"]
+            NCW["RabbitMQ Consumer Worker"]
+            RW["Retention Worker"]
+            NDB[(PostgreSQL - notification_db)]
+        end
+    end
 
-Ana tablolar:
+    subgraph "Messaging & Monitoring"
+        RMQ["RabbitMQ (Message Broker)"]
+        JGR["Jaeger (Distributed Tracing)"]
+        MP["Mailpit (SMTP Testing)"]
+    end
 
-- `Tenants`
-- `Users`
-- `UserRoles`
-- `Expenses`
-- `ExpenseApprovals`
-- `OutboxMessages`
+    %% Flow
+    UI --> NGX
+    NGX --> KC
+    NGX -- "/api/*" --> EA
+    NGX -- "/notify-api/*" --> NA
 
-### NotificationService.Api
+    EA -- "Save + Outbox" --> EDB
+    EPB -- "Poll" --> EDB
+    EPB -- "Publish Events" --> RMQ
 
-Sorumluluklar:
+    RMQ -- "Consume" --> NCW
+    NCW -- "Save Logs" --> NDB
+    NCW -- "Sync Call" --> EA
+    NCW -- "Send Email" --> MP
 
-- RabbitMQ consumer olarak expense eventlerini dinleme
-- Notification kaydı oluşturma
-- Mock bildirim loglama
-- Duplicate event işlemeyi engelleme
-- ExpenseService üzerinden HTTP ile harcama detayı okuma
-
-Veritabanı:
-
-- `notification_db`
-
-Ana tablolar:
-
-- `Notifications`
-- `ProcessedMessages`
-
-## Katmanlar
-
-Her servis Onion Architecture yaklaşımına uygun ayrılmıştır:
-
-- `Domain`: Entity, enum ve domain modelleri.
-- `Application`: DTO, validator, interface ve use-case servisleri.
-- `Infrastructure`: EF Core, repository, UnitOfWork, messaging, HTTP client, auth yardımcıları.
-- `Api`: Controller, authentication/authorization, Swagger ve middleware.
-- `Shared/Contracts`: Ortak integration event contractları.
-
-## Asenkron İletişim
-
-ExpenseService create/approve/reject akışlarında eventleri doğrudan RabbitMQ'ya göndermek yerine aynı veritabanı transactionı içinde `OutboxMessages` tablosuna yazar.
-
-`OutboxPublisherWorker` işlenmemiş mesajları RabbitMQ'ya publish eder.
-
-RabbitMQ yapılandırması:
-
-- Exchange: `expense.events`
-- Queue: `notification.expense-events`
-- Routing key değerleri:
-  - `expense.created`
-  - `expense.approved`
-  - `expense.rejected`
-
-NotificationService bu queue'yu consume eder ve notification kaydı oluşturur.
-
-## Senkron İletişim
-
-NotificationService, event aldıktan sonra detaylı harcama bilgisi için ExpenseService endpointini çağırır:
-
-```http
-GET /api/expenses/{id}
+    EA & NA -- "Traces (OTLP)" --> JGR
 ```
 
-Bu çağrıda internal service JWT kullanılır. `X-Correlation-Id` header olarak taşınır. HTTP client standard resilience/retry pipeline kullanır.
+## 🛠️ Teknik Stack
 
-## Multi-Tenant İzolasyon
+| Bileşen | Teknoloji | Açıklama |
+| :--- | :--- | :--- |
+| **Backend** | .NET 10 (C#) | Onion Architecture, DDD, CQRS |
+| **Frontend** | Vue 3 + Quasar | SPA, Tailwind, Vite |
+| **Auth** | Keycloak | OIDC, RBAC, Multi-Tenancy |
+| **Veritabanı** | PostgreSQL 16 | Her servis için izole DB (Schema-per-service) |
+| **Mesajlaşma** | RabbitMQ | Event-driven asenkron iletişim |
+| **ORM** | EF Core 10 | Code-First, Global Query Filters |
+| **Resilience** | Polly | Retry & Circuit Breaker |
+| **Tracing** | OpenTelemetry | Dağıtık izleme (Jaeger) |
 
-- Her tenant entity `TenantId` taşır.
-- `TenantId` JWT claim içinden okunur.
-- `ICurrentUserContext` merkezi kullanıcı/tenant bilgisini sağlar.
-- EF Core global query filter tenant ve soft delete filtresini otomatik uygular.
-- Controller içinde tenant filtresi elle uygulanmaz.
+## 🛡️ Multi-Tenancy Yaklaşımı
 
-## Soft Delete
+Sistem **"Shared Database, Isolated Schema"** prensibiyle çalışır (bu case study'de basitlik için tek DB içinde tenant kolonları kullanılmıştır).
 
-Hard delete yoktur. `BaseEntity` şu alanları içerir:
+*   **Tenant İzolasyonu:** Her veritabanı sorgusunda `TenantId` bazlı global query filter uygulanır.
+*   **Defense-in-Depth:** Hem API katmanında (JWT Claim) hem de veritabanı seviyesinde (Query Filter) tenant doğrulaması yapılır.
 
-- `Id`
-- `CreatedAt`, `CreatedBy`
-- `UpdatedAt`, `UpdatedBy`
-- `IsDeleted`
-- `DeletedAt`, `DeletedBy`
+## 🔄 Kritik İş Akışları
 
-Repository `Delete` çağrısı EF SaveChanges sırasında soft delete'e çevrilir.
+### 1. Harcama Oluşturma ve Onay (Outbox Pattern)
+Harcama kaydedildiğinde, aynı transaction içinde bir `OutboxMessage` oluşturulur. `OutboxPublisherWorker` bu mesajları asenkron olarak RabbitMQ'ya güvenli bir şekilde iletir. Bu sayede DB işlemi ile mesaj gönderimi arasında tutarlılık sağlanır.
 
-## Güvenlik
+### 2. Bildirim Gönderimi
+`NotificationService`, RabbitMQ'dan gelen eventleri dinler. Bildirim içeriğini zenginleştirmek için `ExpenseService`'e senkron bir HTTP çağrısı yapar (resilience policy ile korunur) ve ardından E-posta/SMS gönderimini gerçekleştirir.
 
-- Varsayılan mod basit JWT login endpointidir.
-- Token içinde `UserId`, `TenantId` ve role claimleri bulunur.
-- Admin endpointleri `[Authorize(Roles = "Admin")]` ile korunur.
-- OAuth2/Keycloak ana Docker Compose akışına dahildir. Authentication Keycloak tarafında, authorization API tarafında JWT claimleriyle yapılır. API kullanıcı tokenı üretmez.
+---
+> [!NOTE]
+> Bu mimari, yatayda ölçeklenebilir ve hata toleransı (fault-tolerance) yüksek bir yapı sunar.
