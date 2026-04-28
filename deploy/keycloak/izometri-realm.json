@@ -6,7 +6,7 @@
     "realm": [
       { "name": "Admin" },
       { "name": "HR" },
-      { "name": "Personnel" },
+      { "name": "Personel" },
       { "name": "Service" }
     ]
   },
@@ -128,7 +128,7 @@
         "tenantId": [ "10000000-0000-0000-0000-000000000001" ]
       },
       "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
-      "realmRoles": [ "Personnel" ]
+      "realmRoles": [ "Personel" ]
     },
     {
       "id": "20000000-0000-0000-0000-000000000010",
@@ -143,7 +143,7 @@
         "tenantId": [ "10000000-0000-0000-0000-000000000001" ]
       },
       "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
-      "realmRoles": [ "Personnel" ]
+      "realmRoles": [ "Personel" ]
     },
     {
       "id": "20000000-0000-0000-0000-000000000004",
@@ -190,7 +190,7 @@
         "tenantId": [ "10000000-0000-0000-0000-000000000002" ]
       },
       "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
-      "realmRoles": [ "Personnel" ]
+      "realmRoles": [ "Personel" ]
     },
     {
       "id": "20000000-0000-0000-0000-000000000011",
@@ -205,7 +205,7 @@
         "tenantId": [ "10000000-0000-0000-0000-000000000002" ]
       },
       "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
-      "realmRoles": [ "Personnel" ]
+      "realmRoles": [ "Personel" ]
     },
     {
       "id": "20000000-0000-0000-0000-000000000007",
@@ -250,7 +250,7 @@
         "tenantId": [ "10000000-0000-0000-0000-000000000003" ]
       },
       "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
-      "realmRoles": [ "Personnel" ]
+      "realmRoles": [ "Personel" ]
     },
     {
       "id": "20000000-0000-0000-0000-000000000012",
@@ -265,7 +265,7 @@
         "tenantId": [ "10000000-0000-0000-0000-000000000003" ]
       },
       "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
-      "realmRoles": [ "Personnel" ]
+      "realmRoles": [ "Personel" ]
     }
   ]
 }

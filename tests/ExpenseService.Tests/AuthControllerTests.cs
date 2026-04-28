@@ -18,8 +18,8 @@ public sealed class AuthControllerTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             request.Email,
-            "Personnel",
-            new[] { "Personnel" });
+            "Personel",
+            new[] { "Personel" });
 
         var authService = new Mock<IAuthService>();
         authService.Setup(x => x.LoginAsync(request, It.IsAny<CancellationToken>()))

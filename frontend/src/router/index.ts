@@ -39,6 +39,10 @@ export default defineRouter((/* { store, ssrContext } */) => {
       return '/';
     }
 
+    if (to.path === '/' && auth.gateUnlocked && !auth.isAuthenticated) {
+      return '/login';
+    }
+
     // Auth required but not authenticated
     if (to.meta.requiresAuth && !auth.isAuthenticated) {
       return '/login';
@@ -48,7 +52,7 @@ export default defineRouter((/* { store, ssrContext } */) => {
     const requiredRoles = to.meta.roles;
     if (requiredRoles && requiredRoles.length > 0) {
       const hasRole = requiredRoles.some((r) =>
-        auth.roles.includes(r as 'Admin' | 'HR' | 'Personnel'),
+        auth.roles.includes(r as 'Admin' | 'HR' | 'Personel'),
       );
       if (!hasRole) {
         return '/dashboard';

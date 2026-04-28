@@ -24,7 +24,7 @@ export interface JwtPayload {
   exp: number;
 }
 
-export type UserRole = 'Admin' | 'HR' | 'Personnel';
+export type UserRole = 'Admin' | 'HR' | 'Personel';
 
 export type ExpenseStatus = 'Draft' | 'Pending' | 'Approved' | 'Rejected';
 
@@ -97,8 +97,9 @@ export interface ExpenseQueryParams {
 
 export interface UserDto {
   id: string;
+  tenantId: string;
   email: string;
-  fullName: string;
+  displayName: string;
   roles: string[];
   createdAt: string;
 }
@@ -106,8 +107,9 @@ export interface UserDto {
 export interface CreateUserRequest {
   email: string;
   password: string;
-  fullName: string;
+  displayName: string;
   roles: string[];
+  phone?: string;
 }
 
 export interface UpdateRolesRequest {

@@ -10,12 +10,15 @@ using NotificationService.Infrastructure.Auth;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, _, configuration) =>
 {
     configuration
+        .MinimumLevel.Information()
+        .MinimumLevel.Override("Microsoft.AspNetCore.DataProtection", LogEventLevel.Error)
         .ReadFrom.Configuration(context.Configuration)
         .Enrich.FromLogContext()
         .WriteTo.Console();
@@ -33,7 +36,7 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Description = "JWT Bearer token — format: **Bearer {token}**",
+        Description = "JWT Bearer token - format: **Bearer {token}**",
         In = Microsoft.OpenApi.ParameterLocation.Header,
         Type = Microsoft.OpenApi.SecuritySchemeType.Http,
         Scheme = "bearer",
@@ -51,9 +54,47 @@ builder.Services.AddNotificationInfrastructure(builder.Configuration);
 
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
 var localLoginEnabled = builder.Configuration.GetValue("Authentication:EnableLocalLogin", true);
+const string smartJwtScheme = "SmartJwt";
 const string localJwtScheme = "LocalJwt";
 const string externalJwtScheme = "ExternalJwt";
-var authenticationBuilder = builder.Services.AddAuthentication(localJwtScheme)
+var authenticationBuilder = builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = smartJwtScheme;
+        options.DefaultAuthenticateScheme = smartJwtScheme;
+        options.DefaultChallengeScheme = smartJwtScheme;
+    })
+    .AddPolicyScheme(smartJwtScheme, null, options =>
+    {
+        options.ForwardDefaultSelector = context =>
+        {
+            if (string.IsNullOrWhiteSpace(jwtOptions.Authority))
+            {
+                return localJwtScheme;
+            }
+
+            var authorization = context.Request.Headers.Authorization.ToString();
+            if (!authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                return localJwtScheme;
+            }
+
+            var token = authorization["Bearer ".Length..].Trim();
+            var header = token.Split('.', 2)[0];
+            try
+            {
+                var headerJson = Encoding.UTF8.GetString(Base64UrlEncoder.DecodeBytes(header));
+                using var document = System.Text.Json.JsonDocument.Parse(headerJson);
+                var algorithm = document.RootElement.GetProperty("alg").GetString();
+                return algorithm?.StartsWith("RS", StringComparison.OrdinalIgnoreCase) == true
+                    ? externalJwtScheme
+                    : localJwtScheme;
+            }
+            catch
+            {
+                return localJwtScheme;
+            }
+        };
+    })
     .AddJwtBearer(localJwtScheme, options =>
     {
         options.MapInboundClaims = false;
@@ -86,6 +127,14 @@ var authenticationBuilder = builder.Services.AddAuthentication(localJwtScheme)
 
 if (!string.IsNullOrWhiteSpace(jwtOptions.Authority))
 {
+    var validExternalIssuers = new HashSet<string>(
+        new[]
+        {
+            jwtOptions.Authority.TrimEnd('/'),
+            jwtOptions.PublicAuthority?.TrimEnd('/')
+        }.Where(x => !string.IsNullOrWhiteSpace(x))!,
+        StringComparer.OrdinalIgnoreCase);
+
     authenticationBuilder.AddJwtBearer(externalJwtScheme, options =>
     {
         options.MapInboundClaims = false;
@@ -97,11 +146,18 @@ if (!string.IsNullOrWhiteSpace(jwtOptions.Authority))
             ValidateAudience = true,
             ValidateIssuerSigningKey = true,
             ValidateLifetime = true,
-            ValidIssuers = new[]
+            ValidIssuers = validExternalIssuers,
+            IssuerValidator = (issuer, _, _) =>
             {
-                jwtOptions.Authority.TrimEnd('/'),
-                jwtOptions.PublicAuthority?.TrimEnd('/')
-            }.Where(x => !string.IsNullOrWhiteSpace(x)),
+                var normalizedIssuer = issuer?.TrimEnd('/');
+                if (!string.IsNullOrWhiteSpace(normalizedIssuer) &&
+                    validExternalIssuers.Contains(normalizedIssuer))
+                {
+                    return normalizedIssuer;
+                }
+
+                throw new SecurityTokenInvalidIssuerException($"Invalid issuer '{issuer}'.");
+            },
             ValidAudience = jwtOptions.Audience,
             RoleClaimType = "role",
             NameClaimType = "UserId"
@@ -111,7 +167,7 @@ if (!string.IsNullOrWhiteSpace(jwtOptions.Authority))
 
 var authSchemes = string.IsNullOrWhiteSpace(jwtOptions.Authority)
     ? new[] { localJwtScheme }
-    : new[] { localJwtScheme, externalJwtScheme };
+    : new[] { smartJwtScheme };
 builder.Services.AddAuthorization(options =>
 {
     options.DefaultPolicy = new AuthorizationPolicyBuilder(authSchemes)
@@ -139,7 +195,11 @@ var app = builder.Build();
 app.UseMiddleware<ApiExceptionMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseHttpsRedirection();
+if (!string.IsNullOrWhiteSpace(app.Configuration["HTTPS_PORT"]) ||
+    !string.IsNullOrWhiteSpace(app.Configuration["ASPNETCORE_HTTPS_PORT"]))
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapHealthChecks("/health");

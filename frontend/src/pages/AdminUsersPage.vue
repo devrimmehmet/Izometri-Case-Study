@@ -70,7 +70,7 @@
         </q-card-section>
         <q-card-section>
           <q-form @submit.prevent="onCreate" class="q-gutter-md">
-            <q-input v-model="createForm.fullName" label="Ad Soyad" outlined dark dense
+            <q-input v-model="createForm.displayName" label="Ad Soyad" outlined dark dense
               :rules="[(v: string) => !!v || 'Zorunlu alan']" />
             <q-input v-model="createForm.email" label="E-posta" type="email" outlined dark dense
               :rules="[(v: string) => !!v || 'Zorunlu alan']" />
@@ -139,12 +139,12 @@ const admin = useAdminStore();
 const roleOptions = [
   { label: 'Yönetici', value: 'Admin' },
   { label: 'İnsan Kaynakları', value: 'HR' },
-  { label: 'Personel', value: 'Personnel' },
+  { label: 'Personel', value: 'Personel' },
 ];
 
 const columns = [
   { name: 'email', label: 'E-posta', field: 'email', align: 'left' as const },
-  { name: 'fullName', label: 'Ad Soyad', field: 'fullName', align: 'left' as const },
+  { name: 'displayName', label: 'Ad Soyad', field: 'displayName', align: 'left' as const },
   { name: 'roles', label: 'Roller', field: 'roles', align: 'left' as const },
   { name: 'createdAt', label: 'Kayıt Tarihi', field: 'createdAt', align: 'left' as const },
   { name: 'actions', label: 'İşlemler', field: '', align: 'center' as const },
@@ -156,8 +156,8 @@ const creating = ref(false);
 const createForm = reactive<CreateUserRequest>({
   email: '',
   password: 'Pass123!',
-  fullName: '',
-  roles: ['Personnel'],
+  displayName: '',
+  roles: ['Personel'],
 });
 
 // Rol düzenleme
@@ -186,7 +186,7 @@ async function onCreate() {
     await admin.createUser(createForm);
     showCreate.value = false;
     createForm.email = '';
-    createForm.fullName = '';
+    createForm.displayName = '';
     $q.notify({ type: 'positive', message: 'Kullanıcı başarıyla oluşturuldu' });
   } catch (err: unknown) {
     const error = err as { response?: { data?: { detail?: string } }; message?: string };

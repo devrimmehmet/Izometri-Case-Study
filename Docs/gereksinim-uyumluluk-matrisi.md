@@ -7,7 +7,7 @@ Bu dokuman `Docs/backend_case.md` icindeki gereksinimlerin projede nerede karsil
 | Kod | Gereksinim | Durum | Karsilik |
 | --- | --- | --- | --- |
 | BR-1 | Multi-tenant izolasyon | Tamamlandi | JWT `TenantId`, `ICurrentUserContext`, EF Core global query filter |
-| BR-2 | Rol tabanli yetkilendirme | Tamamlandi | Admin, HR, Personnel rolleri ve endpoint authorization |
+| BR-2 | Rol tabanli yetkilendirme | Tamamlandi | Admin, HR, Personel rolleri ve endpoint authorization |
 | BR-3 | Harcama talebi olusturma | Tamamlandi | `POST /api/expenses`, kategori, para birimi, aciklama validasyonu |
 | BR-4 | Onay sureci | Tamamlandi | HR/Admin sirali onay, ret aciklamasi zorunlulugu |
 | BR-5 | Asenkron bildirim sistemi | Tamamlandi | RabbitMQ eventleri ve NotificationService consumer |

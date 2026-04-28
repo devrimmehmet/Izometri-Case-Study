@@ -1,5 +1,6 @@
 using ExpenseService.Application.Abstractions;
 using ExpenseService.Domain.Entities;
+using ExpenseService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,18 +10,21 @@ namespace ExpenseService.Infrastructure.Services;
 
 public sealed class ExchangeRateInitializerHostedService : IHostedService
 {
+    private readonly DatabaseMigrationState _migrationState;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<ExchangeRateInitializerHostedService> _logger;
 
-    public ExchangeRateInitializerHostedService(IServiceProvider serviceProvider, ILogger<ExchangeRateInitializerHostedService> logger)
+    public ExchangeRateInitializerHostedService(IServiceProvider serviceProvider, ILogger<ExchangeRateInitializerHostedService> logger, DatabaseMigrationState migrationState)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _migrationState = migrationState;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("ExchangeRateInitializerHostedService is starting...");
+        await _migrationState.Ready.WaitAsync(cancellationToken);
 
         using var scope = _serviceProvider.CreateScope();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();

@@ -105,7 +105,7 @@ const allNavItems: NavItem[] = [
 const navItems = computed(() =>
   allNavItems.filter((item) => {
     if (!item.roles) return true;
-    return item.roles.some((r) => auth.roles.includes(r as 'Admin' | 'HR' | 'Personnel'));
+    return item.roles.some((r) => auth.roles.includes(r as 'Admin' | 'HR' | 'Personel'));
   }),
 );
 

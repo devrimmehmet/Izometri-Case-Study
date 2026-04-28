@@ -32,7 +32,7 @@ export const currencySymbols: Record<Currency, string> = {
 export const roleLabels: Record<string, string> = {
   Admin: 'Yönetici',
   HR: 'İnsan Kaynakları',
-  Personnel: 'Personel',
+  Personel: 'Personel',
 };
 
 export function formatAmount(amount: number, currency: Currency): string {

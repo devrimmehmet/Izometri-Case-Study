@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ExpenseService.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ExpenseDbContext))]
-    [Migration("20260426232508_UpdateAcmeSeedNotificationContacts")]
-    partial class UpdateAcmeSeedNotificationContacts
+    [Migration("20260428002246_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,6 +64,9 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
+                    b.Property<decimal>("ExchangeRate")
+                        .HasColumnType("numeric");
+
                     b.Property<bool>("HrApproved")
                         .HasColumnType("boolean");
 
@@ -99,6 +102,94 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                     b.HasIndex("RequestedByUserId");
 
                     b.ToTable("Expenses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("30000000-0000-0000-0000-000000000001"),
+                            AdminApproved = false,
+                            Amount = 1250.00m,
+                            Category = 1,
+                            CreatedAt = new DateTime(2026, 4, 21, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = new Guid("20000000-0000-0000-0000-000000000006"),
+                            Currency = 1,
+                            Description = "Ankara Müşteri Ziyareti",
+                            ExchangeRate = 1m,
+                            HrApproved = false,
+                            IsDeleted = false,
+                            RequestedByUserId = new Guid("20000000-0000-0000-0000-000000000006"),
+                            Status = 1,
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000002")
+                        },
+                        new
+                        {
+                            Id = new Guid("30000000-0000-0000-0000-000000000002"),
+                            AdminApproved = false,
+                            Amount = 450.00m,
+                            Category = 2,
+                            CreatedAt = new DateTime(2026, 4, 22, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = new Guid("20000000-0000-0000-0000-000000000006"),
+                            Currency = 1,
+                            Description = "Kırtasiye Malzemeleri",
+                            ExchangeRate = 1m,
+                            HrApproved = false,
+                            IsDeleted = false,
+                            RequestedByUserId = new Guid("20000000-0000-0000-0000-000000000006"),
+                            Status = 2,
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000002")
+                        },
+                        new
+                        {
+                            Id = new Guid("30000000-0000-0000-0000-000000000003"),
+                            AdminApproved = true,
+                            Amount = 5000.00m,
+                            Category = 3,
+                            CreatedAt = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = new Guid("20000000-0000-0000-0000-000000000011"),
+                            Currency = 1,
+                            Description = "Udemy Eğitim Kursu",
+                            ExchangeRate = 1m,
+                            HrApproved = true,
+                            IsDeleted = false,
+                            RequestedByUserId = new Guid("20000000-0000-0000-0000-000000000011"),
+                            Status = 3,
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000002")
+                        },
+                        new
+                        {
+                            Id = new Guid("30000000-0000-0000-0000-000000000004"),
+                            AdminApproved = false,
+                            Amount = 200.00m,
+                            Category = 4,
+                            CreatedAt = new DateTime(2026, 4, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = new Guid("20000000-0000-0000-0000-000000000005"),
+                            Currency = 2,
+                            Description = "Yazılım Lisansı",
+                            ExchangeRate = 32.5m,
+                            HrApproved = false,
+                            IsDeleted = false,
+                            RejectionReason = "Bütçe onayı yok",
+                            RequestedByUserId = new Guid("20000000-0000-0000-0000-000000000005"),
+                            Status = 4,
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000002")
+                        },
+                        new
+                        {
+                            Id = new Guid("30000000-0000-0000-0000-000000000005"),
+                            AdminApproved = false,
+                            Amount = 5500.00m,
+                            Category = 1,
+                            CreatedAt = new DateTime(2026, 4, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = new Guid("20000000-0000-0000-0000-000000000006"),
+                            Currency = 1,
+                            Description = "İstanbul Uçak Bileti",
+                            ExchangeRate = 1m,
+                            HrApproved = true,
+                            IsDeleted = false,
+                            RequestedByUserId = new Guid("20000000-0000-0000-0000-000000000006"),
+                            Status = 2,
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000002")
+                        });
                 });
 
             modelBuilder.Entity("ExpenseService.Domain.Entities.ExpenseApproval", b =>
@@ -242,6 +333,12 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<decimal?>("FixedEurRate")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("FixedUsdRate")
+                        .HasColumnType("numeric");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -269,14 +366,21 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                             Id = new Guid("10000000-0000-0000-0000-000000000001"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsDeleted = false,
-                            Name = "acme"
+                            Name = "izometri"
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000002"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsDeleted = false,
-                            Name = "globex"
+                            Name = "test1"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000000003"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            Name = "test2"
                         });
                 });
 
@@ -341,30 +445,38 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("20000000-0000-0000-0000-000000000001"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
-                            DisplayName = "Acme Admin",
-                            Email = "devrimmehmet@gmail.com",
+                            DisplayName = "İzometri Admin",
+                            Email = "admin@izometri.com",
                             IsDeleted = false,
                             PasswordHash = "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.",
-                            Phone = "905438194976",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000001")
                         },
                         new
                         {
                             Id = new Guid("20000000-0000-0000-0000-000000000002"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
-                            DisplayName = "Acme HR",
-                            Email = "devrimmehmet@msn.com",
+                            DisplayName = "İzometri İK",
+                            Email = "hr@izometri.com",
                             IsDeleted = false,
                             PasswordHash = "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.",
-                            Phone = "905393649361",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000001")
                         },
                         new
                         {
                             Id = new Guid("20000000-0000-0000-0000-000000000003"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
-                            DisplayName = "Acme Personnel",
-                            Email = "personel@demo.com",
+                            DisplayName = "İzometri Personel",
+                            Email = "personel@izometri.com",
+                            IsDeleted = false,
+                            PasswordHash = "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.",
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000001")
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000010"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayName = "İzometri Personel 2",
+                            Email = "personel2@izometri.com",
                             IsDeleted = false,
                             PasswordHash = "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000001")
@@ -373,31 +485,83 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("20000000-0000-0000-0000-000000000004"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
-                            DisplayName = "Globex Admin",
-                            Email = "admin@globex.com",
+                            DisplayName = "Test1 Admin",
+                            Email = "pattabanoglu@devrimmehmet.com",
                             IsDeleted = false,
                             PasswordHash = "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.",
+                            Phone = "905438194976",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000002")
                         },
                         new
                         {
                             Id = new Guid("20000000-0000-0000-0000-000000000005"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
-                            DisplayName = "Globex HR",
-                            Email = "hr@globex.com",
+                            DisplayName = "Test1 İK",
+                            Email = "devrimmehmet@gmail.com",
                             IsDeleted = false,
                             PasswordHash = "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.",
+                            Phone = "905393649361",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000002")
                         },
                         new
                         {
                             Id = new Guid("20000000-0000-0000-0000-000000000006"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
-                            DisplayName = "Globex Personnel",
-                            Email = "personel@demo.com",
+                            DisplayName = "Test1 Personel",
+                            Email = "devrimmehmet@msn.com",
                             IsDeleted = false,
                             PasswordHash = "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000002")
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000011"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayName = "Test1 Personel 2",
+                            Email = "personel2@test1.com",
+                            IsDeleted = false,
+                            PasswordHash = "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.",
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000002")
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000007"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayName = "Test2 Admin",
+                            Email = "admin@test2.com",
+                            IsDeleted = false,
+                            PasswordHash = "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.",
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000003")
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000008"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayName = "Test2 İK",
+                            Email = "hr@test2.com",
+                            IsDeleted = false,
+                            PasswordHash = "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.",
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000003")
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000009"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayName = "Test2 Personel",
+                            Email = "personel@test2.com",
+                            IsDeleted = false,
+                            PasswordHash = "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.",
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000003")
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000012"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DisplayName = "Test2 Personel 2",
+                            Email = "personel2@test2.com",
+                            IsDeleted = false,
+                            PasswordHash = "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.",
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000003")
                         });
                 });
 
@@ -470,9 +634,18 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                             Id = new Guid("00000003-0000-0000-0000-000000000003"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsDeleted = false,
-                            Role = "Personnel",
+                            Role = "Personel",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000001"),
                             UserId = new Guid("20000000-0000-0000-0000-000000000003")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000003-0000-0000-0000-000000000010"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            Role = "Personel",
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000001"),
+                            UserId = new Guid("20000000-0000-0000-0000-000000000010")
                         },
                         new
                         {
@@ -497,9 +670,54 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                             Id = new Guid("00000003-0000-0000-0000-000000000006"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsDeleted = false,
-                            Role = "Personnel",
+                            Role = "Personel",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000002"),
                             UserId = new Guid("20000000-0000-0000-0000-000000000006")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000003-0000-0000-0000-000000000011"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            Role = "Personel",
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000002"),
+                            UserId = new Guid("20000000-0000-0000-0000-000000000011")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000003-0000-0000-0000-000000000007"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            Role = "Admin",
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000003"),
+                            UserId = new Guid("20000000-0000-0000-0000-000000000007")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000003-0000-0000-0000-000000000008"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            Role = "HR",
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000003"),
+                            UserId = new Guid("20000000-0000-0000-0000-000000000008")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000003-0000-0000-0000-000000000009"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            Role = "Personel",
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000003"),
+                            UserId = new Guid("20000000-0000-0000-0000-000000000009")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000003-0000-0000-0000-000000000012"),
+                            CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsDeleted = false,
+                            Role = "Personel",
+                            TenantId = new Guid("10000000-0000-0000-0000-000000000003"),
+                            UserId = new Guid("20000000-0000-0000-0000-000000000012")
                         });
                 });
 

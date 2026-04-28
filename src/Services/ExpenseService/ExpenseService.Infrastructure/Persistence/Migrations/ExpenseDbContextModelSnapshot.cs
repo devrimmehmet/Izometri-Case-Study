@@ -631,7 +631,7 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                             Id = new Guid("00000003-0000-0000-0000-000000000003"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsDeleted = false,
-                            Role = "Personnel",
+                            Role = "Personel",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000001"),
                             UserId = new Guid("20000000-0000-0000-0000-000000000003")
                         },
@@ -640,7 +640,7 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                             Id = new Guid("00000003-0000-0000-0000-000000000010"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsDeleted = false,
-                            Role = "Personnel",
+                            Role = "Personel",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000001"),
                             UserId = new Guid("20000000-0000-0000-0000-000000000010")
                         },
@@ -667,7 +667,7 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                             Id = new Guid("00000003-0000-0000-0000-000000000006"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsDeleted = false,
-                            Role = "Personnel",
+                            Role = "Personel",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000002"),
                             UserId = new Guid("20000000-0000-0000-0000-000000000006")
                         },
@@ -676,7 +676,7 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                             Id = new Guid("00000003-0000-0000-0000-000000000011"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsDeleted = false,
-                            Role = "Personnel",
+                            Role = "Personel",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000002"),
                             UserId = new Guid("20000000-0000-0000-0000-000000000011")
                         },
@@ -703,7 +703,7 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                             Id = new Guid("00000003-0000-0000-0000-000000000009"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsDeleted = false,
-                            Role = "Personnel",
+                            Role = "Personel",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000003"),
                             UserId = new Guid("20000000-0000-0000-0000-000000000009")
                         },
@@ -712,7 +712,7 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                             Id = new Guid("00000003-0000-0000-0000-000000000012"),
                             CreatedAt = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsDeleted = false,
-                            Role = "Personnel",
+                            Role = "Personel",
                             TenantId = new Guid("10000000-0000-0000-0000-000000000003"),
                             UserId = new Guid("20000000-0000-0000-0000-000000000012")
                         });

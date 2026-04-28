@@ -67,12 +67,10 @@ Case değerlendirmesi için detaylar README yerine Docs altında ayrı dosyalara
 - [Test ve Doğrulama](Docs/test-dogrulama.md)
 - [Gereksinim Uyumluluk Matrisi](Docs/gereksinim-uyumluluk-matrisi.md)
 - [Çalıştırma ve Ortam Rehberi](Docs/çalıştırma-ve-ortamlar.md)
-- [Case Üzerinden Eklenen Sonraki İyileştirmeler](Docs/case-sonraki-iyileştirmeler.md)
 - [Keycloak Import Rehberi](Docs/keycloak-import-rehberi.md)
 - [Postman Koleksiyonu](Docs/IzometriCaseStudy.postman_collection.json)
 - [ExpenseService OpenAPI JSON](Docs/openapi-expense.json)
 - [NotificationService OpenAPI JSON](Docs/openapi-notification.json)
-- [Proje Planı](Docs/project-plan.md)
 
 ## Test Kullanıcıları
 
@@ -82,16 +80,16 @@ Tüm kullanıcılar için şifre: `Pass123!`
 | --- | --- | --- |
 | `test1` | `pattabanoglu@devrimmehmet.com` | Admin |
 | `test1` | `devrimmehmet@gmail.com` | HR |
-| `test1` | `devrimmehmet@msn.com` | Personnel |
-| `test1` | `personel2@test1.com` | Personnel |
+| `test1` | `devrimmehmet@msn.com` | Personel |
+| `test1` | `personel2@test1.com` | Personel |
 | `test2` | `admin@test2.com` | Admin |
 | `test2` | `hr@test2.com` | HR |
-| `test2` | `personel@test2.com` | Personnel |
-| `test2` | `personel2@test2.com` | Personnel |
+| `test2` | `personel@test2.com` | Personel |
+| `test2` | `personel2@test2.com` | Personel |
 | `izometri` | `admin@izometri.com` | Admin |
 | `izometri` | `hr@izometri.com` | HR |
-| `izometri` | `personel@izometri.com` | Personnel |
-| `izometri` | `personel2@izometri.com` | Personnel |
+| `izometri` | `personel@izometri.com` | Personel |
+| `izometri` | `personel2@izometri.com` | Personel |
 
 Aynı e-posta farklı tenantlarda kullanılabilir. Benzersizlik kuralı `(TenantId, Email)` üzerindedir.
 
@@ -161,13 +159,13 @@ NotificationService:
 
 ## İş Kuralları
 
-- Personnel harcama oluşturabilir ve yalnızca kendi kayıtlarını görebilir.
+- Personel harcama oluşturabilir ve yalnızca kendi kayıtlarını görebilir.
 - HR/Admin kendi tenantındaki tüm harcamaları görebilir.
 - `5000 TRY` ve altı için HR onayı yeterlidir.
 - `5000 TRY` üzeri için önce HR, sonra Admin onayı gerekir. Onay eşiği döviz kuru üzerinden TRY karşılığı ile hesaplanır.
 - Ret işleminde en az 10 karakterlik açıklama zorunludur.
 - Harcama açıklaması en az 20 karakter olmalıdır.
-- Delete işlemleri fiziksel silme yapmaz; soft delete uygulanır. Personnel yalnızca kendi harcamalarını silebilir. HR ve Admin, görünürlük kapsamlarındaki tüm harcamaları silebilir.
+- Delete işlemleri fiziksel silme yapmaz; soft delete uygulanır. Personel yalnızca kendi harcamalarını silebilir. HR ve Admin, görünürlük kapsamlarındaki tüm harcamaları silebilir.
 
 ## Bonus Kapsamı
 
@@ -182,7 +180,7 @@ NotificationService:
 
 ## E-posta Kontrolü
 
-Personel Acme tenantında harcama oluşturduğunda HR/Admin alıcıları `devrimmehmet@gmail.com,devrimmehmet@msn.com` olarak notification kaydına yazılır. Docker local ortamında SMTP hedefi Mailpit’tir; mailler `http://localhost:8025` üzerinden görülebilir. `GET /api/notifications` yanıtında `recipientEmail`, `emailStatus` ve `emailError` alanlarıyla gönderim sonucu da izlenir.
+Personel test1 tenantında harcama oluşturduğunda HR/Admin alıcıları `devrimmehmet@gmail.com,devrimmehmet@msn.com` olarak notification kaydına yazılır. Docker local ortamında SMTP hedefi Mailpit’tir; mailler `http://localhost:8025` üzerinden görülebilir. `GET /api/notifications` yanıtında `recipientEmail`, `emailStatus` ve `emailError` alanlarıyla gönderim sonucu da izlenir.
 
 Gerçek SMTP için `Mail` configuration section’ı kullanılır: `FromName`, `FromEmail`, `Host`, `Port`, `UserName`, `Password`, `UseSsl`, `UsePickupFolder`, `IgnoreCertificateErrors`, `PickupFolderPath`.
 

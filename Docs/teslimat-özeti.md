@@ -11,7 +11,6 @@ Bu doküman case çalışması için teslim edilen dosyaları ve her dosyanın n
 
 ## Docs İçeriği
 
-- [Docs/project-plan.md](project-plan.md): Solution yapısı, entity listesi, endpointler, tablolar, event contractları ve bonus kapsamı.
 - [Docs/çalıştırma-ve-ortamlar.md](çalıştırma-ve-ortamlar.md): Local başlatma, smoke test, admin işlemleri, OAuth2/Keycloak modu ve prod benzeri ortam ayarları.
 - [Docs/mimari-topoloji.md](mimari-topoloji.md): Mikroservis topolojisi, Onion Architecture katmanları, veri sahipliği, async/sync iletişim ve cross-cutting kararlar.
 - [Docs/api-deneme-rehberi.md](api-deneme-rehberi.md): Login, harcama akışı, admin kullanıcı/rol yönetimi, bildirim kontrolü ve tenant izolasyonu örnekleri.

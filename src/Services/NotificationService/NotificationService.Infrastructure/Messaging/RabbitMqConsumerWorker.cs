@@ -16,18 +16,22 @@ public sealed class RabbitMqConsumerWorker : BackgroundService
 {
     private static readonly ActivitySource ActivitySource = new("NotificationService.Messaging");
     private readonly ILogger<RabbitMqConsumerWorker> _logger;
+    private readonly DatabaseMigrationState _migrationState;
     private readonly RabbitMqOptions _options;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public RabbitMqConsumerWorker(IServiceScopeFactory scopeFactory, IOptions<RabbitMqOptions> options, ILogger<RabbitMqConsumerWorker> logger)
+    public RabbitMqConsumerWorker(IServiceScopeFactory scopeFactory, IOptions<RabbitMqOptions> options, ILogger<RabbitMqConsumerWorker> logger, DatabaseMigrationState migrationState)
     {
         _scopeFactory = scopeFactory;
         _options = options.Value;
         _logger = logger;
+        _migrationState = migrationState;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await _migrationState.Ready.WaitAsync(stoppingToken);
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try

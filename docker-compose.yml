@@ -100,7 +100,7 @@ services:
     ports:
       - "5001:8080"
     environment:
-      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_HTTP_PORTS: 8080
       ConnectionStrings__ExpenseDb: Host=expense-db;Port=5432;Database=expense_db;Username=postgres;Password=postgres
       RabbitMq__HostName: rabbitmq
       RabbitMq__Port: 5672
@@ -137,7 +137,7 @@ services:
     ports:
       - "5002:8080"
     environment:
-      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_HTTP_PORTS: 8080
       ConnectionStrings__NotificationDb: Host=notification-db;Port=5432;Database=notification_db;Username=postgres;Password=postgres
       RabbitMq__HostName: rabbitmq
       RabbitMq__Port: 5672

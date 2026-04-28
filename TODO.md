@@ -10,14 +10,14 @@
 - [x] NotificationService domain entityleri eklendi.
 - [x] EF Core DbContext, Code First migration, global query filter, audit alanları ve soft delete davranışı eklendi.
 - [x] Generic Repository ve UnitOfWork eklendi.
-- [x] İki tenant ve Admin/HR/Personnel seed kullanıcıları eklendi.
+- [x] İki tenant ve Admin/HR/Personel seed kullanıcıları eklendi.
 - [x] E-posta benzersizliği tenant bazlı `(TenantId, Email)` olarak tanımlandı.
 - [x] JWT login endpointi ve `UserId`, `TenantId`, role claimleri eklendi.
 - [x] Current user, tenant context ve correlation context eklendi.
 - [x] FluentValidation request validatorları eklendi.
 - [x] ExpenseService endpointleri eklendi: login, admin user list/create, role update, create, list, detail, submit, approve, reject, delete.
 - [x] NotificationService endpointi eklendi: `GET /api/notifications`.
-- [x] Personnel ile HR/Admin görünürlük kuralları eklendi.
+- [x] Personel ile HR/Admin görünürlük kuralları eklendi.
 - [x] `5000 TRY` ve altı ile `5000 TRY` üzeri approval flow eklendi.
 - [x] Ret açıklaması validasyonu eklendi.
 - [x] Expense create/approve/reject transactionları içinde outbox mesajı oluşturma eklendi.
@@ -79,7 +79,7 @@
 
 - [x] **Tüm controller action'larına `[ProducesResponseType]` ve `[Produces("application/json")]` attribute'ları eklendi.** Her endpoint başarı ve hata durum kodlarını Swagger'da doğru şekilde raporluyor.
 - [x] **`AuthController.Login` `ProblemDetails` formatına getirildi.** Geçersiz kimlik bilgisi 401 + `ProblemDetails` döndürüyor; login hatası artık tüm API ile tutarlı format kullanıyor.
-- [x] **`DELETE /api/expenses/{id}` davranışı README İş Kuralları bölümüne belgelendi.** Personnel yalnızca kendi harcamalarını, HR/Admin görünürlük kapsamlarındaki tüm harcamaları silebilir.
+- [x] **`DELETE /api/expenses/{id}` davranışı README İş Kuralları bölümüne belgelendi.** Personel yalnızca kendi harcamalarını, HR/Admin görünürlük kapsamlarındaki tüm harcamaları silebilir.
 - [x] **README'ye GitHub Actions CI badge eklendi.**
 - [x] **`Docs/gereksinim-uyumluluk-matrisi.md` güncellendi.** Auth ve mimari düzeltmeler, test sayısı (34) yansıtıldı.
 - [x] **`Docs/api-deneme-rehberi.md` seed veri ile senkronize edildi.** `acme`/`globex` ve var olmayan kullanıcılar kaldırıldı; `test1`/`test2` gerçek tenant kodları ve kullanıcıları eklendi. Notification endpoint auth gereksinimi de belgelendi.
@@ -110,3 +110,14 @@
   - `Docs/openapi-expense.json`
   - `Docs/openapi-notification.json`
 - [x] Canlı local akış: login, admin kullanıcı/rol yönetimi, harcama oluşturma, submit, HR approve, outbox publish, RabbitMQ consume, notification kaydı ve e-posta teslim durumu kontrolü.
+
+## Artı Puan İçin Ek TODO Önerileri
+
+- [ ] **Keycloak admin API ile kullanıcı oluşturma senkronizasyonu.** `POST /api/admin/users` bugün uygulama DB'sine kullanıcı açıyor; en senior tamamlayıcı adım, aynı transaction/saga akışında Keycloak kullanıcısını da Admin API ile oluşturmak veya bunu açıkça "demo seed only" olarak sınırlamak.
+- [ ] **Contract/integration testleri Keycloak tokenlarıyla genişletme.** Mevcut testlerde local login fallback yoğun kullanılıyor; Docker benzeri akış için Keycloak access token, `aud=expense-service`, `TenantId` ve `role=Personel` claim doğrulaması içeren test eklenebilir.
+- [ ] **OpenAPI artifactlerini build pipeline'da otomatik üretme.** `Docs/openapi-expense.json` ve `Docs/openapi-notification.json` manuel artifact yerine CI adımında üretilip drift kontrolü yapılabilir.
+- [ ] **NotificationService için tenant-aware query filter.** Controller token tenant kontrolü yapıyor; defense-in-depth için Notification DB tarafında da current tenant context + global query filter eklenebilir.
+- [ ] **Outbox cleanup/retention job.** Başarıyla publish edilmiş eski `OutboxMessages` ve eski `ProcessedMessages` kayıtları için retention policy eklemek operasyonel olgunluk sağlar.
+- [ ] **Rate limiting ve security headers.** Public API gateway/nginx katmanında rate limit, HSTS/CSP ve request size limitleri eklenebilir.
+- [ ] **Readiness/liveness ayrımı.** `/health` yanında DB, RabbitMQ ve Keycloak bağımlılıklarını ayrı readiness check olarak raporlamak Kubernetes/production anlatısını güçlendirir.
+- [ ] **E2E UI smoke testi.** Playwright ile login, harcama oluşturma, submit, HR approve ve notification görüntüleme akışı otomatik doğrulanabilir.

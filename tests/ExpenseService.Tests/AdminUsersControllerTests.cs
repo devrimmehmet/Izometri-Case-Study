@@ -28,7 +28,7 @@ public sealed class AdminUsersControllerTests
     [Fact]
     public async Task CreateUser_returns_created_at_action()
     {
-        var request = new CreateUserRequest("new@acme.com", "New User", "Pass123!", new[] { "Personnel" });
+        var request = new CreateUserRequest("new@acme.com", "New User", "Pass123!", new[] { "Personel" });
         var response = UserResponse(request.Roles);
         var service = new Mock<IUserAdminService>();
         service.Setup(x => x.CreateUserAsync(request, It.IsAny<CancellationToken>())).ReturnsAsync(response);
@@ -44,7 +44,7 @@ public sealed class AdminUsersControllerTests
     public async Task UpdateRoles_returns_ok()
     {
         var userId = Guid.NewGuid();
-        var request = new UpdateUserRolesRequest(new[] { "HR", "Personnel" });
+        var request = new UpdateUserRolesRequest(new[] { "HR", "Personel" });
         var response = UserResponse(request.Roles);
         var service = new Mock<IUserAdminService>();
         service.Setup(x => x.UpdateRolesAsync(userId, request, It.IsAny<CancellationToken>())).ReturnsAsync(response);
@@ -59,7 +59,7 @@ public sealed class AdminUsersControllerTests
     [Fact]
     public async Task CreateUser_propagates_duplicate_email_exception()
     {
-        var request = new CreateUserRequest("new@test1.com", "New User", "Pass123!", new[] { "Personnel" });
+        var request = new CreateUserRequest("new@test1.com", "New User", "Pass123!", new[] { "Personel" });
         var service = new Mock<IUserAdminService>();
         service.Setup(x => x.CreateUserAsync(request, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Email already exists in this tenant."));

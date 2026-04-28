@@ -7,7 +7,7 @@
       </div>
       <q-space />
       <q-btn
-        v-if="auth.isPersonnel"
+        v-if="auth.isPersonel"
         color="primary"
         icon="add"
         label="Yeni Harcama"

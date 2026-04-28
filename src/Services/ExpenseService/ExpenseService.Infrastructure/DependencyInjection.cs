@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddDbContext<ExpenseDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("ExpenseDb")));
 
+        services.AddSingleton<DatabaseMigrationState>();
         services.AddHostedService<DatabaseMigrationHostedService>();
         services.AddHostedService<OutboxPublisherWorker>();
         services.AddHostedService<ExpenseService.Infrastructure.Services.ExchangeRateInitializerHostedService>();

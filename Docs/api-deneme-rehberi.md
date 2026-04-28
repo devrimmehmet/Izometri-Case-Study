@@ -1,38 +1,50 @@
 # API Deneme Rehberi
 
-Bu rehber local Docker ortamı açıkken API akışlarını manuel denemek için hazırlanmıştır.
+Bu rehber, local Docker ortamı açıkken API akışlarını manuel denemek için hazırlanmıştır.
 
 ## 1. Servis Adresleri
 
+- Frontend: `http://localhost:3000`
 - Expense API: `http://localhost:5001`
 - Notification API: `http://localhost:5002`
+- Keycloak: `http://localhost:18080`
 - Expense Swagger: `http://localhost:5001/swagger`
 - Notification Swagger: `http://localhost:5002/swagger`
+- Mailpit: `http://localhost:8025`
 
-## 2. Login
+## 2. Keycloak Token Alma
+
+Docker akışında kullanıcı tokenını API üretmez. Access token Keycloak üzerinden alınır.
 
 ```http
-POST http://localhost:5001/api/auth/login
-Content-Type: application/json
+POST http://localhost:18080/realms/izometri/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
 ```
 
-Personnel girişi (`test1` tenant):
+Body:
 
-```json
-{
-  "email": "devrimmehmet@msn.com",
-  "password": "Pass123!",
-  "tenantCode": "test1"
-}
+```text
+client_id=expense-service
+client_secret=expense-service-client-secret
+grant_type=password
+username=devrimmehmet@msn.com
+password=Pass123!
 ```
 
-Dönen `accessToken` sonraki isteklerde kullanılır.
+Beklenen token claimleri:
 
-## 3. Harcama Oluşturma
+- `aud`: `expense-service`
+- `TenantId`: kullanıcının tenant kimliği
+- `UserId`: uygulama DB seed kullanıcısı ile aynı kimlik
+- `role`: `Admin`, `HR` veya `Personel`
+
+> `POST /api/auth/login` endpointi Docker akışında kapalıdır ve `404 Local login disabled` döner. Kodda sadece geliştirme/test fallback'i olarak durur.
+
+## 3. Personel Harcama Oluşturma
 
 ```http
 POST http://localhost:5001/api/expenses
-Authorization: Bearer {personnelToken}
+Authorization: Bearer {personelToken}
 X-Correlation-Id: manual-test-001
 Content-Type: application/json
 ```
@@ -49,32 +61,31 @@ Content-Type: application/json
 Beklenen durum:
 
 - Kayıt `Draft` olarak oluşur.
-- `ExpenseCreatedEvent` outbox tablosuna yazılır.
-- Outbox worker RabbitMQ'ya publish eder.
-- NotificationService HR için mock notification kaydı oluşturur.
+- Tenant bilgisi token içindeki `TenantId` claiminden alınır.
+- Personel yalnızca kendi harcamalarını görür.
 
 ## 4. Submit
 
 ```http
 PUT http://localhost:5001/api/expenses/{expenseId}/submit
-Authorization: Bearer {personnelToken}
+Authorization: Bearer {personelToken}
 X-Correlation-Id: manual-test-001
 ```
 
 Beklenen durum:
 
 - Expense status `Pending` olur.
+- `expense.created` integration event'i outbox tablosuna yazılır.
+- Outbox worker RabbitMQ'ya publish eder.
+- NotificationService HR/Admin alıcıları için notification kaydı oluşturur.
 
 ## 5. HR Onayı
 
-HR login (`test1` tenant):
+HR kullanıcısı için Keycloak token alın:
 
-```json
-{
-  "email": "devrimmehmet@gmail.com",
-  "password": "Pass123!",
-  "tenantCode": "test1"
-}
+```text
+username=devrimmehmet@gmail.com
+password=Pass123!
 ```
 
 Onay:
@@ -88,8 +99,8 @@ X-Correlation-Id: manual-test-001
 `3500 TRY` için beklenen durum:
 
 - Expense status `Approved` olur.
-- `ExpenseApprovedEvent` outbox tablosuna yazılır.
-- NotificationService Personnel için notification kaydı oluşturur.
+- `expense.approved` event'i outbox tablosuna yazılır.
+- NotificationService personele notification kaydı oluşturur.
 
 ## 6. Admin Onayı Gereken Akış
 
@@ -106,9 +117,9 @@ X-Correlation-Id: manual-test-001
 
 Beklenen akış:
 
-1. Personnel create eder.
-2. Personnel submit eder.
-3. HR approve eder; kayıt hâlâ `Pending` kalır (`hrApproved: true`, `requiresAdminApproval: true`).
+1. Personel harcamayı oluşturur.
+2. Personel harcamayı submit eder.
+3. HR approve eder; kayıt `Pending` kalır, `hrApproved=true`, `requiresAdminApproval=true` olur.
 4. Admin approve eder; kayıt `Approved` olur.
 
 ## 7. Reject
@@ -128,19 +139,17 @@ Content-Type: application/json
 Beklenen durum:
 
 - Expense status `Rejected` olur.
-- `ExpenseRejectedEvent` publish edilir.
-- NotificationService Personnel için notification kaydı oluşturur.
+- Red sebebi kaydedilir.
+- `expense.rejected` event'i publish edilir.
+- NotificationService personele notification kaydı oluşturur.
 
 ## 8. Admin Kullanıcı Yönetimi
 
-Admin login (`test1` tenant):
+Admin kullanıcısı için Keycloak token alın:
 
-```json
-{
-  "email": "pattabanoglu@devrimmehmet.com",
-  "password": "Pass123!",
-  "tenantCode": "test1"
-}
+```text
+username=pattabanoglu@devrimmehmet.com
+password=Pass123!
 ```
 
 Kullanıcı listeleme:
@@ -163,7 +172,7 @@ Content-Type: application/json
   "email": "new.user@test1.com",
   "displayName": "New User",
   "password": "Pass123!",
-  "roles": ["Personnel"]
+  "roles": ["Personel"]
 }
 ```
 
@@ -177,31 +186,31 @@ Content-Type: application/json
 
 ```json
 {
-  "roles": ["Personnel", "HR"]
+  "roles": ["Personel", "HR"]
 }
 ```
 
+Not: Bu endpointler uygulama DB'sindeki tenant kullanıcılarını yönetir. Keycloak kullanıcı seed'i demo başlangıç verisi olarak import edilir.
+
 ## 9. Tenant İzolasyonu Denemesi
 
-1. `test1` tenant ile harcama oluşturun.
-2. `test2` tenant kullanıcısı (`personel@test2.com`) ile login olun.
+1. `test1` tenantındaki Personel kullanıcısı ile harcama oluşturun.
+2. `test2` tenant kullanıcısı (`personel@test2.com`) ile token alın.
 3. `GET /api/expenses/{test1ExpenseId}` çağırın.
 
 Beklenen sonuç:
 
 - `404 Not Found`
-- Veri başka tenant tarafından görüntülenmez.
+- Diğer tenant verisi görüntülenmez.
 
 ## 10. Notification Kontrolü
-
-`GET /api/notifications` artık JWT Bearer gerektirir:
 
 ```http
 GET http://localhost:5002/api/notifications
 Authorization: Bearer {anyValidToken}
 ```
 
-Tenant filtresi:
+Tenant filtresi opsiyoneldir. Gönderilirse token tenantı ile aynı olmalıdır:
 
 ```http
 GET http://localhost:5002/api/notifications?tenantId={tenantId}
@@ -214,7 +223,7 @@ Yanıtta e-posta kontrolü için şu alanlara bakılır:
 - `emailStatus`: `Sent`, `Failed` veya `Skipped`.
 - `emailError`: SMTP hatası varsa kısa hata açıklaması.
 
-`test1` tenantında Personnel harcama oluşturduğunda `expense.created` bildirimi için beklenen alıcılar:
+`test1` tenantında Personel harcama oluşturduğunda `expense.created` bildirimi için beklenen alıcılar:
 
 ```text
 pattabanoglu@devrimmehmet.com,devrimmehmet@gmail.com

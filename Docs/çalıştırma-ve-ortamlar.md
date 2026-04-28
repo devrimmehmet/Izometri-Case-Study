@@ -57,7 +57,7 @@ API containerları açılışta migrationları otomatik uygular. Bu nedenle loca
 
 ## 3. Local Smoke Test
 
-Önce Personnel kullanıcısı ile login olun:
+Önce Personel kullanıcısı ile login olun:
 
 ```http
 POST http://localhost:5001/api/auth/login
@@ -76,7 +76,7 @@ Token ile harcama oluşturun:
 
 ```http
 POST http://localhost:5001/api/expenses
-Authorization: Bearer {personnelToken}
+Authorization: Bearer {PersonelToken}
 X-Correlation-Id: local-smoke-001
 Content-Type: application/json
 ```
@@ -94,7 +94,7 @@ Harcama kaydını submit edin:
 
 ```http
 PUT http://localhost:5001/api/expenses/{expenseId}/submit
-Authorization: Bearer {personnelToken}
+Authorization: Bearer {PersonelToken}
 X-Correlation-Id: local-smoke-001
 ```
 
@@ -161,7 +161,7 @@ Content-Type: application/json
   "email": "new.user@test1.com",
   "displayName": "New User",
   "password": "Pass123!",
-  "roles": ["Personnel"]
+  "roles": ["Personel"]
 }
 ```
 
@@ -175,7 +175,7 @@ Content-Type: application/json
 
 ```json
 {
-  "roles": ["Personnel", "HR"]
+  "roles": ["Personel", "HR"]
 }
 ```
 

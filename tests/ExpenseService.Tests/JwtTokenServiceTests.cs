@@ -27,10 +27,10 @@ public sealed class JwtTokenServiceTests
                 Id = userId,
                 TenantId = tenantId,
                 Email = "personel@test1.com",
-                DisplayName = "Personnel",
+                DisplayName = "Personel",
                 PasswordHash = "hash"
             },
-            new[] { Roles.Personnel, Roles.HR });
+            new[] { Roles.Personel, Roles.HR });
 
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
@@ -38,7 +38,7 @@ public sealed class JwtTokenServiceTests
         Assert.Contains("expense-service", jwt.Audiences);
         Assert.Contains(jwt.Claims, x => x.Type == "UserId" && x.Value == userId.ToString());
         Assert.Contains(jwt.Claims, x => x.Type == "TenantId" && x.Value == tenantId.ToString());
-        Assert.Contains(jwt.Claims, x => x.Type == "role" && x.Value == Roles.Personnel);
+        Assert.Contains(jwt.Claims, x => x.Type == "role" && x.Value == Roles.Personel);
         Assert.Contains(jwt.Claims, x => x.Type == "role" && x.Value == Roles.HR);
     }
 

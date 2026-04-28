@@ -137,18 +137,18 @@ public sealed class ExpenseDbContext : DbContext
             // İzometri
             UserSeed(tenantIzometri, "20000000-0000-0000-0000-000000000001", "admin@izometri.com",    "İzometri Admin",    null, Roles.Admin),
             UserSeed(tenantIzometri, "20000000-0000-0000-0000-000000000002", "hr@izometri.com",       "İzometri İK",       null, Roles.HR),
-            UserSeed(tenantIzometri, "20000000-0000-0000-0000-000000000003", "personel@izometri.com", "İzometri Personel", null, Roles.Personnel),
-            UserSeed(tenantIzometri, "20000000-0000-0000-0000-000000000010", "personel2@izometri.com", "İzometri Personel 2", null, Roles.Personnel),
+            UserSeed(tenantIzometri, "20000000-0000-0000-0000-000000000003", "personel@izometri.com", "İzometri Personel", null, Roles.Personel),
+            UserSeed(tenantIzometri, "20000000-0000-0000-0000-000000000010", "personel2@izometri.com", "İzometri Personel 2", null, Roles.Personel),
             // TEST1
             UserSeed(tenantTest1, "20000000-0000-0000-0000-000000000004", "pattabanoglu@devrimmehmet.com", "Test1 Admin",    "905438194976", Roles.Admin),
             UserSeed(tenantTest1, "20000000-0000-0000-0000-000000000005", "devrimmehmet@gmail.com",        "Test1 İK",       "905393649361", Roles.HR),
-            UserSeed(tenantTest1, "20000000-0000-0000-0000-000000000006", "devrimmehmet@msn.com",          "Test1 Personel", null,           Roles.Personnel),
-            UserSeed(tenantTest1, "20000000-0000-0000-0000-000000000011", "personel2@test1.com",           "Test1 Personel 2", null,         Roles.Personnel),
+            UserSeed(tenantTest1, "20000000-0000-0000-0000-000000000006", "devrimmehmet@msn.com",          "Test1 Personel", null,           Roles.Personel),
+            UserSeed(tenantTest1, "20000000-0000-0000-0000-000000000011", "personel2@test1.com",           "Test1 Personel 2", null,         Roles.Personel),
             // TEST2
             UserSeed(tenantTest2, "20000000-0000-0000-0000-000000000007", "admin@test2.com",    "Test2 Admin",    null, Roles.Admin),
             UserSeed(tenantTest2, "20000000-0000-0000-0000-000000000008", "hr@test2.com",       "Test2 İK",       null, Roles.HR),
-            UserSeed(tenantTest2, "20000000-0000-0000-0000-000000000009", "personel@test2.com", "Test2 Personel", null, Roles.Personnel),
-            UserSeed(tenantTest2, "20000000-0000-0000-0000-000000000012", "personel2@test2.com", "Test2 Personel 2", null, Roles.Personnel),
+            UserSeed(tenantTest2, "20000000-0000-0000-0000-000000000009", "personel@test2.com", "Test2 Personel", null, Roles.Personel),
+            UserSeed(tenantTest2, "20000000-0000-0000-0000-000000000012", "personel2@test2.com", "Test2 Personel 2", null, Roles.Personel),
         };
 
         modelBuilder.Entity<Tenant>().HasData(
@@ -159,17 +159,17 @@ public sealed class ExpenseDbContext : DbContext
         modelBuilder.Entity<User>().HasData(users.Select(x => x.User));
         modelBuilder.Entity<UserRole>().HasData(users.SelectMany(x => x.Roles));
 
-        var test1PersonnelId = Guid.Parse("20000000-0000-0000-0000-000000000006");
-        var test1Personnel2Id = Guid.Parse("20000000-0000-0000-0000-000000000011");
+        var test1PersonelId = Guid.Parse("20000000-0000-0000-0000-000000000006");
+        var test1Personel2Id = Guid.Parse("20000000-0000-0000-0000-000000000011");
         var test1HrId = Guid.Parse("20000000-0000-0000-0000-000000000005");
         
         var expenses = new[]
         {
-            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000001"), TenantId = tenantTest1, RequestedByUserId = test1PersonnelId, Category = ExpenseCategory.Travel, Amount = 1250.00m, Currency = ExpenseCurrency.TRY, ExchangeRate = 1m, Description = "Ankara Müşteri Ziyareti", Status = ExpenseStatus.Draft, CreatedAt = now.AddDays(-5), CreatedBy = test1PersonnelId },
-            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000002"), TenantId = tenantTest1, RequestedByUserId = test1PersonnelId, Category = ExpenseCategory.Equipment, Amount = 450.00m, Currency = ExpenseCurrency.TRY, ExchangeRate = 1m, Description = "Kırtasiye Malzemeleri", Status = ExpenseStatus.Pending, CreatedAt = now.AddDays(-4), CreatedBy = test1PersonnelId },
-            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000003"), TenantId = tenantTest1, RequestedByUserId = test1Personnel2Id, Category = ExpenseCategory.Education, Amount = 5000.00m, Currency = ExpenseCurrency.TRY, ExchangeRate = 1m, Description = "Udemy Eğitim Kursu", Status = ExpenseStatus.Approved, HrApproved = true, AdminApproved = true, CreatedAt = now.AddDays(-3), CreatedBy = test1Personnel2Id },
+            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000001"), TenantId = tenantTest1, RequestedByUserId = test1PersonelId, Category = ExpenseCategory.Travel, Amount = 1250.00m, Currency = ExpenseCurrency.TRY, ExchangeRate = 1m, Description = "Ankara Müşteri Ziyareti", Status = ExpenseStatus.Draft, CreatedAt = now.AddDays(-5), CreatedBy = test1PersonelId },
+            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000002"), TenantId = tenantTest1, RequestedByUserId = test1PersonelId, Category = ExpenseCategory.Equipment, Amount = 450.00m, Currency = ExpenseCurrency.TRY, ExchangeRate = 1m, Description = "Kırtasiye Malzemeleri", Status = ExpenseStatus.Pending, CreatedAt = now.AddDays(-4), CreatedBy = test1PersonelId },
+            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000003"), TenantId = tenantTest1, RequestedByUserId = test1Personel2Id, Category = ExpenseCategory.Education, Amount = 5000.00m, Currency = ExpenseCurrency.TRY, ExchangeRate = 1m, Description = "Udemy Eğitim Kursu", Status = ExpenseStatus.Approved, HrApproved = true, AdminApproved = true, CreatedAt = now.AddDays(-3), CreatedBy = test1Personel2Id },
             new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000004"), TenantId = tenantTest1, RequestedByUserId = test1HrId, Category = ExpenseCategory.Other, Amount = 200.00m, Currency = ExpenseCurrency.USD, ExchangeRate = 32.5m, Description = "Yazılım Lisansı", Status = ExpenseStatus.Rejected, RejectionReason = "Bütçe onayı yok", CreatedAt = now.AddDays(-2), CreatedBy = test1HrId },
-            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000005"), TenantId = tenantTest1, RequestedByUserId = test1PersonnelId, Category = ExpenseCategory.Travel, Amount = 5500.00m, Currency = ExpenseCurrency.TRY, ExchangeRate = 1m, Description = "İstanbul Uçak Bileti", Status = ExpenseStatus.Pending, HrApproved = true, CreatedAt = now.AddDays(-1), CreatedBy = test1PersonnelId }
+            new Expense { Id = Guid.Parse("30000000-0000-0000-0000-000000000005"), TenantId = tenantTest1, RequestedByUserId = test1PersonelId, Category = ExpenseCategory.Travel, Amount = 5500.00m, Currency = ExpenseCurrency.TRY, ExchangeRate = 1m, Description = "İstanbul Uçak Bileti", Status = ExpenseStatus.Pending, HrApproved = true, CreatedAt = now.AddDays(-1), CreatedBy = test1PersonelId }
         };
         
         modelBuilder.Entity<Expense>().HasData(expenses);

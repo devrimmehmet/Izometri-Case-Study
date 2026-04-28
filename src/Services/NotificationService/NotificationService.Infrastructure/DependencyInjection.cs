@@ -28,6 +28,7 @@ public static class DependencyInjection
         services.AddDbContext<NotificationDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("NotificationDb")));
 
+        services.AddSingleton<DatabaseMigrationState>();
         services.AddScoped<INotificationStore, NotificationStore>();
         services.AddScoped<NotificationDeadLetterStore>();
         services.AddScoped<INotificationQueryService, NotificationQueryService>();

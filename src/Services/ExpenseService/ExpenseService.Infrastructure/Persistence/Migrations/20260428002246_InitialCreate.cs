@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -23,6 +23,7 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                     Payload = table.Column<string>(type: "text", nullable: false),
                     CorrelationId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeadLetteredAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Error = table.Column<string>(type: "text", nullable: true),
                     RetryCount = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -44,6 +45,8 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    FixedUsdRate = table.Column<decimal>(type: "numeric", nullable: true),
+                    FixedEurRate = table.Column<decimal>(type: "numeric", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -65,6 +68,7 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                     Email = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     DisplayName = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     PasswordHash = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Phone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -102,6 +106,7 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                     SubmittedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ApprovedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     RejectedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ExchangeRate = table.Column<decimal>(type: "numeric", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -182,24 +187,43 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
 
             migrationBuilder.InsertData(
                 table: "Tenants",
-                columns: new[] { "Id", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "IsDeleted", "Name", "UpdatedAt", "UpdatedBy" },
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "FixedEurRate", "FixedUsdRate", "IsDeleted", "Name", "UpdatedAt", "UpdatedBy" },
                 values: new object[,]
                 {
-                    { new Guid("10000000-0000-0000-0000-000000000001"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "acme", null, null },
-                    { new Guid("10000000-0000-0000-0000-000000000002"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "globex", null, null }
+                    { new Guid("10000000-0000-0000-0000-000000000001"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, null, null, false, "izometri", null, null },
+                    { new Guid("10000000-0000-0000-0000-000000000002"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, null, null, false, "test1", null, null },
+                    { new Guid("10000000-0000-0000-0000-000000000003"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, null, null, false, "test2", null, null }
                 });
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "DisplayName", "Email", "IsDeleted", "PasswordHash", "TenantId", "UpdatedAt", "UpdatedBy" },
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "DisplayName", "Email", "IsDeleted", "PasswordHash", "Phone", "TenantId", "UpdatedAt", "UpdatedBy" },
                 values: new object[,]
                 {
-                    { new Guid("20000000-0000-0000-0000-000000000001"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Acme Admin", "admin@acme.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", new Guid("10000000-0000-0000-0000-000000000001"), null, null },
-                    { new Guid("20000000-0000-0000-0000-000000000002"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Acme HR", "hr@acme.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", new Guid("10000000-0000-0000-0000-000000000001"), null, null },
-                    { new Guid("20000000-0000-0000-0000-000000000003"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Acme Personnel", "personel@demo.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", new Guid("10000000-0000-0000-0000-000000000001"), null, null },
-                    { new Guid("20000000-0000-0000-0000-000000000004"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Globex Admin", "admin@globex.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", new Guid("10000000-0000-0000-0000-000000000002"), null, null },
-                    { new Guid("20000000-0000-0000-0000-000000000005"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Globex HR", "hr@globex.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", new Guid("10000000-0000-0000-0000-000000000002"), null, null },
-                    { new Guid("20000000-0000-0000-0000-000000000006"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Globex Personnel", "personel@demo.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", new Guid("10000000-0000-0000-0000-000000000002"), null, null }
+                    { new Guid("20000000-0000-0000-0000-000000000001"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "İzometri Admin", "admin@izometri.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", null, new Guid("10000000-0000-0000-0000-000000000001"), null, null },
+                    { new Guid("20000000-0000-0000-0000-000000000002"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "İzometri İK", "hr@izometri.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", null, new Guid("10000000-0000-0000-0000-000000000001"), null, null },
+                    { new Guid("20000000-0000-0000-0000-000000000003"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "İzometri Personel", "personel@izometri.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", null, new Guid("10000000-0000-0000-0000-000000000001"), null, null },
+                    { new Guid("20000000-0000-0000-0000-000000000004"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Test1 Admin", "pattabanoglu@devrimmehmet.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", "905438194976", new Guid("10000000-0000-0000-0000-000000000002"), null, null },
+                    { new Guid("20000000-0000-0000-0000-000000000005"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Test1 İK", "devrimmehmet@gmail.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", "905393649361", new Guid("10000000-0000-0000-0000-000000000002"), null, null },
+                    { new Guid("20000000-0000-0000-0000-000000000006"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Test1 Personel", "devrimmehmet@msn.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", null, new Guid("10000000-0000-0000-0000-000000000002"), null, null },
+                    { new Guid("20000000-0000-0000-0000-000000000007"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Test2 Admin", "admin@test2.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", null, new Guid("10000000-0000-0000-0000-000000000003"), null, null },
+                    { new Guid("20000000-0000-0000-0000-000000000008"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Test2 İK", "hr@test2.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", null, new Guid("10000000-0000-0000-0000-000000000003"), null, null },
+                    { new Guid("20000000-0000-0000-0000-000000000009"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Test2 Personel", "personel@test2.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", null, new Guid("10000000-0000-0000-0000-000000000003"), null, null },
+                    { new Guid("20000000-0000-0000-0000-000000000010"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "İzometri Personel 2", "personel2@izometri.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", null, new Guid("10000000-0000-0000-0000-000000000001"), null, null },
+                    { new Guid("20000000-0000-0000-0000-000000000011"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Test1 Personel 2", "personel2@test1.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", null, new Guid("10000000-0000-0000-0000-000000000002"), null, null },
+                    { new Guid("20000000-0000-0000-0000-000000000012"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "Test2 Personel 2", "personel2@test2.com", false, "$2a$11$fgeAx3QXBTMBAfhNflNjHu2px60jVk65AEwZe7xAA8G5p3.koIWI.", null, new Guid("10000000-0000-0000-0000-000000000003"), null, null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Expenses",
+                columns: new[] { "Id", "AdminApproved", "Amount", "ApprovedAt", "Category", "CreatedAt", "CreatedBy", "Currency", "DeletedAt", "DeletedBy", "Description", "ExchangeRate", "HrApproved", "IsDeleted", "RejectedAt", "RejectionReason", "RequestedByUserId", "Status", "SubmittedAt", "TenantId", "UpdatedAt", "UpdatedBy" },
+                values: new object[,]
+                {
+                    { new Guid("30000000-0000-0000-0000-000000000001"), false, 1250.00m, null, 1, new DateTime(2026, 4, 21, 0, 0, 0, 0, DateTimeKind.Utc), new Guid("20000000-0000-0000-0000-000000000006"), 1, null, null, "Ankara Müşteri Ziyareti", 1m, false, false, null, null, new Guid("20000000-0000-0000-0000-000000000006"), 1, null, new Guid("10000000-0000-0000-0000-000000000002"), null, null },
+                    { new Guid("30000000-0000-0000-0000-000000000002"), false, 450.00m, null, 2, new DateTime(2026, 4, 22, 0, 0, 0, 0, DateTimeKind.Utc), new Guid("20000000-0000-0000-0000-000000000006"), 1, null, null, "Kırtasiye Malzemeleri", 1m, false, false, null, null, new Guid("20000000-0000-0000-0000-000000000006"), 2, null, new Guid("10000000-0000-0000-0000-000000000002"), null, null },
+                    { new Guid("30000000-0000-0000-0000-000000000003"), true, 5000.00m, null, 3, new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc), new Guid("20000000-0000-0000-0000-000000000011"), 1, null, null, "Udemy Eğitim Kursu", 1m, true, false, null, null, new Guid("20000000-0000-0000-0000-000000000011"), 3, null, new Guid("10000000-0000-0000-0000-000000000002"), null, null },
+                    { new Guid("30000000-0000-0000-0000-000000000004"), false, 200.00m, null, 4, new DateTime(2026, 4, 24, 0, 0, 0, 0, DateTimeKind.Utc), new Guid("20000000-0000-0000-0000-000000000005"), 2, null, null, "Yazılım Lisansı", 32.5m, false, false, null, "Bütçe onayı yok", new Guid("20000000-0000-0000-0000-000000000005"), 4, null, new Guid("10000000-0000-0000-0000-000000000002"), null, null },
+                    { new Guid("30000000-0000-0000-0000-000000000005"), false, 5500.00m, null, 1, new DateTime(2026, 4, 25, 0, 0, 0, 0, DateTimeKind.Utc), new Guid("20000000-0000-0000-0000-000000000006"), 1, null, null, "İstanbul Uçak Bileti", 1m, true, false, null, null, new Guid("20000000-0000-0000-0000-000000000006"), 2, null, new Guid("10000000-0000-0000-0000-000000000002"), null, null }
                 });
 
             migrationBuilder.InsertData(
@@ -209,10 +233,16 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                 {
                     { new Guid("00000003-0000-0000-0000-000000000001"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "Admin", new Guid("10000000-0000-0000-0000-000000000001"), null, null, new Guid("20000000-0000-0000-0000-000000000001") },
                     { new Guid("00000003-0000-0000-0000-000000000002"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "HR", new Guid("10000000-0000-0000-0000-000000000001"), null, null, new Guid("20000000-0000-0000-0000-000000000002") },
-                    { new Guid("00000003-0000-0000-0000-000000000003"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "Personnel", new Guid("10000000-0000-0000-0000-000000000001"), null, null, new Guid("20000000-0000-0000-0000-000000000003") },
+                    { new Guid("00000003-0000-0000-0000-000000000003"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "Personel", new Guid("10000000-0000-0000-0000-000000000001"), null, null, new Guid("20000000-0000-0000-0000-000000000003") },
                     { new Guid("00000003-0000-0000-0000-000000000004"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "Admin", new Guid("10000000-0000-0000-0000-000000000002"), null, null, new Guid("20000000-0000-0000-0000-000000000004") },
                     { new Guid("00000003-0000-0000-0000-000000000005"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "HR", new Guid("10000000-0000-0000-0000-000000000002"), null, null, new Guid("20000000-0000-0000-0000-000000000005") },
-                    { new Guid("00000003-0000-0000-0000-000000000006"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "Personnel", new Guid("10000000-0000-0000-0000-000000000002"), null, null, new Guid("20000000-0000-0000-0000-000000000006") }
+                    { new Guid("00000003-0000-0000-0000-000000000006"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "Personel", new Guid("10000000-0000-0000-0000-000000000002"), null, null, new Guid("20000000-0000-0000-0000-000000000006") },
+                    { new Guid("00000003-0000-0000-0000-000000000007"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "Admin", new Guid("10000000-0000-0000-0000-000000000003"), null, null, new Guid("20000000-0000-0000-0000-000000000007") },
+                    { new Guid("00000003-0000-0000-0000-000000000008"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "HR", new Guid("10000000-0000-0000-0000-000000000003"), null, null, new Guid("20000000-0000-0000-0000-000000000008") },
+                    { new Guid("00000003-0000-0000-0000-000000000009"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "Personel", new Guid("10000000-0000-0000-0000-000000000003"), null, null, new Guid("20000000-0000-0000-0000-000000000009") },
+                    { new Guid("00000003-0000-0000-0000-000000000010"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "Personel", new Guid("10000000-0000-0000-0000-000000000001"), null, null, new Guid("20000000-0000-0000-0000-000000000010") },
+                    { new Guid("00000003-0000-0000-0000-000000000011"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "Personel", new Guid("10000000-0000-0000-0000-000000000002"), null, null, new Guid("20000000-0000-0000-0000-000000000011") },
+                    { new Guid("00000003-0000-0000-0000-000000000012"), new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, false, "Personel", new Guid("10000000-0000-0000-0000-000000000003"), null, null, new Guid("20000000-0000-0000-0000-000000000012") }
                 });
 
             migrationBuilder.CreateIndex(
@@ -224,6 +254,11 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                 name: "IX_Expenses_RequestedByUserId",
                 table: "Expenses",
                 column: "RequestedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OutboxMessages_DeadLetteredAt",
+                table: "OutboxMessages",
+                column: "DeadLetteredAt");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OutboxMessages_ProcessedAt",

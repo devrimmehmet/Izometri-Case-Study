@@ -125,7 +125,7 @@ public sealed class UserAdminService : IUserAdminService
             .Select(x => x.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Select(x => x.Equals(Roles.Admin, StringComparison.OrdinalIgnoreCase) ? Roles.Admin :
-                x.Equals(Roles.HR, StringComparison.OrdinalIgnoreCase) ? Roles.HR : Roles.Personnel)
+                x.Equals(Roles.HR, StringComparison.OrdinalIgnoreCase) ? Roles.HR : Roles.Personel)
             .ToArray();
     }
 

@@ -1,7 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
-  // Gate — lock screen
+  // Gate - lock screen
   {
     path: '/',
     component: () => import('pages/GatePage.vue'),

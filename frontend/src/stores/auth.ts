@@ -48,6 +48,27 @@ function claimString(claims: Record<string, unknown>, ...keys: string[]): string
   return '';
 }
 
+function claimArray(claims: Record<string, unknown>, ...keys: string[]): string[] {
+  for (const key of keys) {
+    const value = claims[key];
+    if (Array.isArray(value)) {
+      return value.filter((item): item is string => typeof item === 'string');
+    }
+    if (typeof value === 'string') {
+      return [value];
+    }
+  }
+
+  return [];
+}
+
+function isKeycloakAccessToken(claims: Record<string, unknown>): boolean {
+  const issuer = claimString(claims, 'iss');
+  const audiences = claimArray(claims, 'aud');
+
+  return issuer.includes('/realms/izometri') && audiences.includes('expense-service');
+}
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: null as string | null,
@@ -64,13 +85,13 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: (state) => !!state.token,
     isAdmin: (state) => state.roles.includes('Admin'),
     isHR: (state) => state.roles.includes('HR'),
-    isPersonnel: (state) => state.roles.includes('Personnel'),
+    isPersonel: (state) => state.roles.includes('Personel'),
     canApprove: (state) =>
       state.roles.includes('HR') || state.roles.includes('Admin'),
     displayRole: (state) => {
       if (state.roles.includes('Admin')) return 'Admin';
       if (state.roles.includes('HR')) return 'HR';
-      return 'Personnel';
+      return 'Personel';
     },
   },
 
@@ -88,26 +109,23 @@ export const useAuthStore = defineStore('auth', {
     async login(payload: LoginPayload): Promise<void> {
       let accessToken: string;
       let fallbackData: LoginApiResponse | null = null;
+      let authProvider = 'keycloak';
 
       try {
+        accessToken = await loginWithKeycloak(payload.email, payload.password);
+      } catch (keycloakError) {
+        if (isAxiosError(keycloakError) && keycloakError.response) {
+          throw keycloakError;
+        }
+
+        authProvider = 'local';
         const { data } = await api.post<LoginApiResponse>('/auth/login', payload);
         accessToken = data.accessToken;
         fallbackData = data;
-      } catch (error) {
-        if (!isAxiosError(error) || error.response?.status !== 404) {
-          throw error;
-        }
-
-        accessToken = await loginWithKeycloak(payload.email, payload.password);
       }
 
       const claims = parseJwtClaims(accessToken);
-      const role = claims.role ?? claims.roles;
-      const roles = Array.isArray(role)
-        ? (role as UserRole[])
-        : role
-          ? ([role] as UserRole[])
-          : (fallbackData?.roles as UserRole[] | undefined) ?? [];
+      const roles = claimArray(claims, 'role', 'roles', 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role') as UserRole[];
 
       this.token = accessToken;
       this.userId = claimString(claims, 'UserId', 'sub') || fallbackData?.userId || '';
@@ -117,10 +135,11 @@ export const useAuthStore = defineStore('auth', {
       );
       this.tenantId = claimString(claims, 'TenantId', 'tenantId') || fallbackData?.tenantId || '';
       this.tenantCode = payload.tenantCode;
-      this.roles = roles;
+      this.roles = roles.length > 0 ? roles : (fallbackData?.roles as UserRole[] | undefined) ?? [];
 
       localStorage.setItem('jwt', accessToken);
       localStorage.setItem('tenantCode', payload.tenantCode);
+      localStorage.setItem('authProvider', authProvider);
       api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
     },
 
@@ -134,6 +153,7 @@ export const useAuthStore = defineStore('auth', {
       this.roles = [];
       localStorage.removeItem('jwt');
       localStorage.removeItem('tenantCode');
+      localStorage.removeItem('authProvider');
       delete api.defaults.headers.common['Authorization'];
     },
 
@@ -149,19 +169,24 @@ export const useAuthStore = defineStore('auth', {
           return false;
         }
 
+        const authProvider = localStorage.getItem('authProvider');
+        if (authProvider !== 'local' && !isKeycloakAccessToken(claims)) {
+          this.logout();
+          return false;
+        }
+
         this.token = token;
         this.userId = claimString(claims, 'UserId', 'sub');
         this.email = claimString(claims, 'email');
         this.displayName = claimString(claims, 'name', 'preferred_username', 'email');
         this.tenantId = claimString(claims, 'TenantId', 'tenantId');
         this.tenantCode = localStorage.getItem('tenantCode') ?? '';
-
-        const role = claims.role ?? claims.roles ?? claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-        this.roles = Array.isArray(role)
-          ? (role as UserRole[])
-          : role
-            ? ([role] as UserRole[])
-            : [];
+        this.roles = claimArray(
+          claims,
+          'role',
+          'roles',
+          'http://schemas.microsoft.com/ws/2008/06/identity/claims/role',
+        ) as UserRole[];
 
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         return true;

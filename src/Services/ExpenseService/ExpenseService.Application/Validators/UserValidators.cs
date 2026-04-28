@@ -17,7 +17,7 @@ public sealed class CreateUserRequestValidator : AbstractValidator<CreateUserReq
 
     private static bool BeValidRole(string role)
     {
-        return role is Roles.Admin or Roles.HR or Roles.Personnel;
+        return role is Roles.Admin or Roles.HR or Roles.Personel;
     }
 }
 
@@ -31,6 +31,6 @@ public sealed class UpdateUserRolesRequestValidator : AbstractValidator<UpdateUs
 
     private static bool BeValidRole(string role)
     {
-        return role is Roles.Admin or Roles.HR or Roles.Personnel;
+        return role is Roles.Admin or Roles.HR or Roles.Personel;
     }
 }

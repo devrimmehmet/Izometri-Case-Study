@@ -162,8 +162,8 @@ const demoGroups: DemoGroup[] = [
     users: [
       { email: 'admin@izometri.com', role: 'Admin', label: 'Yönetici' },
       { email: 'hr@izometri.com', role: 'HR', label: 'İK' },
-      { email: 'personel@izometri.com', role: 'Personnel', label: 'Personel 1' },
-      { email: 'personel2@izometri.com', role: 'Personnel', label: 'Personel 2' },
+      { email: 'personel@izometri.com', role: 'Personel', label: 'Personel 1' },
+      { email: 'personel2@izometri.com', role: 'Personel', label: 'Personel 2' },
     ],
   },
   {
@@ -173,8 +173,8 @@ const demoGroups: DemoGroup[] = [
     users: [
       { email: 'pattabanoglu@devrimmehmet.com', role: 'Admin', label: 'Yönetici' },
       { email: 'devrimmehmet@gmail.com', role: 'HR', label: 'İK' },
-      { email: 'devrimmehmet@msn.com', role: 'Personnel', label: 'Personel 1' },
-      { email: 'personel2@test1.com', role: 'Personnel', label: 'Personel 2' },
+      { email: 'devrimmehmet@msn.com', role: 'Personel', label: 'Personel 1' },
+      { email: 'personel2@test1.com', role: 'Personel', label: 'Personel 2' },
     ],
   },
   {
@@ -184,8 +184,8 @@ const demoGroups: DemoGroup[] = [
     users: [
       { email: 'admin@test2.com', role: 'Admin', label: 'Yönetici' },
       { email: 'hr@test2.com', role: 'HR', label: 'İK' },
-      { email: 'personel@test2.com', role: 'Personnel', label: 'Personel 1' },
-      { email: 'personel2@test2.com', role: 'Personnel', label: 'Personel 2' },
+      { email: 'personel@test2.com', role: 'Personel', label: 'Personel 1' },
+      { email: 'personel2@test2.com', role: 'Personel', label: 'Personel 2' },
     ],
   },
 ];

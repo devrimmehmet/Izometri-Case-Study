@@ -16,6 +16,7 @@ public sealed class OutboxPublisherWorker : BackgroundService
 {
     private static readonly ActivitySource ActivitySource = new("ExpenseService.Messaging");
     private readonly ILogger<OutboxPublisherWorker> _logger;
+    private readonly DatabaseMigrationState _migrationState;
     private readonly RabbitMqOptions _options;
     private readonly IServiceScopeFactory _scopeFactory;
 
@@ -23,15 +24,18 @@ public sealed class OutboxPublisherWorker : BackgroundService
     private IConnection? _connection;
     private IChannel? _channel;
 
-    public OutboxPublisherWorker(IServiceScopeFactory scopeFactory, IOptions<RabbitMqOptions> options, ILogger<OutboxPublisherWorker> logger)
+    public OutboxPublisherWorker(IServiceScopeFactory scopeFactory, IOptions<RabbitMqOptions> options, ILogger<OutboxPublisherWorker> logger, DatabaseMigrationState migrationState)
     {
         _scopeFactory = scopeFactory;
         _options = options.Value;
         _logger = logger;
+        _migrationState = migrationState;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await _migrationState.Ready.WaitAsync(stoppingToken);
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try

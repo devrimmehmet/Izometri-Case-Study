@@ -37,7 +37,7 @@ public sealed class ExpenseAppService : IExpenseAppService
 
     public async Task<ExpenseResponse> CreateAsync(CreateExpenseRequest request, CancellationToken cancellationToken)
     {
-        EnsureRole(Roles.Personnel);
+        EnsureRole(Roles.Personel);
         var tenantId = RequiredTenantId();
         var userId = RequiredUserId();
 

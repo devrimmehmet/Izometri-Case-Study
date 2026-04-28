@@ -54,13 +54,13 @@ Kapsanan alanlar:
 `TestcontainersIntegrationTests` izole PostgreSQL ve RabbitMQ containerlari uzerinde su akisi dogrular:
 
 1. Expense API ve Notification API erisilebilir mi?
-2. Admin, Personnel, HR ve farkli tenant kullanicisi login olabilir mi?
+2. Admin, Personel, HR ve farkli tenant kullanicisi login olabilir mi?
 3. Admin yeni kullanici olusturabilir mi?
 4. Admin kullanici rollerini guncelleyebilir mi?
 5. Yeni kullanici guncellenen coklu rollerle login olabilir mi?
-6. Personnel harcama olusturabilir mi?
+6. Personel harcama olusturabilir mi?
 7. Farkli tenant kullanicisi bu harcamayi goremiyor mu?
-8. Personnel submit yapabilir mi?
+8. Personel submit yapabilir mi?
 9. HR approve yapabilir mi?
 10. Outbox mesaji RabbitMQ'ya publish ediliyor mu?
 11. NotificationService event consume edip notification kaydi olusturuyor mu?
@@ -86,7 +86,7 @@ Bu komut su kontrolleri yapar:
 - Expense DB portu
 - Notification DB portu
 - RabbitMQ AMQP portu
-- `Devrimmehmet@gmail.com` adresine `testtir` icerikli Mailpit e-posta gonderimi
+- `ops@example.com` adresine probe subject/body ile Mailpit e-posta gonderimi
 
 Gercek Netgsm SMS testi ayri acilir:
 
@@ -110,10 +110,12 @@ Son dogrulamada:
 - Normal test sayisi: 41.
 - `npm run build` gecti; frontend build warning uretmedi.
 - `docker compose config --quiet` gecti.
-- `docker compose up -d --build` ile Keycloak dahil tum sistem otomatik kalkti.
+- `docker compose down -v` sonrasi `docker compose up -d --build` ile Keycloak dahil tum sistem otomatik kalkti.
 - Expense API, Notification API, PostgreSQL, RabbitMQ, Keycloak, Mailpit, Jaeger ve frontend containerlari calisir durumda.
 - Docker akışında `/api/auth/login` local fallback'i kapalıdır.
-- Hosttan alinan Keycloak OAuth2 access tokeni ile Expense API sorgusu basarili dondu.
+- Expense DB ve Notification DB `__EFMigrationsHistory` tablolarinda yalnizca tek `InitialCreate` migration kaydi vardir.
+- Seed roller `Admin=3`, `HR=3`, `Personel=6` olarak dogrulandi.
+- Hosttan alinan Keycloak OAuth2 access tokeni ile Expense API, Admin Users, Exchange Rates ve Notification endpointleri basarili dondu.
 - Canli health + Mailpit e-posta testleri daha once gecti.
 - Netgsm bakiye API'si daha once basarili dondu ve hesapta 1000 OTP SMS bakiyesi goruldu.
 - Netgsm canli SMS testi provider'a ulasti fakat `40 invalidHeader` ile reddedildi. Bu, hesapta aktif gonderici basligi tanimli olmadigi anlamina gelir; kod veya endpoint hatasi degildir.

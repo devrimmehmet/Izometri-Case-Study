@@ -26,32 +26,32 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
     {
         var admin = await LoginAsync("pattabanoglu@devrimmehmet.com", "test1");
         var hr = await LoginAsync("devrimmehmet@gmail.com", "test1");
-        var personnel = await LoginAsync("devrimmehmet@msn.com", "test1");
-        var otherTenantPersonnel = await LoginAsync("personel@test2.com", "test2");
+        var Personel = await LoginAsync("devrimmehmet@msn.com", "test1");
+        var otherTenantPersonel = await LoginAsync("personel@test2.com", "test2");
 
         var uniqueEmail = $"tc-{Guid.NewGuid():N}@test1.com";
         var createdUser = await SendAsync<UserResponse>(
             HttpMethod.Post,
             "/api/admin/users",
             admin.AccessToken,
-            new CreateUserRequest(uniqueEmail, "TC User", "Pass123!", new[] { "Personnel" }));
-        Assert.Contains("Personnel", createdUser.Roles);
+            new CreateUserRequest(uniqueEmail, "TC User", "Pass123!", new[] { "Personel" }));
+        Assert.Contains("Personel", createdUser.Roles);
 
         var roleUpdate = await SendAsync<UserResponse>(
             HttpMethod.Put,
             $"/api/admin/users/{createdUser.Id}/roles",
             admin.AccessToken,
-            new UpdateUserRolesRequest(new[] { "Personnel", "HR" }));
+            new UpdateUserRolesRequest(new[] { "Personel", "HR" }));
         Assert.Contains("HR", roleUpdate.Roles);
 
         var createdLogin = await LoginAsync(uniqueEmail, "test1");
         Assert.Contains("HR", createdLogin.Roles);
-        Assert.Contains("Personnel", createdLogin.Roles);
+        Assert.Contains("Personel", createdLogin.Roles);
 
         var expense = await SendAsync<ExpenseResponse>(
             HttpMethod.Post,
             "/api/expenses",
-            personnel.AccessToken,
+            Personel.AccessToken,
             new CreateExpenseRequest(
                 ExpenseCategory.Travel,
                 ExpenseCurrency.TRY,
@@ -59,10 +59,10 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
                 null,
                 "Integration test travel expense description"));
 
-        var hiddenFromOtherTenant = await SendRawAsync(HttpMethod.Get, $"/api/expenses/{expense.Id}", otherTenantPersonnel.AccessToken);
+        var hiddenFromOtherTenant = await SendRawAsync(HttpMethod.Get, $"/api/expenses/{expense.Id}", otherTenantPersonel.AccessToken);
         Assert.Equal(HttpStatusCode.NotFound, hiddenFromOtherTenant.StatusCode);
 
-        var submit = await SendRawAsync(HttpMethod.Put, $"/api/expenses/{expense.Id}/submit", personnel.AccessToken);
+        var submit = await SendRawAsync(HttpMethod.Put, $"/api/expenses/{expense.Id}/submit", Personel.AccessToken);
         Assert.Equal(HttpStatusCode.NoContent, submit.StatusCode);
 
         var approved = await SendAsync<ExpenseResponse>(HttpMethod.Put, $"/api/expenses/{expense.Id}/approve", hr.AccessToken);
@@ -135,19 +135,19 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
         var admin = await LoginAsync("pattabanoglu@devrimmehmet.com", "test1");
         await SendRawAsync(HttpMethod.Put, "/api/settings/exchange-rates", admin.AccessToken, new { FixedUsdRate = 35.0m, FixedEurRate = 40.0m });
 
-        // 2. Personnel creates 145 USD expense (145 * 35 = 5075 TRY > 5000)
-        var personnel = await LoginAsync("devrimmehmet@msn.com", "test1");
+        // 2. Personel creates 145 USD expense (145 * 35 = 5075 TRY > 5000)
+        var Personel = await LoginAsync("devrimmehmet@msn.com", "test1");
         var highExpense = await SendAsync<ExpenseResponse>(
             HttpMethod.Post,
             "/api/expenses",
-            personnel.AccessToken,
+            Personel.AccessToken,
             new CreateExpenseRequest(ExpenseCategory.Other, ExpenseCurrency.USD, 145, null, "High USD expense description for integration testing"));
 
         // Verify it requires admin approval
-        var fetchedHigh = await SendAsync<ExpenseResponse>(HttpMethod.Get, $"/api/expenses/{highExpense.Id}", personnel.AccessToken);
+        var fetchedHigh = await SendAsync<ExpenseResponse>(HttpMethod.Get, $"/api/expenses/{highExpense.Id}", Personel.AccessToken);
         // We can't directly see RequiresAdminApproval in DTO yet, but we can check if it's still pending after HR approves
         
-        await SendRawAsync(HttpMethod.Put, $"/api/expenses/{highExpense.Id}/submit", personnel.AccessToken);
+        await SendRawAsync(HttpMethod.Put, $"/api/expenses/{highExpense.Id}/submit", Personel.AccessToken);
         var hr = await LoginAsync("devrimmehmet@gmail.com", "test1");
         var afterHrApproval = await SendAsync<ExpenseResponse>(HttpMethod.Put, $"/api/expenses/{highExpense.Id}/approve", hr.AccessToken);
         
@@ -159,14 +159,14 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
         // 3. Admin sets USD rate to 33
         await SendRawAsync(HttpMethod.Put, "/api/settings/exchange-rates", admin.AccessToken, new { FixedUsdRate = 33.0m, FixedEurRate = 38.0m });
 
-        // 4. Personnel creates 150 USD expense (150 * 33 = 4950 TRY < 5000)
+        // 4. Personel creates 150 USD expense (150 * 33 = 4950 TRY < 5000)
         var lowExpense = await SendAsync<ExpenseResponse>(
             HttpMethod.Post,
             "/api/expenses",
-            personnel.AccessToken,
+            Personel.AccessToken,
             new CreateExpenseRequest(ExpenseCategory.Other, ExpenseCurrency.USD, 150, null, "Low USD expense description for integration testing"));
 
-        await SendRawAsync(HttpMethod.Put, $"/api/expenses/{lowExpense.Id}/submit", personnel.AccessToken);
+        await SendRawAsync(HttpMethod.Put, $"/api/expenses/{lowExpense.Id}/submit", Personel.AccessToken);
         var afterHrApprovalLow = await SendAsync<ExpenseResponse>(HttpMethod.Put, $"/api/expenses/{lowExpense.Id}/approve", hr.AccessToken);
 
         // Since it's < 5000, it should be APPROVED directly after HR

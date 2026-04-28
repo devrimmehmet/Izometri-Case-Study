@@ -36,7 +36,7 @@
       </q-form>
 
       <div class="text-center q-mt-lg">
-        <div class="text-grey-7 text-caption">© {{ new Date().getFullYear() }} — DMP</div>
+        <div class="text-grey-7 text-caption">© {{ new Date().getFullYear() }} - DMP</div>
       </div>
     </div>
   </div>

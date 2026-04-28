@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { notifyApi } from 'src/services/http';
-import { useAuthStore } from './auth';
 import type { NotificationDto } from 'src/types';
 
 export const useNotificationStore = defineStore('notification', {
@@ -13,10 +12,7 @@ export const useNotificationStore = defineStore('notification', {
     async fetchNotifications() {
       this.loading = true;
       try {
-        const auth = useAuthStore();
-        const { data } = await notifyApi.get<NotificationDto[]>(
-          `/notifications?tenantId=${auth.tenantId}`,
-        );
+        const { data } = await notifyApi.get<NotificationDto[]>('/notifications');
         this.notifications = data;
       } finally {
         this.loading = false;
