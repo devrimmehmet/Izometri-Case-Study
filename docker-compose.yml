@@ -120,7 +120,7 @@ services:
       Keycloak__ClientSecret: expense-service-client-secret
       OpenTelemetry__OtlpEndpoint: http://jaeger:4317
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -176,7 +176,7 @@ services:
       Netgsm__AppName: ""
       Netgsm__UseOtpEndpoint: false
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10

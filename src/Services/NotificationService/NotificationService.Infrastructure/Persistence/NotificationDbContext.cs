@@ -1,13 +1,18 @@
 using NotificationService.Domain.Common;
 using NotificationService.Domain.Entities;
+using NotificationService.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace NotificationService.Infrastructure.Persistence;
 
 public sealed class NotificationDbContext : DbContext
 {
-    public NotificationDbContext(DbContextOptions<NotificationDbContext> options) : base(options)
+    private readonly ICurrentUserContext? _currentUser;
+
+    public NotificationDbContext(DbContextOptions<NotificationDbContext> options, ICurrentUserContext? currentUser = null)
+        : base(options)
     {
+        _currentUser = currentUser;
     }
 
     public DbSet<Notification> Notifications => Set<Notification>();
@@ -29,7 +34,7 @@ public sealed class NotificationDbContext : DbContext
             b.Property(x => x.Message).HasMaxLength(1000).IsRequired();
             b.Property(x => x.Payload).IsRequired();
             b.HasIndex(x => new { x.TenantId, x.EventId });
-            b.HasQueryFilter(x => !x.IsDeleted);
+            b.HasQueryFilter(x => !x.IsDeleted && (_currentUser == null || _currentUser.TenantId == null || x.TenantId == _currentUser.TenantId));
         });
 
         modelBuilder.Entity<ProcessedMessage>(b =>
@@ -51,7 +56,7 @@ public sealed class NotificationDbContext : DbContext
             b.Property(x => x.Error).HasMaxLength(2000).IsRequired();
             b.HasIndex(x => x.EventId).IsUnique();
             b.HasIndex(x => x.DeadLetteredAt);
-            b.HasQueryFilter(x => !x.IsDeleted);
+            b.HasQueryFilter(x => !x.IsDeleted && (_currentUser == null || _currentUser.TenantId == null || x.TenantId == _currentUser.TenantId));
         });
     }
 
@@ -64,16 +69,26 @@ public sealed class NotificationDbContext : DbContext
     private void ApplyAudit()
     {
         var now = DateTime.UtcNow;
+        var userId = _currentUser?.UserId;
+        var tenantId = _currentUser?.TenantId;
+
         foreach (var entry in ChangeTracker.Entries<BaseEntity>())
         {
             if (entry.State == EntityState.Added)
             {
                 entry.Entity.CreatedAt = now;
+                entry.Entity.CreatedBy ??= userId;
+                
+                if (entry.Entity is TenantEntity tenantEntity && tenantEntity.TenantId == Guid.Empty && tenantId.HasValue)
+                {
+                    tenantEntity.TenantId = tenantId.Value;
+                }
             }
 
             if (entry.State == EntityState.Modified)
             {
                 entry.Entity.UpdatedAt = now;
+                entry.Entity.UpdatedBy = userId;
             }
 
             if (entry.State == EntityState.Deleted)
@@ -81,6 +96,7 @@ public sealed class NotificationDbContext : DbContext
                 entry.State = EntityState.Modified;
                 entry.Entity.IsDeleted = true;
                 entry.Entity.DeletedAt = now;
+                entry.Entity.DeletedBy = userId;
             }
         }
     }

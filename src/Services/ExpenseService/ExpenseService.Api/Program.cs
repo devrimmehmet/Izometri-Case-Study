@@ -13,6 +13,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Events;
+using ExpenseService.Infrastructure.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,7 +51,22 @@ builder.Services.AddSwaggerGen(options =>
         { new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer", doc), new List<string>() }
     });
 });
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), ["live"])
+    .AddNpgSql(builder.Configuration.GetConnectionString("ExpenseDb")!, name: "expense-db", tags: ["ready"])
+    .AddRabbitMQ(async sp =>
+    {
+        var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<RabbitMqOptions>>().Value;
+        var factory = new RabbitMQ.Client.ConnectionFactory
+        {
+            HostName = options.HostName,
+            Port = options.Port,
+            UserName = options.UserName,
+            Password = options.Password
+        };
+        return await factory.CreateConnectionAsync();
+    }, name: "rabbitmq", tags: ["ready"])
+    .AddUrlGroup(new Uri($"{builder.Configuration["Keycloak:BaseUrl"]}/health/live"), name: "keycloak", tags: ["ready"]);
 
 builder.Services.AddExpenseApplication();
 builder.Services.AddExpenseInfrastructure(builder.Configuration);
@@ -206,7 +222,18 @@ if (!string.IsNullOrWhiteSpace(app.Configuration["HTTPS_PORT"]) ||
 }
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = r => r.Tags.Contains("live")
+});
+
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = r => r.Tags.Contains("ready")
+});
+
+app.MapHealthChecks("/health"); // Legacy support
+
 app.MapControllers();
 
 app.Run();

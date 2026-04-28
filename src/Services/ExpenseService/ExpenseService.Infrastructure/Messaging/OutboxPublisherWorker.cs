@@ -23,6 +23,7 @@ public sealed class OutboxPublisherWorker : BackgroundService
     // Persistent connection — yeni TCP bağlantısı her poll'da açılmaz.
     private IConnection? _connection;
     private IChannel? _channel;
+    private DateTime _lastCleanup = DateTime.MinValue;
 
     public OutboxPublisherWorker(IServiceScopeFactory scopeFactory, IOptions<RabbitMqOptions> options, ILogger<OutboxPublisherWorker> logger, DatabaseMigrationState migrationState)
     {
@@ -42,6 +43,7 @@ public sealed class OutboxPublisherWorker : BackgroundService
             {
                 await EnsureChannelAsync(stoppingToken);
                 await PublishPendingAsync(stoppingToken);
+                await CleanupOldMessagesAsync(stoppingToken);
             }
             catch (OperationCanceledException)
             {
@@ -143,6 +145,36 @@ public sealed class OutboxPublisherWorker : BackgroundService
 
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+    }
+
+    private async Task CleanupOldMessagesAsync(CancellationToken cancellationToken)
+    {
+        if (DateTime.UtcNow - _lastCleanup < TimeSpan.FromHours(1))
+            return;
+
+        try
+        {
+            await using var scope = _scopeFactory.CreateAsyncScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ExpenseDbContext>();
+
+            var threshold = DateTime.UtcNow.AddDays(-7);
+            
+            // Başarıyla işlenmiş ve 7 günden eski mesajları sil
+            var deletedCount = await dbContext.OutboxMessages
+                .Where(x => x.ProcessedAt != null && x.ProcessedAt < threshold)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            if (deletedCount > 0)
+            {
+                _logger.LogInformation("Outbox cleanup: {DeletedCount} old processed messages removed.", deletedCount);
+            }
+
+            _lastCleanup = DateTime.UtcNow;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Outbox cleanup failed.");
+        }
     }
 
     private async Task DisposeChannelAsync()

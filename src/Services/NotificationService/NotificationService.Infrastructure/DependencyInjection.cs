@@ -2,6 +2,7 @@ using NotificationService.Application.Abstractions;
 using NotificationService.Application.Services;
 using NotificationService.Infrastructure.Auth;
 using NotificationService.Infrastructure.Clients;
+using NotificationService.Infrastructure.Contexts;
 using NotificationService.Infrastructure.Messaging;
 using NotificationService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -41,8 +42,12 @@ public static class DependencyInjection
         }).AddStandardResilienceHandler();
         services.AddTransient<IEmailSender, SmtpEmailSender>();
         services.AddHttpClient<ISmsService, NetgsmSmsSender>();
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
+
         services.AddHostedService<DatabaseMigrationHostedService>();
         services.AddHostedService<RabbitMqConsumerWorker>();
+        services.AddHostedService<RetentionWorker>();
         return services;
     }
 }
