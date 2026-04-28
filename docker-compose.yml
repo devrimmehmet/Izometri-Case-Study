@@ -113,6 +113,11 @@ services:
       Jwt__PublicAuthority: http://localhost:18080/realms/izometri
       Jwt__RequireHttpsMetadata: false
       Authentication__EnableLocalLogin: false
+      Keycloak__Enabled: true
+      Keycloak__BaseUrl: http://keycloak:8080
+      Keycloak__Realm: izometri
+      Keycloak__ClientId: expense-service
+      Keycloak__ClientSecret: expense-service-client-secret
       OpenTelemetry__OtlpEndpoint: http://jaeger:4317
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]

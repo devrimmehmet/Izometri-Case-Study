@@ -16,6 +16,7 @@ public static class DependencyInjection
     {
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
         services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
+        services.Configure<KeycloakAdminOptions>(configuration.GetSection("Keycloak"));
 
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
@@ -25,6 +26,16 @@ public static class DependencyInjection
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         
         services.AddHttpClient<IExchangeRateService, ExpenseService.Infrastructure.Services.TcmbExchangeRateService>();
+
+        // Keycloak Admin API client — BaseUrl opsiyonel; Enabled=false ise no-op.
+        var keycloakBaseUrl = configuration["Keycloak:BaseUrl"];
+        services.AddHttpClient<IKeycloakAdminClient, KeycloakAdminClient>(client =>
+        {
+            if (!string.IsNullOrWhiteSpace(keycloakBaseUrl))
+            {
+                client.BaseAddress = new Uri(keycloakBaseUrl.TrimEnd('/'));
+            }
+        });
 
         services.AddDbContext<ExpenseDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("ExpenseDb")));

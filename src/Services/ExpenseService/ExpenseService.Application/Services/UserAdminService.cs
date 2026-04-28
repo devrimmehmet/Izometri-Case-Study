@@ -3,6 +3,7 @@ using ExpenseService.Application.DTOs;
 using ExpenseService.Domain.Entities;
 using ExpenseService.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ExpenseService.Application.Services;
 
@@ -18,12 +19,21 @@ public sealed class UserAdminService : IUserAdminService
     private readonly ICurrentUserContext _currentUser;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IKeycloakAdminClient _keycloakAdminClient;
+    private readonly ILogger<UserAdminService> _logger;
 
-    public UserAdminService(IUnitOfWork unitOfWork, ICurrentUserContext currentUser, IPasswordHasher passwordHasher)
+    public UserAdminService(
+        IUnitOfWork unitOfWork,
+        ICurrentUserContext currentUser,
+        IPasswordHasher passwordHasher,
+        IKeycloakAdminClient keycloakAdminClient,
+        ILogger<UserAdminService> logger)
     {
         _unitOfWork = unitOfWork;
         _currentUser = currentUser;
         _passwordHasher = passwordHasher;
+        _keycloakAdminClient = keycloakAdminClient;
+        _logger = logger;
     }
 
     public async Task<IReadOnlyCollection<UserResponse>> GetUsersAsync(CancellationToken cancellationToken)
@@ -51,6 +61,8 @@ public sealed class UserAdminService : IUserAdminService
             throw new InvalidOperationException("Email already exists in this tenant.");
         }
 
+        var normalizedRoles = NormalizeRoles(request.Roles);
+
         var user = new User
         {
             TenantId = tenantId,
@@ -60,7 +72,7 @@ public sealed class UserAdminService : IUserAdminService
             Phone = request.Phone?.Trim()
         };
 
-        var roles = NormalizeRoles(request.Roles)
+        var roles = normalizedRoles
             .Select(role => new UserRole
             {
                 TenantId = tenantId,
@@ -77,6 +89,27 @@ public sealed class UserAdminService : IUserAdminService
                 await _unitOfWork.Repository<UserRole>().AddAsync(role, ct);
             }
         }, cancellationToken);
+
+        // Keycloak senkronizasyonu — DB commit başarılı olduktan sonra.
+        // Keycloak çağrısı başarısız olursa kullanıcı DB'de kalır; hata loglanır.
+        try
+        {
+            await _keycloakAdminClient.CreateUserAsync(
+                user.Id,
+                tenantId,
+                normalizedEmail,
+                request.DisplayName.Trim(),
+                request.Password, // plain-text — Keycloak kendi hash'ini yapar
+                normalizedRoles,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Keycloak sync failed for user {Email} (DB user {UserId} was created successfully). " +
+                "Manual sync may be required.",
+                normalizedEmail, user.Id);
+        }
 
         user.Roles = roles;
         return Map(user);

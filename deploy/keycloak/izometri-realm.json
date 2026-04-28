@@ -81,7 +81,16 @@
             "access.token.claim": "true"
           }
         }
-      ]
+      ],
+      "defaultClientScopes": ["profile", "email"],
+      "serviceAccountClientRoles": {
+        "realm-management": [
+          "manage-users",
+          "view-users",
+          "manage-realm",
+          "view-realm"
+        ]
+      }
     }
   ],
   "users": [

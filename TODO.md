@@ -113,8 +113,8 @@
 
 ## Artı Puan İçin Ek TODO Önerileri
 
-- [ ] **Keycloak admin API ile kullanıcı oluşturma senkronizasyonu.** `POST /api/admin/users` bugün uygulama DB'sine kullanıcı açıyor; en senior tamamlayıcı adım, aynı transaction/saga akışında Keycloak kullanıcısını da Admin API ile oluşturmak veya bunu açıkça "demo seed only" olarak sınırlamak.
-- [ ] **Contract/integration testleri Keycloak tokenlarıyla genişletme.** Mevcut testlerde local login fallback yoğun kullanılıyor; Docker benzeri akış için Keycloak access token, `aud=expense-service`, `TenantId` ve `role=Personel` claim doğrulaması içeren test eklenebilir.
+- [x] **Keycloak admin API ile kullanıcı oluşturma senkronizasyonu.** `POST /api/admin/users` artık uygulama DB'sine kullanıcı açtıktan sonra Keycloak Admin REST API ile aynı kullanıcıyı Keycloak'ta da oluşturuyor. `IKeycloakAdminClient` abstraction'ı Application katmanında, `KeycloakAdminClient` implementasyonu Infrastructure'da. `Keycloak:Enabled=false` iken no-op; Docker Compose ortamında otomatik aktif. Service-account `client_credentials` token'ı ile `manage-users` rolüyle çalışır.
+- [x] **Contract/integration testleri Keycloak tokenlarıyla genişletme.** `KeycloakTokenIntegrationTests` eklendi: `RUN_KEYCLOAK_TESTS=1` ile çalışır. 6 test: token kabul, claim doğrulaması (`aud=expense-service`, `TenantId`, `UserId`, `role`), RBAC (Personel→403), Keycloak user sync E2E, geçersiz token ret, tenant izolasyonu.
 - [ ] **OpenAPI artifactlerini build pipeline'da otomatik üretme.** `Docs/openapi-expense.json` ve `Docs/openapi-notification.json` manuel artifact yerine CI adımında üretilip drift kontrolü yapılabilir.
 - [ ] **NotificationService için tenant-aware query filter.** Controller token tenant kontrolü yapıyor; defense-in-depth için Notification DB tarafında da current tenant context + global query filter eklenebilir.
 - [ ] **Outbox cleanup/retention job.** Başarıyla publish edilmiş eski `OutboxMessages` ve eski `ProcessedMessages` kayıtları için retention policy eklemek operasyonel olgunluk sağlar.

@@ -43,7 +43,7 @@ public sealed class ExpenseDbContext : DbContext
             b.Property(x => x.Phone).HasMaxLength(20);
             b.HasIndex(x => new { x.TenantId, x.Email }).IsUnique();
             b.HasMany(x => x.Roles).WithOne(x => x.User).HasForeignKey(x => x.UserId);
-            b.HasQueryFilter(x => !x.IsDeleted && (_currentUser == null || !_currentUser.TenantId.HasValue || x.TenantId == _currentUser.TenantId.Value));
+            b.HasQueryFilter(x => !x.IsDeleted && (_currentUser == null || _currentUser.TenantId == null || x.TenantId == _currentUser.TenantId));
         });
 
         modelBuilder.Entity<UserRole>(b =>
@@ -51,7 +51,7 @@ public sealed class ExpenseDbContext : DbContext
             b.HasKey(x => x.Id);
             b.Property(x => x.Role).HasMaxLength(50).IsRequired();
             b.HasIndex(x => new { x.UserId, x.Role }).IsUnique();
-            b.HasQueryFilter(x => !x.IsDeleted && (_currentUser == null || !_currentUser.TenantId.HasValue || x.TenantId == _currentUser.TenantId.Value));
+            b.HasQueryFilter(x => !x.IsDeleted && (_currentUser == null || _currentUser.TenantId == null || x.TenantId == _currentUser.TenantId));
         });
 
         modelBuilder.Entity<Expense>(b =>
@@ -60,14 +60,14 @@ public sealed class ExpenseDbContext : DbContext
             b.Property(x => x.Description).HasMaxLength(1000).IsRequired();
             b.Property(x => x.Amount).HasPrecision(18, 2);
             b.HasMany(x => x.Approvals).WithOne(x => x.Expense).HasForeignKey(x => x.ExpenseId);
-            b.HasQueryFilter(x => !x.IsDeleted && (_currentUser == null || !_currentUser.TenantId.HasValue || x.TenantId == _currentUser.TenantId.Value));
+            b.HasQueryFilter(x => !x.IsDeleted && (_currentUser == null || _currentUser.TenantId == null || x.TenantId == _currentUser.TenantId));
         });
 
         modelBuilder.Entity<ExpenseApproval>(b =>
         {
             b.HasKey(x => x.Id);
             b.Property(x => x.Reason).HasMaxLength(500);
-            b.HasQueryFilter(x => !x.IsDeleted && (_currentUser == null || !_currentUser.TenantId.HasValue || x.TenantId == _currentUser.TenantId.Value));
+            b.HasQueryFilter(x => !x.IsDeleted && (_currentUser == null || _currentUser.TenantId == null || x.TenantId == _currentUser.TenantId));
         });
 
         modelBuilder.Entity<OutboxMessage>(b =>
