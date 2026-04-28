@@ -38,5 +38,5 @@ Bu belge, **Senior .NET Developer** pozisyonu için hazırlanan case study çal�
 *   [Gereksinim Uyumluluk Matrisi](gereksinim-uyumluluk-matrisi.md)
 
 ---
-**Hazırlayan:** Izometri Case Study Adayı
+**Hazırlayan:** Devrim Mehmet Pattabanoğlu
 **Tarih:** 28 Nisan 2026

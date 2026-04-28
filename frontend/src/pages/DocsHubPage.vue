@@ -85,6 +85,10 @@
                 access token doğrular. Authorization, tenant izolasyonu ve rol kontrolleri API tarafında
                 <code>UserId</code>, <code>TenantId</code>, <code>role</code> ve <code>aud</code> claimleriyle yapılır.
               </div>
+              <div class="q-mt-md">
+                <mermaid-diagram :code="userSyncDiagram" />
+                <div class="text-caption text-grey-5 q-mt-sm text-center">Kullanıcı Oluşturma ve Keycloak Senkronizasyon Akışı</div>
+              </div>
               <endpoint-list :items="authEndpoints" color="info" />
             </q-card-section>
           </q-card>
@@ -138,6 +142,7 @@
 <script setup lang="ts">
 import { reactive, onMounted, defineComponent, h, type PropType } from 'vue';
 import axios from 'axios';
+import MermaidDiagram from 'src/components/MermaidDiagram.vue';
 
 interface ServiceLink {
   title: string;
@@ -249,86 +254,147 @@ const services: ServiceLink[] = [
 
 const documents = [
   {
-    title: 'BR-1 & BR-2: Multi-Tenant ve Rol Modeli',
-    desc: 'Tenant izolasyonu JWT claimleriyle başlar, EF Core global filter ile uygulanır',
-    icon: 'corporate_fare',
+    title: '🚀 Genel Bakış (README)',
+    icon: 'rocket_launch',
+    desc: 'Proje vizyonu, teknolojiler ve hızlı başlangıç rehberi.',
     content: `
-      <div class="doc-callout doc-callout-primary">
-        <h4>Tenant izolasyonu</h4>
-        <p>Her kullanıcı tek bir tenant'a aittir. <code>TenantId</code> claim'i Keycloak access token içinde gelir, API tarafındaki current user context tarafından okunur ve EF Core global query filter ile tüm sorgulara uygulanır.</p>
+      <div class="text-subtitle1 text-primary q-mb-sm text-weight-bold">Izometri Harcama Yönetim Sistemi (EMS)</div>
+      <p>Modern kurumsal ihtiyaçlar için tasarlanmış, <strong>Multi-Tenant SaaS</strong> mimarisine sahip, yüksek ölçeklenebilir ve güvenli bir harcama yönetim platformudur.</p>
+      
+      <div class="text-subtitle2 text-weight-bold q-mt-md">Öne Çıkan Teknik Özellikler:</div>
+      <ul class="q-pl-md">
+        <li><strong>🛡️ Multi-Tenancy:</strong> JWT Claim + EF Core Global Query Filter ile tam veri izolasyonu.</li>
+        <li><strong>🔄 Outbox Pattern:</strong> Transactional mesaj gönderimi ile %100 veri tutarlılığı.</li>
+        <li><strong>🔑 Keycloak SSO:</strong> OAuth2/OIDC tabanlı merkezi kimlik ve yetki yönetimi.</li>
+        <li><strong>📈 Observability:</strong> OpenTelemetry (Jaeger) ve Serilog ile uçtan uca izlenebilirlik.</li>
+        <li><strong>🚀 Resilience:</strong> Polly kütüphanesi ile servisler arası hata toleransı.</li>
+      </ul>
+
+      <div class="text-subtitle2 text-weight-bold q-mt-md">Hızlı Başlangıç:</div>
+      <pre class="bg-dark q-pa-sm rounded-borders text-grey-4">docker compose up -d --build</pre>
+      <p class="text-caption q-mt-xs text-grey-5">Tüm ekosistem (API'ler, DB'ler, Keycloak, UI, Jaeger, Mailpit) tek komutla hazır hale gelir.</p>
+    `,
+  },
+  {
+    title: '🏗️ Mimari Topoloji & Stack',
+    icon: 'architecture',
+    desc: 'Mikroservis yapısı, event-driven akışlar ve teknoloji stack detayı.',
+    content: `
+      <p>Sistem, <strong>Clean Architecture</strong> prensiplerine uygun olarak 4 katmanlı (Domain, Application, Infrastructure, Api) yapıda tasarlanmıştır.</p>
+      
+      <div class="text-subtitle2 text-weight-bold q-mt-md">Teknoloji Stack:</div>
+      <q-markup-table dark dense bordered class="q-mt-sm">
+        <thead>
+          <tr>
+            <th class="text-left">Bileşen</th>
+            <th class="text-left">Teknoloji</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Backend</td><td>.NET 10 (C#) - Clean Architecture</td></tr>
+          <tr><td>Frontend</td><td>Vue 3 + Quasar (Vite)</td></tr>
+          <tr><td>Auth</td><td>Keycloak 25.0 (OIDC/OAuth2)</td></tr>
+          <tr><td>Veritabanı</td><td>PostgreSQL 16 (Isolated per service)</td></tr>
+          <tr><td>Mesajlaşma</td><td>RabbitMQ + MassTransit</td></tr>
+          <tr><td>Monitoring</td><td>OpenTelemetry + Jaeger</td></tr>
+        </tbody>
+      </q-markup-table>
+
+      <div class="text-subtitle2 text-weight-bold q-mt-md">Kritik Akışlar:</div>
+      <div class="q-pl-sm border-left-primary q-mt-sm">
+        <strong>1. Outbox Pattern:</strong> Harcama kaydedildiğinde, aynı transaction içinde bir OutboxMessage oluşturulur. Quartz worker bu mesajları RabbitMQ'ya güvenli bir şekilde iletir.
       </div>
-      <p><strong>Roller Keycloak üzerinde statik tanımlıdır:</strong> <code>Admin</code>, <code>HR</code>, <code>Personel</code>.</p>
-      <ul>
-        <li><strong>Admin:</strong> Tenant içindeki kullanıcı, ayar, outbox ve tüm harcama kayıtlarını yönetir.</li>
-        <li><strong>HR:</strong> Tenant içindeki harcamaları görüntüler, HR onay/red adımını yürütür.</li>
-        <li><strong>Personel:</strong> Kendi harcamalarını oluşturur, günceller, submit eder ve takip eder.</li>
+      <div class="q-pl-sm border-left-primary q-mt-sm q-mb-md">
+        <strong>2. Event-Driven Bildirim:</strong> NotificationService, RabbitMQ eventlerini dinler. Bildirim içeriği için ExpenseService'e internal JWT ile HTTP çağrısı yapar.
+      </div>
+    `,
+  },
+  {
+    title: '📦 Teslimat Özeti (Senior .NET Case)',
+    icon: 'inventory_2',
+    desc: 'Tamamlanan gereksinimler, bonus maddeler ve teknik olgunluk raporu.',
+    content: `
+      <div class="text-subtitle2 text-weight-bold text-info">Tamamlanan Temel Gereksinimler (TR-1..10):</div>
+      <ul class="q-pl-md">
+        <li>✅ <strong>Multi-Tenant:</strong> JWT claim bazlı izolasyon ve global query filters.</li>
+        <li>✅ <strong>Harcama Akışı:</strong> 5.000 TRY limitli kademeli onay (HR -> Admin).</li>
+        <li>✅ <strong>Bildirim:</strong> RabbitMQ üzerinden asenkron e-posta simülasyonu.</li>
+        <li>✅ <strong>Onion Architecture:</strong> Tam katmanlı servis tasarımı.</li>
+      </ul>
+
+      <div class="text-subtitle2 text-weight-bold q-mt-md text-info">Tamamlanan Bonus Özellikler (TB-1..6):</div>
+      <ul class="q-pl-md">
+        <li>✅ <strong>Outbox Pattern (TB-1):</strong> %100 mesaj gönderim garantisi.</li>
+        <li>✅ <strong>Keycloak (TB-2):</strong> Admin API ile kullanıcı senkronizasyonu.</li>
+        <li>✅ <strong>Unit Testing (TB-3):</strong> xUnit + Moq ile yüksek test kapsamı.</li>
+        <li>✅ <strong>Observability (TB-6):</strong> Jaeger dağıtık tracing ve correlation ID.</li>
+      </ul>
+
+      <div class="text-subtitle2 text-weight-bold q-mt-md">Ekstra Operasyonel Olgunluklar:</div>
+      <ul class="q-pl-md text-grey-4">
+        <li>Auto-OpenAPI Drift Control (CI Pipeline entegrasyonu)</li>
+        <li>Retention Worker (Outbox ve Log temizleme)</li>
+        <li>Nginx Security (HSTS, CSP, Rate Limit)</li>
       </ul>
     `,
   },
   {
-    title: 'OAuth2 / Keycloak Entegrasyonu',
-    desc: 'Authentication Keycloak, authorization API tarafında JWT Bearer claimleriyle yapılır',
-    icon: 'verified_user',
+    title: '📋 Gereksinim Uyumluluk Matrisi',
+    icon: 'fact_check',
+    desc: 'Proje gereksinimlerinin teknik karşılıklarını içeren detaylı uyumluluk tablosu.',
     content: `
-      <div class="doc-callout doc-callout-info">
-        <h4>Güncel karar</h4>
-        <p>Docker/prod akışında <code>/api/auth/login</code> kullanıcı tokenı üretmez. Frontend Keycloak token endpointinden access token alır; API'ler bu tokenı <code>Jwt__Authority</code> ve <code>Jwt__PublicAuthority</code> ayarlarıyla doğrular.</p>
+      <q-markup-table dark dense bordered class="q-mt-sm full-width doc-table">
+        <thead>
+          <tr>
+            <th class="text-left">Kod</th>
+            <th class="text-left">Gereksinim</th>
+            <th class="text-left">Teknik Karşılık</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>BR-1</td><td>Multi-tenant izolasyon</td><td>JWT TenantId + Global Filter</td></tr>
+          <tr><td>BR-2</td><td>Rol tabanlı yetki</td><td>Admin/HR/Personel rolleri</td></tr>
+          <tr><td>BR-4</td><td>Onay Süreci</td><td>HR/Admin sıralı onay akışı</td></tr>
+          <tr><td>TR-5</td><td>Onion Architecture</td><td>Domain/App/Infra/Api katmanları</td></tr>
+          <tr><td>TR-10</td><td>Authentication</td><td>Keycloak OIDC Access Token</td></tr>
+          <tr><td>TB-1</td><td>Outbox Pattern</td><td>Quartz.NET + Integration Events</td></tr>
+          <tr><td>TB-6</td><td>Logging & Tracing</td><td>Serilog + Jaeger + CorrelationID</td></tr>
+        </tbody>
+      </q-markup-table>
+      <div class="text-caption q-mt-md text-grey-5">
+        <strong>Not:</strong> Bu matris Docs/gereksinim-uyumluluk-matrisi.md dosyasındaki detaylı analizin özetidir.
       </div>
-      <ul>
-        <li><strong>Realm:</strong> <code>izometri</code></li>
-        <li><strong>Client:</strong> <code>expense-service</code>, audience <code>expense-service</code></li>
-        <li><strong>Claims:</strong> <code>UserId</code>, <code>TenantId</code>, <code>role</code>, <code>aud</code>, <code>email</code></li>
-        <li><strong>Seed ayrımı:</strong> uygulama DB seed'i tenant, expense ve notification verilerini; Keycloak seed'i realm, client, user ve role verilerini yükler.</li>
-        <li><strong>Local fallback:</strong> kodda geliştirme/test için durur; Docker'da <code>Authentication__EnableLocalLogin=false</code>.</li>
-      </ul>
-    `,
-  },
-  {
-    title: 'BR-3 & BR-4: Harcama ve Onay Akışı',
-    desc: 'Draft, Pending, Approved, Rejected durumları ve tutara bağlı kademeli onay',
-    icon: 'price_check',
-    content: `
-      <p>Personel Seyahat, Malzeme, Eğitim ve Diğer kategorilerinde TRY, USD veya EUR para birimiyle harcama oluşturabilir. Dövizli harcamalar tenant bazlı kur ayarlarıyla TRY karşılığına çevrilir.</p>
-      <div class="flow-grid">
-        <div class="flow-card flow-ok"><strong>≤ 5.000 TL</strong><span>HR onayı yeterlidir.</span></div>
-        <div class="flow-card flow-warn"><strong>&gt; 5.000 TL</strong><span>Önce HR, sonra Admin onayı gerekir.</span></div>
-      </div>
-      <p>Red işleminde minimum 10 karakterlik gerekçe zorunludur. Delete işlemleri hard delete yapmaz; soft delete ve audit alanları korunur.</p>
-    `,
-  },
-  {
-    title: 'TR: Servis Mimarisi ve Patternler',
-    desc: 'Onion Architecture, Repository, Unit of Work, Soft Delete, OpenTelemetry',
-    icon: 'account_tree',
-    content: `
-      <ul>
-        <li><strong>Database per Service:</strong> ExpenseService ve NotificationService ayrı PostgreSQL veritabanları kullanır.</li>
-        <li><strong>Onion Architecture:</strong> Domain, Application, Infrastructure ve Api katmanları ayrıdır.</li>
-        <li><strong>Repository & Unit of Work:</strong> transaction sınırları application servislerinde kontrollü tutulur.</li>
-        <li><strong>Soft Delete:</strong> tüm ana entity'lerde <code>IsDeleted</code>, audit ve global filter uygulanır.</li>
-        <li><strong>Observability:</strong> Serilog, correlation id middleware ve OpenTelemetry/Jaeger izleme akışı bulunur.</li>
-      </ul>
-    `,
-  },
-  {
-    title: 'BR-5 & TB-1: Async Bildirim ve Outbox',
-    desc: 'RabbitMQ, MassTransit, Quartz worker ve güvenilir event yayını',
-    icon: 'move_to_inbox',
-    content: `
-      <div class="doc-callout doc-callout-warning">
-        <h4>Outbox Pattern</h4>
-        <p>Domain işleminden çıkan integration event önce Expense DB içindeki <code>OutboxMessages</code> tablosuna yazılır. Quartz worker mesajı RabbitMQ'ya taşır; başarısız kayıtlar dead-letter görünümünden izlenir.</p>
-      </div>
-      <p>NotificationService RabbitMQ eventlerini tüketir, kendi veritabanına notification log yazar ve Mailpit üzerinden e-posta simülasyonu yapar. Gerekli detaylar için ExpenseService'e internal service JWT ile HTTP çağrısı yapabilir.</p>
     `,
   },
 ];
+
+const userSyncDiagram = `
+sequenceDiagram
+    participant Client as Frontend / Admin
+    participant API as AdminUsersController
+    participant Service as UserAdminService
+    participant DB as PostgreSQL
+    participant KC as Keycloak Admin API
+
+    Client->>API: POST /api/admin/users
+    API->>Service: CreateUserAsync()
+    Service->>DB: BEGIN TX → User + Roles → COMMIT
+    Note over Service,DB: DB commit başarılı
+    Service->>KC: POST /admin/realms/izometri/users
+    KC-->>Service: 201 Created
+    Service->>KC: GET /admin/realms/izometri/users?email=...
+    KC-->>Service: Keycloak user ID
+    Service->>KC: POST /users/{id}/role-mappings/realm
+    KC-->>Service: 204 No Content
+    Service-->>API: UserResponse
+    API-->>Client: 201 Created
+`;
 
 const authEndpoints: EndpointInfo[] = [
   {
     method: 'POST',
     path: 'http://localhost:18080/realms/izometri/protocol/openid-connect/token',
-    auth: 'Public OAuth2',
+    auth: 'Public OAuth2 (client_id: izometri-spa)',
     desc: 'Frontend Keycloak password grant ile access token alır.',
   },
   {

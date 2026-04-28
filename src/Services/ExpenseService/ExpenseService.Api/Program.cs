@@ -66,7 +66,7 @@ builder.Services.AddHealthChecks()
         };
         return await factory.CreateConnectionAsync();
     }, name: "rabbitmq", tags: ["ready"])
-    .AddUrlGroup(new Uri($"{builder.Configuration["Keycloak:BaseUrl"]}/health/live"), name: "keycloak", tags: ["ready"]);
+    .AddUrlGroup(new Uri("http://keycloak:9000/health/live"), name: "keycloak", tags: ["ready"]);
 
 builder.Services.AddExpenseApplication();
 builder.Services.AddExpenseInfrastructure(builder.Configuration);

@@ -20,6 +20,9 @@
       "serviceAccountsEnabled": true,
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": true,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email", "basic"],
+      "optionalClientScopes": ["address", "phone", "offline_access", "microprofile-jwt"],
       "protocol": "openid-connect",
       "redirectUris": [ "*" ],
       "webOrigins": [ "*" ],
@@ -81,16 +84,67 @@
             "access.token.claim": "true"
           }
         }
+      ]
+    },
+    {
+      "clientId": "izometri-spa",
+      "name": "Izometri Frontend SPA",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "protocol": "openid-connect",
+      "redirectUris": [ "*" ],
+      "webOrigins": [ "*" ],
+      "protocolMappers": [
+        {
+          "name": "realm-roles-as-role",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "role",
+            "jsonType.label": "String",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "tenant-id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "tenantId",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "TenantId",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "user-id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "userId",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "UserId",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "expense-service-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "expense-service",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
       ],
-      "defaultClientScopes": ["profile", "email"],
-      "serviceAccountClientRoles": {
-        "realm-management": [
-          "manage-users",
-          "view-users",
-          "manage-realm",
-          "view-realm"
-        ]
-      }
+      "defaultClientScopes": ["profile", "email"]
     }
   ],
   "users": [
@@ -275,6 +329,14 @@
       },
       "credentials": [{ "type": "password", "value": "Pass123!", "temporary": false }],
       "realmRoles": [ "Personel" ]
+    },
+    {
+      "username": "service-account-expense-service",
+      "enabled": true,
+      "serviceAccountClientId": "expense-service",
+      "clientRoles": {
+        "realm-management": ["manage-users", "view-users", "manage-realm", "view-realm"]
+      }
     }
   ]
 }

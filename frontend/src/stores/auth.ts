@@ -200,8 +200,7 @@ export const useAuthStore = defineStore('auth', {
 
 async function loginWithKeycloak(email: string, password: string): Promise<string> {
   const body = new URLSearchParams({
-    client_id: 'expense-service',
-    client_secret: 'expense-service-client-secret',
+    client_id: 'izometri-spa',
     grant_type: 'password',
     username: email,
     password,

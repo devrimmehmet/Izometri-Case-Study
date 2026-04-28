@@ -96,7 +96,9 @@ services:
       rabbitmq:
         condition: service_healthy
       keycloak:
-        condition: service_started
+        condition: service_healthy
+      keycloak-setup:
+        condition: service_completed_successfully
     ports:
       - "5001:8080"
     environment:
@@ -184,14 +186,37 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:25.0
     container_name: izometri-keycloak
-    command: start-dev --import-realm
+    command: start-dev --import-realm --health-enabled=true
     ports:
       - "18080:8080"
+      - "19000:9000"
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     volumes:
       - ./deploy/keycloak:/opt/keycloak/data/import:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/health/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  keycloak-setup:
+    image: alpine:3.19
+    container_name: izometri-keycloak-setup
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    volumes:
+      - ./deploy/keycloak:/setup:ro
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_MGMT_URL: http://keycloak:9000
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: sh -c "apk add --no-cache curl jq --quiet && sh /setup/setup-service-account-roles.sh"
+    restart: on-failure:5
 
 volumes:
   expense_db_data:

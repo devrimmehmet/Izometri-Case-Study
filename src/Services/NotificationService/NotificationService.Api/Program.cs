@@ -63,7 +63,7 @@ builder.Services.AddHealthChecks()
         };
         return await factory.CreateConnectionAsync();
     }, name: "rabbitmq", tags: ["ready"])
-    .AddUrlGroup(new Uri($"{builder.Configuration["Jwt:Authority"]}/health/live"), name: "keycloak", tags: ["ready"]);
+    .AddUrlGroup(new Uri("http://keycloak:9000/health/live"), name: "keycloak", tags: ["ready"]);
 
 builder.Services.AddNotificationApplication();
 builder.Services.AddNotificationInfrastructure(builder.Configuration);

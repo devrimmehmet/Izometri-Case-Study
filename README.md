@@ -82,5 +82,5 @@ Tüm kullanıcılar için ortak şifre: `Pass123!`
 *   🤖 **Auto-OpenAPI:** CI pipeline entegre otomatik dökümantasyon ve drift check.
 
 ---
-**Hazırlayan:** Izometri Case Study Adayı
+**Hazırlayan:** Devrim Mehmet Pattabanoğlu
 **İletişim:** [devrimmehmet@gmail.com](mailto:devrimmehmet@gmail.com)

@@ -257,7 +257,7 @@ public sealed class KeycloakAdminClient : IKeycloakAdminClient
     private static (string firstName, string lastName) SplitDisplayName(string displayName)
     {
         var parts = displayName.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-        return parts.Length >= 2 ? (parts[0], parts[1]) : (parts[0], string.Empty);
+        return parts.Length >= 2 ? (parts[0], parts[1]) : (parts[0], parts[0]);
     }
 
     // ──────────────────────── DTOs ────────────────────────
@@ -272,6 +272,8 @@ public sealed class KeycloakAdminClient : IKeycloakAdminClient
         public string? LastName { get; set; }
         public Dictionary<string, string[]>? Attributes { get; set; }
         public List<KeycloakCredential>? Credentials { get; set; }
+        // Prevents Keycloak 25 from adding UPDATE_PROFILE / VERIFY_EMAIL required actions automatically
+        public List<string> RequiredActions { get; set; } = [];
     }
 
     private sealed class KeycloakCredential

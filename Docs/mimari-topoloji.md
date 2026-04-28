@@ -84,7 +84,32 @@ Sistem **"Shared Database, Isolated Schema"** prensibiyle çalışır (bu case s
 
 ## 🔄 Kritik İş Akışları
 
-### 1. Harcama Oluşturma ve Onay (Outbox Pattern)
+### 1. Kullanıcı Senkronizasyonu (Keycloak Admin API)
+Kullanıcı yönetimi işlemleri sırasında sistem, PostgreSQL veritabanı ile Keycloak arasında tam senkronizasyon sağlar.
+
+```mermaid
+sequenceDiagram
+    participant Client as Frontend / Admin
+    participant API as AdminUsersController
+    participant Service as UserAdminService
+    participant DB as PostgreSQL
+    participant KC as Keycloak Admin API
+
+    Client->>API: POST /api/admin/users
+    API->>Service: CreateUserAsync()
+    Service->>DB: BEGIN TX → User + Roles → COMMIT
+    Note over Service,DB: DB commit başarılı
+    Service->>KC: POST /admin/realms/izometri/users
+    KC-->>Service: 201 Created
+    Service->>KC: GET /admin/realms/izometri/users?email=...
+    KC-->>Service: Keycloak user ID
+    Service->>KC: POST /users/{id}/role-mappings/realm
+    KC-->>Service: 204 No Content
+    Service-->>API: UserResponse
+    API-->>Client: 201 Created
+```
+
+### 2. Harcama Oluşturma ve Onay (Outbox Pattern)
 Harcama kaydedildiğinde, aynı transaction içinde bir `OutboxMessage` oluşturulur. `OutboxPublisherWorker` bu mesajları asenkron olarak RabbitMQ'ya güvenli bir şekilde iletir. Bu sayede DB işlemi ile mesaj gönderimi arasında tutarlılık sağlanır.
 
 ### 2. Bildirim Gönderimi
