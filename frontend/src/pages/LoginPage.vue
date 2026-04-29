@@ -2,20 +2,8 @@
   <div class="gate-bg flex flex-center">
     <div class="gate-card q-pa-xl" style="width: 460px; max-width: 92vw">
       <div class="text-center q-mb-lg">
-        <div
-          class="text-h5 text-weight-bold"
-          style="
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-          "
-        >
-          İzometri
-        </div>
-        <div class="text-grey-5 text-body2 q-mt-xs">
-          Kurumsal Harcama Yönetim Sistemi
-        </div>
+        <div class="text-h5 text-weight-bold brand-gradient">İzometri</div>
+        <div class="text-grey-5 text-body2 q-mt-xs">Kurumsal Harcama Yönetim Sistemi</div>
       </div>
 
       <q-form @submit.prevent="onLogin" class="q-gutter-md">
@@ -36,74 +24,34 @@
           </template>
         </q-select>
 
-        <q-input
-          v-model="form.email"
-          label="E-posta"
-          type="email"
-          outlined
-          dark
-          dense
-          color="primary"
-          :rules="[(v: string) => !!v || 'E-posta gerekli']"
-        >
+        <q-input v-model="form.email" label="E-posta" type="email" outlined dark dense color="primary" :rules="[(v: string) => !!v || 'E-posta gerekli']">
           <template #prepend>
             <q-icon name="email" color="grey-5" />
           </template>
         </q-input>
 
-        <q-input
-          v-model="form.password"
-          label="Şifre"
-          :type="showPwd ? 'text' : 'password'"
-          outlined
-          dark
-          dense
-          color="primary"
-          :rules="[(v: string) => !!v || 'Şifre gerekli']"
-        >
+        <q-input v-model="form.password" label="Şifre" :type="showPwd ? 'text' : 'password'" outlined dark dense color="primary" :rules="[(v: string) => !!v || 'Şifre gerekli']">
           <template #prepend>
             <q-icon name="lock" color="grey-5" />
           </template>
           <template #append>
-            <q-icon
-              :name="showPwd ? 'visibility_off' : 'visibility'"
-              class="cursor-pointer"
-              color="grey-5"
-              @click="showPwd = !showPwd"
-            />
+            <q-icon :name="showPwd ? 'visibility_off' : 'visibility'" class="cursor-pointer" color="grey-5" @click="showPwd = !showPwd" />
           </template>
         </q-input>
 
-        <q-btn
-          type="submit"
-          label="Giriş Yap"
-          color="primary"
-          class="full-width q-mt-md"
-          :loading="loading"
-          rounded
-          unelevated
-          size="md"
-        />
+        <q-btn type="submit" label="Giriş Yap" color="primary" class="full-width q-mt-md" :loading="loading" rounded unelevated size="md" />
 
-        <div v-if="errorMsg" class="text-negative text-center text-caption q-mt-sm">
-          {{ errorMsg }}
-        </div>
+        <div v-if="errorMsg" class="text-negative text-center text-caption q-mt-sm">{{ errorMsg }}</div>
       </q-form>
 
       <q-separator dark class="q-my-md" />
 
-      <!-- Tıklanabilir demo hesaplar -->
       <div class="text-grey-5 text-caption q-mb-sm">
         Hızlı giriş için bir hesaba tıklayın <span class="text-grey-7">(Şifre: Pass123!)</span>
       </div>
 
       <div v-for="group in demoGroups" :key="group.tenant" class="q-mb-sm">
-        <div
-          class="text-caption text-weight-bold q-mb-xs"
-          :style="{ color: group.color }"
-        >
-          {{ group.label }}
-        </div>
+        <div class="text-caption text-weight-bold q-mb-xs" :style="{ color: group.color }">{{ group.label }}</div>
         <div class="row q-gutter-xs">
           <q-chip
             v-for="user in group.users"
@@ -128,9 +76,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from 'stores/auth';
+import { parseApiError } from 'src/services/http';
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -210,9 +159,12 @@ function fillUser(tenant: string, email: string) {
 
 function roleIcon(role: string): string {
   switch (role) {
-    case 'Admin': return 'admin_panel_settings';
-    case 'HR': return 'badge';
-    default: return 'person';
+    case 'Admin':
+      return 'admin_panel_settings';
+    case 'HR':
+      return 'badge';
+    default:
+      return 'person';
   }
 }
 
@@ -222,10 +174,8 @@ async function onLogin() {
   try {
     await auth.login(form);
     void router.push('/dashboard');
-  } catch (err: unknown) {
-    const error = err as { response?: { data?: { detail?: string } }; message?: string };
-    errorMsg.value =
-      error.response?.data?.detail ?? error.message ?? 'Giriş başarısız';
+  } catch (error) {
+    errorMsg.value = parseApiError(error, 'Giriş başarısız').message;
   } finally {
     loading.value = false;
   }
@@ -233,10 +183,18 @@ async function onLogin() {
 </script>
 
 <style scoped>
-.demo-chip {
-  transition: all 0.2s ease;
-  cursor: pointer;
+.brand-gradient {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
+
+.demo-chip {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
 .demo-chip:hover {
   border-color: #6366f1 !important;
   transform: translateY(-1px);

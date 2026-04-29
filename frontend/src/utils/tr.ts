@@ -1,6 +1,6 @@
-// İzometri — Türkçe Etiketler ve Yardımcı Fonksiyonlar
+// Izometri - Türkçe etiketler ve yardımcı fonksiyonlar
 
-import type { ExpenseStatus, ExpenseCategory, Currency } from 'src/types';
+import type { Currency, ExpenseCategory, ExpenseStatus } from 'src/types';
 
 export const statusLabels: Record<ExpenseStatus, string> = {
   Draft: 'Taslak',
@@ -18,7 +18,7 @@ export const statusClasses: Record<ExpenseStatus, string> = {
 
 export const categoryLabels: Record<ExpenseCategory, string> = {
   Travel: 'Seyahat',
-  Equipment: 'Malzeme',
+  Equipment: 'Ekipman',
   Education: 'Eğitim',
   Other: 'Diğer',
 };
@@ -39,7 +39,8 @@ export function formatAmount(amount: number, currency: Currency): string {
   return `${currencySymbols[currency] ?? ''}${amount.toLocaleString('tr-TR')}`;
 }
 
-export function formatDate(iso: string): string {
+export function formatDate(iso?: string | null): string {
+  if (!iso) return '-';
   return new Date(iso).toLocaleDateString('tr-TR', {
     day: '2-digit',
     month: 'short',
@@ -47,8 +48,9 @@ export function formatDate(iso: string): string {
   });
 }
 
-export function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleDateString('tr-TR', {
+export function formatDateTime(iso?: string | null): string {
+  if (!iso) return '-';
+  return new Date(iso).toLocaleString('tr-TR', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

@@ -1,21 +1,12 @@
-// Configuration for your app
-// https://v2.quasar.dev/quasar-cli-vite/quasar-config-file
-
 import { defineConfig } from '#q-app/wrappers';
-import { fileURLToPath } from 'node:url';
 
-export default defineConfig((ctx) => {
+export default defineConfig(() => {
   return {
-    // Boot files (/src/boot) – part of "main.js"
-    boot: ['i18n', 'axios'],
+    boot: ['axios'],
 
     css: ['app.scss'],
 
-    extras: [
-      'roboto-font',
-      'material-icons',
-      'material-symbols-outlined',
-    ],
+    extras: ['roboto-font', 'material-icons', 'material-symbols-outlined'],
 
     build: {
       target: {
@@ -43,13 +34,6 @@ export default defineConfig((ctx) => {
       },
 
       vitePlugins: [
-        [
-          '@intlify/unplugin-vue-i18n/vite',
-          {
-            ssr: ctx.modeName === 'ssr',
-            include: [fileURLToPath(new URL('./src/i18n', import.meta.url))],
-          },
-        ],
         [
           'vite-plugin-checker',
           {
@@ -104,18 +88,15 @@ export default defineConfig((ctx) => {
 
     animations: ['fadeIn', 'fadeOut', 'slideInLeft', 'slideInRight', 'slideInUp'],
 
-    // ─── PWA ────────────────────────────────────────────────────────────────
     pwa: {
       workboxMode: 'GenerateSW',
 
       workboxOptions: {
-        // Silently activate and take control without waiting for old SW to die.
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
       },
 
-      // Web-app manifest — all Quasar branding replaced with DMP
       manifest: {
         name: 'Case Study',
         short_name: 'Case Study',

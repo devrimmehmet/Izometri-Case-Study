@@ -32,6 +32,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/SettingsPage.vue'),
         meta: { roles: ['Admin'] },
       },
+      {
+        path: 'admin/operations',
+        component: () => import('pages/AdminOperationsPage.vue'),
+        meta: { roles: ['Admin'] },
+      },
       { path: 'notifications', component: () => import('pages/NotificationsPage.vue') },
     ],
   },

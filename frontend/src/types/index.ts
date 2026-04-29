@@ -1,4 +1,4 @@
-// İzometri Case Study — Shared TypeScript Types
+// Izometri Case Study - shared TypeScript types
 
 export interface LoginRequest {
   email: string;
@@ -34,6 +34,8 @@ export type Currency = 'TRY' | 'USD' | 'EUR';
 
 export interface ExpenseDto {
   id: string;
+  tenantId: string;
+  requestedByUserId: string;
   category: ExpenseCategory;
   currency: Currency;
   amount: number;
@@ -45,18 +47,9 @@ export interface ExpenseDto {
   adminApproved: boolean;
   requiresAdminApproval: boolean;
   rejectionReason?: string;
-  createdAt: string;
-  updatedAt?: string;
-  requestedByUserId: string;
-  createdByEmail?: string;
-  approvals?: ExpenseApprovalDto[];
-}
-
-export interface ExpenseApprovalDto {
-  id: string;
-  approverRole: string;
-  isApproved: boolean;
-  comment?: string;
+  submittedAt?: string;
+  approvedAt?: string;
+  rejectedAt?: string;
   createdAt: string;
 }
 
@@ -78,11 +71,14 @@ export interface RejectExpenseRequest {
   reason: string;
 }
 
-export interface PagedResult<T> {
+export interface PagedResponse<T> {
   items: T[];
-  totalCount: number;
   pageNumber: number;
   pageSize: number;
+  totalCount: number;
+}
+
+export interface PagedResult<T> extends PagedResponse<T> {
   totalPages: number;
 }
 
@@ -119,12 +115,16 @@ export interface UpdateRolesRequest {
 export interface NotificationDto {
   id: string;
   tenantId: string;
+  eventId: string;
   eventType: string;
+  correlationId: string;
   expenseId: string;
-  message: string;
-  recipientEmail?: string;
-  emailStatus?: string;
+  recipient: string;
+  recipientEmail: string;
+  recipientPhone: string;
+  emailStatus: string;
   emailError?: string;
+  message: string;
   sentAt: string;
 }
 
@@ -136,7 +136,50 @@ export interface OutboxDeadLetter {
   id: string;
   eventType: string;
   routingKey: string;
+  correlationId: string;
+  retryCount: number;
+  error?: string;
+  createdAt: string;
+  deadLetteredAt?: string;
+}
+
+export interface NotificationDeadLetterDto {
+  id: string;
+  eventId: string;
+  tenantId?: string;
+  expenseId?: string;
+  eventType: string;
+  routingKey: string;
+  correlationId: string;
   error: string;
   retryCount: number;
-  deadLetteredAt: string;
+  deadLetteredAt?: string;
+  createdAt: string;
+}
+
+export interface ExchangeRateResponse {
+  fixedUsdRate?: number | null;
+  fixedEurRate?: number | null;
+  currentUsdRate: number;
+  currentEurRate: number;
+}
+
+export interface UpdateRatesRequest {
+  fixedUsdRate?: number | null;
+  fixedEurRate?: number | null;
+}
+
+export interface SendProbeEmailRequest {
+  toEmail: string;
+  subject: string;
+  body: string;
+}
+
+export interface ProblemDetails {
+  type?: string;
+  title?: string;
+  status?: number;
+  detail?: string;
+  instance?: string;
+  errors?: Record<string, string[]>;
 }

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import axios, { isAxiosError } from 'axios';
-import { api } from 'src/services/http';
+import { api, notifyApi } from 'src/services/http';
 import type { UserRole } from 'src/types';
 
 interface LoginPayload {
@@ -141,6 +141,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('tenantCode', payload.tenantCode);
       localStorage.setItem('authProvider', authProvider);
       api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+      notifyApi.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
     },
 
     logout() {
@@ -155,6 +156,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('tenantCode');
       localStorage.removeItem('authProvider');
       delete api.defaults.headers.common['Authorization'];
+      delete notifyApi.defaults.headers.common['Authorization'];
     },
 
     restoreSession(): boolean {
@@ -189,6 +191,7 @@ export const useAuthStore = defineStore('auth', {
         ) as UserRole[];
 
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        notifyApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         return true;
       } catch {
         this.logout();

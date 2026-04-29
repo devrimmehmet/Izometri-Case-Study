@@ -55,7 +55,10 @@ export default defineRouter((/* { store, ssrContext } */) => {
         auth.roles.includes(r as 'Admin' | 'HR' | 'Personel'),
       );
       if (!hasRole) {
-        return '/dashboard';
+        return {
+          path: '/dashboard',
+          query: { denied: 'role' },
+        };
       }
     }
 

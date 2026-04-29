@@ -6,6 +6,7 @@ import type {
   UpdateExpenseRequest,
   RejectExpenseRequest,
   ExpenseQueryParams,
+  PagedResponse,
 } from 'src/types';
 
 export const useExpenseStore = defineStore('expense', {
@@ -31,19 +32,13 @@ export const useExpenseStore = defineStore('expense', {
         query.set('pageNumber', String(params?.pageNumber ?? this.pageNumber));
         query.set('pageSize', String(params?.pageSize ?? this.pageSize));
 
-        const { data } = await api.get(`/expenses?${query.toString()}`);
+        const { data } = await api.get<PagedResponse<ExpenseDto>>(`/expenses?${query.toString()}`);
 
-        // API may return paged or array
-        if (Array.isArray(data)) {
-          this.expenses = data;
-          this.totalCount = data.length;
-          this.totalPages = 1;
-        } else {
-          this.expenses = data.items ?? data;
-          this.totalCount = data.totalCount ?? this.expenses.length;
-          this.pageNumber = data.pageNumber ?? 1;
-          this.totalPages = data.totalPages ?? 1;
-        }
+        this.expenses = data.items;
+        this.totalCount = data.totalCount;
+        this.pageNumber = data.pageNumber;
+        this.pageSize = data.pageSize;
+        this.totalPages = Math.max(1, Math.ceil(data.totalCount / data.pageSize));
       } finally {
         this.loading = false;
       }
@@ -62,34 +57,28 @@ export const useExpenseStore = defineStore('expense', {
 
     async createExpense(payload: CreateExpenseRequest): Promise<ExpenseDto> {
       const { data } = await api.post<ExpenseDto>('/expenses', payload);
-      await this.fetchExpenses();
       return data;
     },
 
     async updateExpense(id: string, payload: UpdateExpenseRequest): Promise<ExpenseDto> {
       const { data } = await api.put<ExpenseDto>(`/expenses/${id}`, payload);
-      await this.fetchExpenses();
       return data;
     },
 
     async submitExpense(id: string) {
       await api.put(`/expenses/${id}/submit`);
-      await this.fetchExpenses();
     },
 
     async approveExpense(id: string) {
       await api.put(`/expenses/${id}/approve`);
-      await this.fetchExpenses();
     },
 
     async rejectExpense(id: string, payload: RejectExpenseRequest) {
       await api.put(`/expenses/${id}/reject`, payload);
-      await this.fetchExpenses();
     },
 
     async deleteExpense(id: string) {
       await api.delete(`/expenses/${id}`);
-      await this.fetchExpenses();
     },
   },
 });

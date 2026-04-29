@@ -1,26 +1,23 @@
 <template>
   <q-layout view="hHh LpR fFf" class="bg-dark-page">
     <q-header class="bg-transparent">
-      <q-toolbar class="q-px-lg" style="backdrop-filter: blur(16px); background: rgba(19, 17, 28, 0.8); border-bottom: 1px solid rgba(99, 102, 241, 0.1);">
+      <q-toolbar class="q-px-lg toolbar">
         <q-btn flat dense round icon="menu" @click="toggleDrawer" />
 
-        <q-toolbar-title class="text-weight-bold" style="font-size: 18px;">
-          <span style="background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-            İzometri
-          </span>
+        <q-toolbar-title class="text-weight-bold brand-title">
+          <span class="brand-gradient">İzometri</span>
           <span class="text-grey-5 text-caption q-ml-sm">Harcama Yönetimi</span>
         </q-toolbar-title>
 
         <q-space />
 
-        <!-- User Info -->
         <div class="row items-center q-gutter-sm">
           <q-badge :color="roleColor" outline class="q-mr-sm">
             {{ translateRole(auth.displayRole) }}
           </q-badge>
-          <span class="text-grey-4 text-caption">{{ auth.email }}</span>
+          <span class="text-grey-4 text-caption gt-xs">{{ auth.email }}</span>
           <q-btn flat dense round icon="logout" color="grey-5" @click="onLogout">
-            <q-tooltip>Çıkış Yap</q-tooltip>
+            <q-tooltip>Çıkış yap</q-tooltip>
           </q-btn>
         </div>
       </q-toolbar>
@@ -31,24 +28,18 @@
       show-if-above
       bordered
       :width="260"
-      style="background: rgba(19, 17, 28, 0.95); border-right: 1px solid rgba(99, 102, 241, 0.1);"
+      class="drawer"
     >
       <q-list dark class="q-pt-md">
-        <!-- Brand -->
         <q-item class="q-mb-lg q-px-lg">
           <q-item-section>
-            <div class="text-h6 text-weight-bold" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-              İzometri
-            </div>
-            <div class="text-grey-6 text-caption">
-              {{ auth.tenantCode.toUpperCase() }} Tenant
-            </div>
+            <div class="text-h6 text-weight-bold brand-gradient">İzometri</div>
+            <div class="text-grey-6 text-caption">{{ auth.tenantCode.toUpperCase() }} Tenant</div>
           </q-item-section>
         </q-item>
 
         <q-separator dark class="q-mb-sm" />
 
-        <!-- Navigation -->
         <q-item
           v-for="item in navItems"
           :key="item.path"
@@ -76,8 +67,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { computed, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from 'stores/auth';
 import { translateRole } from 'src/utils/tr';
 
@@ -98,6 +89,7 @@ const allNavItems: NavItem[] = [
   { label: 'Harcamalar', icon: 'receipt_long', path: '/expenses' },
   { label: 'Kullanıcılar', icon: 'people', path: '/admin/users', roles: ['Admin'] },
   { label: 'Sistem Ayarları', icon: 'settings', path: '/admin/settings', roles: ['Admin'] },
+  { label: 'Admin Operasyonları', icon: 'manage_history', path: '/admin/operations', roles: ['Admin'] },
   { label: 'Bildirimler', icon: 'notifications', path: '/notifications' },
 ];
 
@@ -129,6 +121,28 @@ function onLogout() {
 </script>
 
 <style scoped>
+.toolbar {
+  backdrop-filter: blur(16px);
+  background: rgba(19, 17, 28, 0.8);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.drawer {
+  background: rgba(19, 17, 28, 0.95);
+  border-right: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.brand-title {
+  font-size: 18px;
+}
+
+.brand-gradient {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .nav-active {
   background: rgba(99, 102, 241, 0.12) !important;
 }
