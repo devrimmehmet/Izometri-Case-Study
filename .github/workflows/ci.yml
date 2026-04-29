@@ -26,17 +26,6 @@ jobs:
       - name: Build
         run: dotnet build Izometri.CaseStudy.slnx --configuration Release --no-restore
 
-      - name: Generate OpenAPI JSONs
-        run: pwsh Scripts/generate-openapi.ps1 -Configuration Release
-
-      - name: Check for OpenAPI drift
-        run: |
-          if [ -n "$(git status --porcelain Docs/*.json)" ]; then
-            echo "Error: OpenAPI artifacts are out of date. Please run 'Scripts/generate-openapi.ps1' locally and commit the changes."
-            git diff Docs/*.json
-            exit 1
-          fi
-
       - name: Validate compose
         run: docker compose config --quiet
 

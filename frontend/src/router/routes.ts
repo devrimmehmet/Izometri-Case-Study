@@ -33,7 +33,6 @@ const routes: RouteRecordRaw[] = [
         meta: { roles: ['Admin'] },
       },
       { path: 'notifications', component: () => import('pages/NotificationsPage.vue') },
-      { path: 'docs', component: () => import('pages/DocsHubPage.vue') },
     ],
   },
 

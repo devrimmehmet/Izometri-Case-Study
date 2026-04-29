@@ -99,7 +99,6 @@ const allNavItems: NavItem[] = [
   { label: 'Kullanıcılar', icon: 'people', path: '/admin/users', roles: ['Admin'] },
   { label: 'Sistem Ayarları', icon: 'settings', path: '/admin/settings', roles: ['Admin'] },
   { label: 'Bildirimler', icon: 'notifications', path: '/notifications' },
-  { label: 'Dokümantasyon', icon: 'menu_book', path: '/docs' },
 ];
 
 const navItems = computed(() =>

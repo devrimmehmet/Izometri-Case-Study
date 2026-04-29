@@ -17,6 +17,7 @@
     <Project Path="src/Shared/ExpenseManagement.Contracts/ExpenseManagement.Contracts.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/ExpenseService.Tests/ExpenseService.Tests.csproj" />
+    <Project Path="tests/ExpenseService.UnitTests/ExpenseService.UnitTests.csproj" />
+    <Project Path="tests/ExpenseService.IntegrationTests/ExpenseService.IntegrationTests.csproj" />
   </Folder>
 </Solution>

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ExpenseService.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ExpenseDbContext))]
-    [Migration("20260428002246_InitialCreate")]
+    [Migration("20260429210217_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -299,6 +299,9 @@ namespace ExpenseService.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
