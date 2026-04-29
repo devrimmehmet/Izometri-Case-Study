@@ -660,31 +660,42 @@ const ServiceCard = {
         'div',
         {
           class: ['svc-card', hasLink ? 'svc-card--clickable' : ''],
-          style: { '--accent': svc.accent },
+          style: {
+            '--accent': svc.accent,
+            cursor: hasLink ? 'pointer' : 'default',
+            background: `rgba(8, 22, 22, 0.75)`,
+            borderColor: `${svc.accent}`,
+          },
           onClick: () => emit('open', svc),
         },
         [
           // Üst şerit
-          h('div', { class: 'svc-card__header q-px-md q-py-sm row items-center' }, [
-            h('div', { class: 'svc-icon-wrap q-mr-sm' }, [
-              h('q-icon', { name: svc.icon, size: '18px', style: { color: svc.accent } }),
-            ]),
-            h('div', { class: 'col' }, [
-              h('div', { class: 'text-caption text-weight-bold text-white' }, svc.name),
-              h('div', { class: 'text-caption text-grey-6' }, svc.desc),
-            ]),
-            svc.port
-              ? h(
-                  'q-badge',
-                  {
-                    outline: true,
-                    class: 'text-caption q-ml-sm',
-                    style: { color: svc.accent, borderColor: `${svc.accent}66` },
-                  },
-                  () => `:${svc.port}`,
-                )
-              : null,
-          ]),
+          h(
+            'div',
+            {
+              class: 'svc-card__header q-px-md q-py-sm row items-center',
+            },
+            [
+              h('div', { class: 'svc-icon-wrap q-mr-sm' }, [
+                h('q-icon', { name: svc.icon, size: '18px', style: { color: svc.accent } }),
+              ]),
+              h('div', { class: 'col' }, [
+                h('div', { class: 'text-caption text-weight-bold text-white shadow-2' }, svc.name),
+                h('div', { class: 'text-caption text-grey-6' }, svc.desc),
+              ]),
+              svc.port
+                ? h(
+                    'q-badge',
+                    {
+                      outline: true,
+                      class: 'text-caption q-ml-sm',
+                      style: { color: svc.accent, borderColor: `${svc.accent}66` },
+                    },
+                    () => `:${svc.port}`,
+                  )
+                : null,
+            ],
+          ),
 
           // URL satırı
           h('div', { class: 'q-px-md q-pt-sm q-pb-xs' }, [
