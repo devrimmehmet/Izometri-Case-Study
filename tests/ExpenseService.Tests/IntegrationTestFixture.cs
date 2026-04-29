@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using NotificationService.Application.Abstractions;
 using NotificationService.Infrastructure.Auth;
 using NotificationService.Infrastructure.Clients;
@@ -78,7 +79,7 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
                             BaseAddress = new Uri("http://localhost/")
                         };
                         var tokenFactory = sp.GetRequiredService<ServiceTokenFactory>();
-                        return new ExpenseDetailsClient(httpClient, tokenFactory);
+                        return new ExpenseDetailsClient(httpClient, tokenFactory, NullLogger<ExpenseDetailsClient>.Instance);
                     });
                     services.AddTransient<IEmailSender, NoopEmailSender>();
                     services.AddTransient<ISmsService, NoopSmsService>();

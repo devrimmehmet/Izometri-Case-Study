@@ -117,13 +117,27 @@ public sealed class OutboxPublisherWorker : BackgroundService
             activity?.SetTag("messaging.system", "rabbitmq");
             activity?.SetTag("messaging.destination", message.RoutingKey);
             activity?.SetTag("messaging.message.id", message.Id.ToString());
+            activity?.SetTag("correlation.id", message.CorrelationId);
             try
             {
                 var body = Encoding.UTF8.GetBytes(message.Payload);
+                var properties = new BasicProperties
+                {
+                    CorrelationId = message.CorrelationId,
+                    MessageId = message.Id.ToString(),
+                    ContentType = "application/json",
+                    DeliveryMode = DeliveryModes.Persistent,
+                    Headers = new Dictionary<string, object?>
+                    {
+                        ["X-Correlation-Id"] = message.CorrelationId
+                    }
+                };
+
                 await _channel!.BasicPublishAsync(
                     exchange: ExpenseEventNames.Exchange,
                     routingKey: message.RoutingKey,
                     mandatory: false,
+                    basicProperties: properties,
                     body: body,
                     cancellationToken: cancellationToken);
 

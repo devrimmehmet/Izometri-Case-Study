@@ -62,6 +62,21 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
         var hiddenFromOtherTenant = await SendRawAsync(HttpMethod.Get, $"/api/expenses/{expense.Id}", otherTenantPersonel.AccessToken);
         Assert.Equal(HttpStatusCode.NotFound, hiddenFromOtherTenant.StatusCode);
 
+        var internalDeniedForUser = await SendRawAsync(HttpMethod.Get, $"/api/internal/expenses/{expense.Id}", Personel.AccessToken);
+        Assert.Equal(HttpStatusCode.Forbidden, internalDeniedForUser.StatusCode);
+
+        var internalVisibleForService = await SendAsync<ExpenseResponse>(
+            HttpMethod.Get,
+            $"/api/internal/expenses/{expense.Id}",
+            CreateServiceToken(Personel.TenantId));
+        Assert.Equal(expense.Id, internalVisibleForService.Id);
+
+        var internalHiddenFromOtherTenantService = await SendRawAsync(
+            HttpMethod.Get,
+            $"/api/internal/expenses/{expense.Id}",
+            CreateServiceToken(otherTenantPersonel.TenantId));
+        Assert.Equal(HttpStatusCode.NotFound, internalHiddenFromOtherTenantService.StatusCode);
+
         var submit = await SendRawAsync(HttpMethod.Put, $"/api/expenses/{expense.Id}/submit", Personel.AccessToken);
         Assert.Equal(HttpStatusCode.NoContent, submit.StatusCode);
 
@@ -97,6 +112,14 @@ public sealed class TestcontainersIntegrationTests : IClassFixture<IntegrationTe
         }
 
         return await _expenseClient.SendAsync(request);
+    }
+
+    private static string CreateServiceToken(Guid tenantId)
+    {
+        var tokenFactory = new NotificationService.Infrastructure.Auth.ServiceTokenFactory(
+            Microsoft.Extensions.Options.Options.Create(new NotificationService.Infrastructure.Auth.JwtOptions()));
+
+        return tokenFactory.Create(tenantId, $"tc-service-{Guid.NewGuid():N}");
     }
 
     private async Task<IReadOnlyCollection<NotificationResponse>> WaitForNotificationAsync(Guid expenseId, string eventType, string token)

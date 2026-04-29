@@ -39,7 +39,13 @@ public static class DependencyInjection
         {
             var options = configuration.GetSection("ExpenseService").Get<ExpenseServiceOptions>() ?? new ExpenseServiceOptions();
             client.BaseAddress = new Uri(options.BaseUrl);
-        }).AddStandardResilienceHandler();
+        }).AddStandardResilienceHandler(options =>
+        {
+            options.Retry.MaxRetryAttempts = 3;
+            options.Retry.Delay = TimeSpan.FromMilliseconds(200);
+            options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(3);
+            options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+        });
         services.AddTransient<IEmailSender, SmtpEmailSender>();
         services.AddHttpClient<ISmsService, NetgsmSmsSender>();
         services.AddHttpContextAccessor();

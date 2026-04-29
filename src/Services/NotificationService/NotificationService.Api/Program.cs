@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using NotificationService.Api;
 using NotificationService.Application;
 using NotificationService.Infrastructure;
+using NotificationService.Infrastructure.Contexts;
 using NotificationService.Infrastructure.Auth;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -211,6 +212,7 @@ builder.Services.AddOpenTelemetry()
 var app = builder.Build();
 
 app.UseMiddleware<ApiExceptionMiddleware>();
+app.UseMiddleware<CorrelationMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI();
 if (!string.IsNullOrWhiteSpace(app.Configuration["HTTPS_PORT"]) ||

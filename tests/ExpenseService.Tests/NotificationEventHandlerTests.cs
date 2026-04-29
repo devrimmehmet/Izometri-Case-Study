@@ -50,12 +50,58 @@ public sealed class NotificationEventHandlerTests
                 n.Recipient == "HR/Admin" &&
                 n.RecipientEmail == recipientEmail &&
                 n.RecipientPhone == recipientPhone &&
-                n.EmailStatus == "Sent"),
+                n.EmailStatus == "Sent" &&
+                n.Message.Contains("Tutar:") &&
+                n.Message.Contains("TRY")),
             It.Is<ProcessedMessage>(m => m.EventId == integrationEvent.EventId),
             It.IsAny<CancellationToken>()), Times.Once);
 
         emailSender.Verify(x => x.SendAsync(recipientEmail, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         smsSender.Verify(x => x.SendAsync(recipientPhone, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_saves_notification_without_expense_details_when_enrichment_fails()
+    {
+        var integrationEvent = new ExpenseApprovedEvent(
+            Guid.NewGuid(), "corr-no-detail", DateTime.UtcNow, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Approved")
+        {
+            RecipientEmail = "personel@test1.com"
+        };
+
+        var store = new Mock<INotificationStore>();
+        store.Setup(x => x.IsProcessedAsync(integrationEvent.EventId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var client = new Mock<IExpenseDetailsClient>();
+        client.Setup(x => x.GetExpenseAsync(
+                integrationEvent.ExpenseId,
+                integrationEvent.TenantId,
+                integrationEvent.CorrelationId,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ExpenseDetailResponse?)null);
+
+        var emailSender = new Mock<IEmailSender>();
+        var smsSender = new Mock<ISmsService>();
+        var logger = new Mock<ILogger<NotificationEventHandler>>();
+
+        var handler = new NotificationEventHandler(store.Object, client.Object, emailSender.Object, smsSender.Object, logger.Object);
+
+        await handler.HandleAsync(ExpenseEventNames.ExpenseApproved, JsonSerializer.Serialize(integrationEvent), CancellationToken.None);
+
+        store.Verify(x => x.SaveAsync(
+            It.Is<Notification>(n =>
+                n.EventId == integrationEvent.EventId &&
+                n.EmailStatus == "Sent" &&
+                !n.Message.Contains("Tutar:")),
+            It.Is<ProcessedMessage>(m => m.EventId == integrationEvent.EventId),
+            It.IsAny<CancellationToken>()), Times.Once);
+
+        emailSender.Verify(x => x.SendAsync(
+            integrationEvent.RecipientEmail,
+            It.IsAny<string>(),
+            It.Is<string>(message => !message.Contains("Tutar:")),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

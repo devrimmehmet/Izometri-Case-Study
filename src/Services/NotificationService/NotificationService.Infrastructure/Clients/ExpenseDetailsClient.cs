@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Logging;
 using NotificationService.Application.Abstractions;
 using NotificationService.Application.DTOs;
 using NotificationService.Infrastructure.Auth;
@@ -9,24 +10,36 @@ namespace NotificationService.Infrastructure.Clients;
 public sealed class ExpenseDetailsClient : IExpenseDetailsClient
 {
     private readonly HttpClient _httpClient;
+    private readonly ILogger<ExpenseDetailsClient> _logger;
     private readonly ServiceTokenFactory _serviceTokenFactory;
 
-    public ExpenseDetailsClient(HttpClient httpClient, ServiceTokenFactory serviceTokenFactory)
+    public ExpenseDetailsClient(
+        HttpClient httpClient,
+        ServiceTokenFactory serviceTokenFactory,
+        ILogger<ExpenseDetailsClient> logger)
     {
         _httpClient = httpClient;
         _serviceTokenFactory = serviceTokenFactory;
+        _logger = logger;
     }
 
     public async Task<ExpenseDetailResponse?> GetExpenseAsync(Guid expenseId, Guid tenantId, string correlationId, CancellationToken cancellationToken)
     {
         var token = _serviceTokenFactory.Create(tenantId, correlationId);
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/expenses/{expenseId}");
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/internal/expenses/{expenseId}");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         request.Headers.TryAddWithoutValidation("X-Correlation-Id", correlationId);
 
         var response = await _httpClient.SendAsync(request, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
+            _logger.LogWarning(
+                "Expense detail enrichment failed. ExpenseId: {ExpenseId}, TenantId: {TenantId}, StatusCode: {StatusCode}, CorrelationId: {CorrelationId}",
+                expenseId,
+                tenantId,
+                response.StatusCode,
+                correlationId);
+
             return null;
         }
 
