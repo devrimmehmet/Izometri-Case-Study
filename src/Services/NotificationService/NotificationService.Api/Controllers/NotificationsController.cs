@@ -30,7 +30,8 @@ public sealed class NotificationsController : ControllerBase
             return Forbid();
         }
 
-        return Ok(await _queryService.GetAsync(tokenTenantId.Value, cancellationToken));
+        var recipientEmail = IsAdmin() ? null : GetEmail();
+        return Ok(await _queryService.GetAsync(tokenTenantId.Value, recipientEmail, cancellationToken));
     }
 
     private Guid? GetTenantId()
@@ -38,4 +39,12 @@ public sealed class NotificationsController : ControllerBase
         var value = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenantId")?.Value;
         return Guid.TryParse(value, out var tenantId) ? tenantId : null;
     }
+
+    private string? GetEmail() =>
+        User.FindFirst("email")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+
+    private bool IsAdmin() =>
+        User.IsInRole("Admin") ||
+        User.HasClaim("role", "Admin") ||
+        User.HasClaim("roles", "Admin");
 }

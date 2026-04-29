@@ -12,8 +12,13 @@
         <q-space />
 
         <div class="row items-center q-gutter-sm">
-          <q-badge :color="roleColor" outline class="q-mr-sm">
-            {{ translateRole(auth.displayRole) }}
+          <q-badge
+            v-for="role in auth.roles"
+            :key="role"
+            :color="roleColorMap[role] ?? 'grey'"
+            outline
+          >
+            {{ translateRole(role) }}
           </q-badge>
           <span class="text-grey-4 text-caption gt-xs">{{ auth.email }}</span>
           <q-btn flat dense round icon="logout" color="grey-5" @click="onLogout">
@@ -90,6 +95,7 @@ const allNavItems: NavItem[] = [
   { label: 'Kullanıcılar', icon: 'people', path: '/admin/users', roles: ['Admin'] },
   { label: 'Sistem Ayarları', icon: 'settings', path: '/admin/settings', roles: ['Admin'] },
   { label: 'Admin Operasyonları', icon: 'manage_history', path: '/admin/operations', roles: ['Admin'] },
+  { label: 'Dökümanlar', icon: 'menu_book', path: '/admin/docs', roles: ['Admin'] },
   { label: 'Bildirimler', icon: 'notifications', path: '/notifications' },
 ];
 
@@ -100,11 +106,11 @@ const navItems = computed(() =>
   }),
 );
 
-const roleColor = computed(() => {
-  if (auth.isAdmin) return 'purple';
-  if (auth.isHR) return 'blue';
-  return 'teal';
-});
+const roleColorMap: Record<string, string> = {
+  Admin: 'purple',
+  HR: 'blue',
+  Personel: 'teal',
+};
 
 function isActive(path: string): boolean {
   return route.path === path;

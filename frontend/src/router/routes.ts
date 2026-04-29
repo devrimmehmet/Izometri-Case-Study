@@ -1,24 +1,23 @@
 import type { RouteRecordRaw } from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
-  // Gate - lock screen
+  // Root → login
   {
     path: '/',
-    component: () => import('pages/GatePage.vue'),
+    redirect: '/login',
   },
 
   // Login
   {
     path: '/login',
     component: () => import('pages/LoginPage.vue'),
-    meta: { requiresGate: true },
   },
 
   // Authenticated area
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
-    meta: { requiresAuth: true, requiresGate: true },
+    meta: { requiresAuth: true },
     children: [
       { path: 'dashboard', component: () => import('pages/DashboardPage.vue') },
       { path: 'expenses', component: () => import('pages/ExpensesPage.vue') },
@@ -35,6 +34,11 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'admin/operations',
         component: () => import('pages/AdminOperationsPage.vue'),
+        meta: { roles: ['Admin'] },
+      },
+      {
+        path: 'admin/docs',
+        component: () => import('pages/DocsPage.vue'),
         meta: { roles: ['Admin'] },
       },
       { path: 'notifications', component: () => import('pages/NotificationsPage.vue') },

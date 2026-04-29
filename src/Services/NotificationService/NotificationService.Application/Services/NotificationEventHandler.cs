@@ -51,21 +51,26 @@ public sealed class NotificationEventHandler : INotificationEventHandler
             _                                               => "Personel"
         };
 
+        var recipientEmails = (integrationEvent.RecipientEmail ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (recipientEmails.Length == 0)
+            recipientEmails = [string.Empty];
+
         var emailStatus = "Skipped";
         string? emailError = null;
-        if (!string.IsNullOrWhiteSpace(integrationEvent.RecipientEmail))
+        foreach (var email in recipientEmails.Where(e => !string.IsNullOrEmpty(e)))
         {
             try
             {
-                await _emailSender.SendAsync(integrationEvent.RecipientEmail, subject, message, cancellationToken);
+                await _emailSender.SendAsync(email, subject, message, cancellationToken);
                 emailStatus = "Sent";
             }
             catch (Exception ex)
             {
                 emailStatus = "Failed";
-                emailError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+                emailError ??= ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
                 _logger.LogWarning(ex, "Email delivery failed. To: {ToEmail}, EventType: {EventType}, ExpenseId: {ExpenseId}",
-                    integrationEvent.RecipientEmail, eventType, integrationEvent.ExpenseId);
+                    email, eventType, integrationEvent.ExpenseId);
             }
         }
 
@@ -86,22 +91,27 @@ public sealed class NotificationEventHandler : INotificationEventHandler
             "Notification dispatched. EventType: {EventType}, TenantId: {TenantId}, ExpenseId: {ExpenseId}, Recipient: {Recipient}, EmailStatus: {EmailStatus}, CorrelationId: {CorrelationId}",
             eventType, integrationEvent.TenantId, integrationEvent.ExpenseId, recipient, emailStatus, integrationEvent.CorrelationId);
 
-        await _store.SaveAsync(new Notification
-        {
-            TenantId = integrationEvent.TenantId,
-            EventId = integrationEvent.EventId,
-            EventType = eventType,
-            CorrelationId = integrationEvent.CorrelationId,
-            ExpenseId = integrationEvent.ExpenseId,
-            Recipient = recipient,
-            RecipientEmail = integrationEvent.RecipientEmail,
-            RecipientPhone = integrationEvent.RecipientPhone,
-            EmailStatus = emailStatus,
-            EmailError = emailError,
-            Message = message,
-            Payload = payload,
-            SentAt = DateTime.UtcNow
-        }, new ProcessedMessage
+        var sentAt = DateTime.UtcNow;
+        var notifications = recipientEmails
+            .Select(email => new Notification
+            {
+                TenantId = integrationEvent.TenantId,
+                EventId = integrationEvent.EventId,
+                EventType = eventType,
+                CorrelationId = integrationEvent.CorrelationId,
+                ExpenseId = integrationEvent.ExpenseId,
+                Recipient = recipient,
+                RecipientEmail = email,
+                RecipientPhone = integrationEvent.RecipientPhone,
+                EmailStatus = emailStatus,
+                EmailError = emailError,
+                Message = message,
+                Payload = payload,
+                SentAt = sentAt
+            })
+            .ToList();
+
+        await _store.SaveManyAsync(notifications, new ProcessedMessage
         {
             EventId = integrationEvent.EventId,
             EventType = eventType,
@@ -150,5 +160,5 @@ public sealed class NotificationEventHandler : INotificationEventHandler
 public interface INotificationStore
 {
     Task<bool> IsProcessedAsync(Guid eventId, CancellationToken cancellationToken);
-    Task SaveAsync(Notification notification, ProcessedMessage processedMessage, CancellationToken cancellationToken);
+    Task SaveManyAsync(IReadOnlyList<Notification> notifications, ProcessedMessage processedMessage, CancellationToken cancellationToken);
 }

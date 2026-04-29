@@ -15,7 +15,7 @@ public interface INotificationEventHandler
 
 public interface INotificationQueryService
 {
-    Task<IReadOnlyCollection<NotificationResponse>> GetAsync(Guid? tenantId, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<NotificationResponse>> GetAsync(Guid? tenantId, string? recipientEmail, CancellationToken cancellationToken);
 }
 
 public interface INotificationDeadLetterAdminService

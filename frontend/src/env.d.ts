@@ -13,7 +13,6 @@ import 'vue-router';
 declare module 'vue-router' {
   interface RouteMeta {
     requiresAuth?: boolean;
-    requiresGate?: boolean;
     roles?: string[];
   }
 }

@@ -33,7 +33,7 @@ public sealed class NotificationsControllerTests
         };
 
         var queryService = new Mock<INotificationQueryService>();
-        queryService.Setup(x => x.GetAsync(tenantId, It.IsAny<CancellationToken>()))
+        queryService.Setup(x => x.GetAsync(tenantId, It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(response);
         var controller = new NotificationsController(queryService.Object);
         controller.ControllerContext = WithTenant(tenantId);
@@ -42,7 +42,7 @@ public sealed class NotificationsControllerTests
 
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         Assert.Same(response, ok.Value);
-        queryService.Verify(x => x.GetAsync(tenantId, It.IsAny<CancellationToken>()), Times.Once);
+        queryService.Verify(x => x.GetAsync(tenantId, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public sealed class NotificationsControllerTests
         var tenantId = Guid.NewGuid();
         var response = Array.Empty<NotificationResponse>();
         var queryService = new Mock<INotificationQueryService>();
-        queryService.Setup(x => x.GetAsync(tenantId, It.IsAny<CancellationToken>()))
+        queryService.Setup(x => x.GetAsync(tenantId, It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(response);
         var controller = new NotificationsController(queryService.Object)
         {
@@ -62,7 +62,7 @@ public sealed class NotificationsControllerTests
 
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         Assert.Same(response, ok.Value);
-        queryService.Verify(x => x.GetAsync(tenantId, It.IsAny<CancellationToken>()), Times.Once);
+        queryService.Verify(x => x.GetAsync(tenantId, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public sealed class NotificationsControllerTests
         var result = await controller.Get(Guid.NewGuid(), CancellationToken.None);
 
         Assert.IsType<ForbidResult>(result.Result);
-        queryService.Verify(x => x.GetAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        queryService.Verify(x => x.GetAsync(It.IsAny<Guid>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -92,7 +92,49 @@ public sealed class NotificationsControllerTests
         var result = await controller.Get(null, CancellationToken.None);
 
         Assert.IsType<ForbidResult>(result.Result);
-        queryService.Verify(x => x.GetAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        queryService.Verify(x => x.GetAsync(It.IsAny<Guid>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Get_filters_by_recipient_email_for_non_admin()
+    {
+        var tenantId = Guid.NewGuid();
+        var email = "personel@test.com";
+        var response = Array.Empty<NotificationResponse>();
+        var queryService = new Mock<INotificationQueryService>();
+        queryService.Setup(x => x.GetAsync(tenantId, email, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+        var controller = new NotificationsController(queryService.Object)
+        {
+            ControllerContext = WithTenantAndEmail(tenantId, email)
+        };
+
+        var result = await controller.Get(null, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Same(response, ok.Value);
+        queryService.Verify(x => x.GetAsync(tenantId, email, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Get_does_not_filter_by_email_for_admin()
+    {
+        var tenantId = Guid.NewGuid();
+        var email = "admin@test.com";
+        var response = Array.Empty<NotificationResponse>();
+        var queryService = new Mock<INotificationQueryService>();
+        queryService.Setup(x => x.GetAsync(tenantId, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+        var controller = new NotificationsController(queryService.Object)
+        {
+            ControllerContext = WithTenantEmailAndRole(tenantId, email, "Admin")
+        };
+
+        var result = await controller.Get(null, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Same(response, ok.Value);
+        queryService.Verify(x => x.GetAsync(tenantId, null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private static ControllerContext WithTenant(Guid tenantId)
@@ -102,7 +144,37 @@ public sealed class NotificationsControllerTests
             HttpContext = new DefaultHttpContext
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(
-                    new[] { new Claim("TenantId", tenantId.ToString()) },
+                    [new Claim("TenantId", tenantId.ToString())],
+                    "TestAuth"))
+            }
+        };
+    }
+
+    private static ControllerContext WithTenantAndEmail(Guid tenantId, string email)
+    {
+        return new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(
+                    [new Claim("TenantId", tenantId.ToString()), new Claim("email", email)],
+                    "TestAuth"))
+            }
+        };
+    }
+
+    private static ControllerContext WithTenantEmailAndRole(Guid tenantId, string email, string role)
+    {
+        return new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(
+                    [
+                        new Claim("TenantId", tenantId.ToString()),
+                        new Claim("email", email),
+                        new Claim("role", role),
+                    ],
                     "TestAuth"))
             }
         };

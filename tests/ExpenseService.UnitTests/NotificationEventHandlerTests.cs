@@ -12,16 +12,15 @@ namespace ExpenseService.Tests;
 public sealed class NotificationEventHandlerTests
 {
     [Fact]
-    public async Task HandleAsync_saves_notification_and_sends_email_and_sms_for_new_event()
+    public async Task HandleAsync_saves_one_notification_per_recipient_and_sends_individual_emails()
     {
         var tenantId = Guid.NewGuid();
         var expenseId = Guid.NewGuid();
-        var recipientEmail = "devrimmehmet@msn.com,devrimmehmet@gmail.com";
         var recipientPhone = "+905551234567";
         var integrationEvent = new ExpenseCreatedEvent(
             Guid.NewGuid(), "corr-1", DateTime.UtcNow, tenantId, expenseId, Guid.NewGuid(), 1000, "TRY")
         {
-            RecipientEmail = recipientEmail,
+            RecipientEmail = "hr@izometri.com,admin@izometri.com",
             RecipientPhone = recipientPhone
         };
 
@@ -41,22 +40,26 @@ public sealed class NotificationEventHandlerTests
 
         await handler.HandleAsync(ExpenseEventNames.ExpenseCreated, JsonSerializer.Serialize(integrationEvent), CancellationToken.None);
 
-        store.Verify(x => x.SaveAsync(
-            It.Is<Notification>(n =>
-                n.EventId == integrationEvent.EventId &&
-                n.TenantId == tenantId &&
-                n.ExpenseId == expenseId &&
-                n.EventType == ExpenseEventNames.ExpenseCreated &&
-                n.Recipient == "HR/Admin" &&
-                n.RecipientEmail == recipientEmail &&
-                n.RecipientPhone == recipientPhone &&
-                n.EmailStatus == "Sent" &&
-                n.Message.Contains("Tutar:") &&
-                n.Message.Contains("TRY")),
+        store.Verify(x => x.SaveManyAsync(
+            It.Is<IReadOnlyList<Notification>>(list =>
+                list.Count == 2 &&
+                list.All(n =>
+                    n.EventId == integrationEvent.EventId &&
+                    n.TenantId == tenantId &&
+                    n.ExpenseId == expenseId &&
+                    n.EventType == ExpenseEventNames.ExpenseCreated &&
+                    n.Recipient == "HR/Admin" &&
+                    n.RecipientPhone == recipientPhone &&
+                    n.EmailStatus == "Sent" &&
+                    n.Message.Contains("Tutar:") &&
+                    n.Message.Contains("TRY")) &&
+                list.Any(n => n.RecipientEmail == "hr@izometri.com") &&
+                list.Any(n => n.RecipientEmail == "admin@izometri.com")),
             It.Is<ProcessedMessage>(m => m.EventId == integrationEvent.EventId),
             It.IsAny<CancellationToken>()), Times.Once);
 
-        emailSender.Verify(x => x.SendAsync(recipientEmail, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        emailSender.Verify(x => x.SendAsync("hr@izometri.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        emailSender.Verify(x => x.SendAsync("admin@izometri.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         smsSender.Verify(x => x.SendAsync(recipientPhone, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -89,16 +92,18 @@ public sealed class NotificationEventHandlerTests
 
         await handler.HandleAsync(ExpenseEventNames.ExpenseApproved, JsonSerializer.Serialize(integrationEvent), CancellationToken.None);
 
-        store.Verify(x => x.SaveAsync(
-            It.Is<Notification>(n =>
-                n.EventId == integrationEvent.EventId &&
-                n.EmailStatus == "Sent" &&
-                !n.Message.Contains("Tutar:")),
+        store.Verify(x => x.SaveManyAsync(
+            It.Is<IReadOnlyList<Notification>>(list =>
+                list.Count == 1 &&
+                list[0].EventId == integrationEvent.EventId &&
+                list[0].RecipientEmail == "personel@test1.com" &&
+                list[0].EmailStatus == "Sent" &&
+                !list[0].Message.Contains("Tutar:")),
             It.Is<ProcessedMessage>(m => m.EventId == integrationEvent.EventId),
             It.IsAny<CancellationToken>()), Times.Once);
 
         emailSender.Verify(x => x.SendAsync(
-            integrationEvent.RecipientEmail,
+            "personel@test1.com",
             It.IsAny<string>(),
             It.Is<string>(message => !message.Contains("Tutar:")),
             It.IsAny<CancellationToken>()), Times.Once);
@@ -119,7 +124,7 @@ public sealed class NotificationEventHandlerTests
 
         var client = new Mock<IExpenseDetailsClient>();
         var emailSender = new Mock<IEmailSender>();
-        emailSender.Setup(x => x.SendAsync(integrationEvent.RecipientEmail, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        emailSender.Setup(x => x.SendAsync("devrimmehmet@msn.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new TimeoutException("SMTP timeout"));
         var smsSender = new Mock<ISmsService>();
         var logger = new Mock<ILogger<NotificationEventHandler>>();
@@ -128,8 +133,11 @@ public sealed class NotificationEventHandlerTests
 
         await handler.HandleAsync(ExpenseEventNames.ExpenseCreated, JsonSerializer.Serialize(integrationEvent), CancellationToken.None);
 
-        store.Verify(x => x.SaveAsync(
-            It.Is<Notification>(n => n.EmailStatus == "Failed" && n.EmailError!.Contains("SMTP timeout")),
+        store.Verify(x => x.SaveManyAsync(
+            It.Is<IReadOnlyList<Notification>>(list =>
+                list.Count == 1 &&
+                list[0].EmailStatus == "Failed" &&
+                list[0].EmailError!.Contains("SMTP timeout")),
             It.Is<ProcessedMessage>(m => m.EventId == integrationEvent.EventId),
             It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -155,6 +163,10 @@ public sealed class NotificationEventHandlerTests
 
         emailSender.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         smsSender.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        store.Verify(x => x.SaveManyAsync(
+            It.IsAny<IReadOnlyList<Notification>>(),
+            It.IsAny<ProcessedMessage>(),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -176,7 +188,7 @@ public sealed class NotificationEventHandlerTests
 
         await handler.HandleAsync(ExpenseEventNames.ExpenseRejected, JsonSerializer.Serialize(integrationEvent), CancellationToken.None);
 
-        store.Verify(x => x.SaveAsync(It.IsAny<Notification>(), It.IsAny<ProcessedMessage>(), It.IsAny<CancellationToken>()), Times.Never);
+        store.Verify(x => x.SaveManyAsync(It.IsAny<IReadOnlyList<Notification>>(), It.IsAny<ProcessedMessage>(), It.IsAny<CancellationToken>()), Times.Never);
         emailSender.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         smsSender.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }

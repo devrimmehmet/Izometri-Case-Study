@@ -39,7 +39,7 @@
     </div>
 
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-lg-7">
+      <div class="col-12">
         <div class="glass-card q-pa-lg">
           <q-banner v-if="errorMessage" rounded class="bg-negative text-white q-mb-md">
             {{ errorMessage }}
@@ -97,19 +97,6 @@
               <q-td :props="props">{{ formatDate(props.row.createdAt) }}</q-td>
             </template>
           </q-table>
-        </div>
-      </div>
-
-      <div class="col-12 col-lg-5">
-        <div class="glass-card q-pa-lg">
-          <div class="text-h6 text-weight-bold q-mb-md">Demo Akışı</div>
-          <q-timeline color="primary" dark dense>
-            <q-timeline-entry title="Personel" subtitle="test1 / devrimmehmet@msn.com / Pass123!" icon="person" />
-            <q-timeline-entry title="HR" subtitle="test1 / devrimmehmet@gmail.com / Pass123!" icon="badge" />
-            <q-timeline-entry title="Admin" subtitle="test1 / pattabanoglu@devrimmehmet.com / Pass123!" icon="admin_panel_settings" />
-            <q-timeline-entry title="Bildirim" subtitle="Bildirimler ekranında event kaydını kontrol edin." icon="notifications" />
-            <q-timeline-entry title="Mailpit" subtitle="http://localhost:8025 üzerinden e-postayı doğrulayın." icon="mark_email_read" />
-          </q-timeline>
         </div>
       </div>
     </div>

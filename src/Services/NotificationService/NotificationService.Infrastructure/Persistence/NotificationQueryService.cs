@@ -13,12 +13,16 @@ public sealed class NotificationQueryService : INotificationQueryService
         _dbContext = dbContext;
     }
 
-    public async Task<IReadOnlyCollection<NotificationResponse>> GetAsync(Guid? tenantId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<NotificationResponse>> GetAsync(Guid? tenantId, string? recipientEmail, CancellationToken cancellationToken)
     {
         var query = _dbContext.Notifications.AsQueryable();
         if (tenantId.HasValue)
         {
             query = query.Where(x => x.TenantId == tenantId.Value);
+        }
+        if (!string.IsNullOrEmpty(recipientEmail))
+        {
+            query = query.Where(x => x.RecipientEmail == recipientEmail);
         }
 
         return await query

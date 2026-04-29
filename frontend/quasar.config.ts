@@ -78,7 +78,7 @@ export default defineConfig(() => {
       config: {
         dark: true,
         notify: {
-          position: 'top-right',
+          position: 'bottom',
           timeout: 3000,
         },
         loading: {},

@@ -24,26 +24,11 @@ export default defineRouter((/* { store, ssrContext } */) => {
   Router.beforeEach((to) => {
     const auth = useAuthStore();
 
-    // Restore session on first load
     if (!auth.isAuthenticated) {
       auth.restoreSession();
     }
 
-    // Check gate
-    if (!auth.gateUnlocked) {
-      auth.checkGate();
-    }
-
-    // Gate required but not unlocked
-    if (to.meta.requiresGate && !auth.gateUnlocked) {
-      return '/';
-    }
-
-    if (to.path === '/' && auth.gateUnlocked && !auth.isAuthenticated) {
-      return '/login';
-    }
-
-    // Auth required but not authenticated
+    // Auth required but not authenticated → login
     if (to.meta.requiresAuth && !auth.isAuthenticated) {
       return '/login';
     }
@@ -55,23 +40,15 @@ export default defineRouter((/* { store, ssrContext } */) => {
         auth.roles.includes(r as 'Admin' | 'HR' | 'Personel'),
       );
       if (!hasRole) {
-        return {
-          path: '/dashboard',
-          query: { denied: 'role' },
-        };
+        return { path: '/dashboard', query: { denied: 'role' } };
       }
     }
 
-    // Already authenticated, redirect gate/login to dashboard
-    if (
-      auth.isAuthenticated &&
-      auth.gateUnlocked &&
-      (to.path === '/' || to.path === '/login')
-    ) {
+    // Already authenticated → skip login/root, go to dashboard
+    if (auth.isAuthenticated && (to.path === '/' || to.path === '/login')) {
       return '/dashboard';
     }
 
-    // Allow navigation
     return true;
   });
 

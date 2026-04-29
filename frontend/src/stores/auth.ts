@@ -78,7 +78,6 @@ export const useAuthStore = defineStore('auth', {
     tenantId: '',
     tenantCode: '',
     roles: [] as UserRole[],
-    gateUnlocked: false,
   }),
 
   getters: {
@@ -96,16 +95,6 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    unlockGate() {
-      this.gateUnlocked = true;
-      sessionStorage.setItem('gate', '1');
-    },
-
-    checkGate(): boolean {
-      this.gateUnlocked = sessionStorage.getItem('gate') === '1';
-      return this.gateUnlocked;
-    },
-
     async login(payload: LoginPayload): Promise<void> {
       let accessToken: string;
       let fallbackData: LoginApiResponse | null = null;

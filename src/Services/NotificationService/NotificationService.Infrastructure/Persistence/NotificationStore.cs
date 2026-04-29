@@ -18,11 +18,9 @@ public sealed class NotificationStore : INotificationStore
         return _dbContext.ProcessedMessages.AnyAsync(x => x.EventId == eventId, cancellationToken);
     }
 
-    public async Task SaveAsync(Notification notification, ProcessedMessage processedMessage, CancellationToken cancellationToken)
+    public async Task SaveManyAsync(IReadOnlyList<Notification> notifications, ProcessedMessage processedMessage, CancellationToken cancellationToken)
     {
-        // SaveChangesAsync birden fazla entity'yi tek implicit transaction içinde kaydeder.
-        // Explicit BeginTransactionAsync gerekli değil.
-        await _dbContext.Notifications.AddAsync(notification, cancellationToken);
+        await _dbContext.Notifications.AddRangeAsync(notifications, cancellationToken);
         await _dbContext.ProcessedMessages.AddAsync(processedMessage, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
