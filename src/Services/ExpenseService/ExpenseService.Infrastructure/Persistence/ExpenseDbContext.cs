@@ -79,7 +79,7 @@ public sealed class ExpenseDbContext : DbContext
             b.Property(x => x.CorrelationId).HasMaxLength(100).IsRequired();
             b.HasIndex(x => x.ProcessedAt);
             b.HasIndex(x => x.DeadLetteredAt);
-            b.HasQueryFilter(x => !x.IsDeleted);
+            b.HasQueryFilter(x => !x.IsDeleted && (_currentUser == null || _currentUser.TenantId == null || x.TenantId == _currentUser.TenantId));
         });
 
         Seed(modelBuilder);

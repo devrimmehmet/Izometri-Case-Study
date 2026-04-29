@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Application.Abstractions;
+using NotificationService.Application.DTOs;
 
 namespace NotificationService.Api.Controllers;
 
@@ -27,4 +28,3 @@ public sealed class AdminEmailProbeController : ControllerBase
     }
 }
 
-public sealed record SendProbeEmailRequest(string ToEmail, string Subject, string Body);

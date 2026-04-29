@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using ExpenseService.Application.Abstractions;
 using ExpenseService.Domain.Common;
 
@@ -7,7 +6,7 @@ namespace ExpenseService.Infrastructure.Persistence;
 public sealed class UnitOfWork : IUnitOfWork
 {
     private readonly ExpenseDbContext _dbContext;
-    private readonly ConcurrentDictionary<Type, object> _repositories = new();
+    private readonly Dictionary<Type, object> _repositories = new();
 
     public UnitOfWork(ExpenseDbContext dbContext)
     {
@@ -16,7 +15,12 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public IRepository<T> Repository<T>() where T : BaseEntity
     {
-        return (IRepository<T>)_repositories.GetOrAdd(typeof(T), _ => new Repository<T>(_dbContext));
+        if (!_repositories.TryGetValue(typeof(T), out var repo))
+        {
+            repo = new Repository<T>(_dbContext);
+            _repositories[typeof(T)] = repo;
+        }
+        return (IRepository<T>)repo;
     }
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

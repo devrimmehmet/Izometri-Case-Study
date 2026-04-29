@@ -112,8 +112,8 @@ public sealed class ExpenseAppService : IExpenseAppService
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
         var expenses = VisibleExpenses();
 
-        if (query.DateFrom.HasValue) expenses = expenses.Where(x => x.CreatedAt >= query.DateFrom.Value);
-        if (query.DateTo.HasValue) expenses = expenses.Where(x => x.CreatedAt <= query.DateTo.Value);
+        if (query.DateFrom.HasValue) expenses = expenses.Where(x => x.CreatedAt >= DateTime.SpecifyKind(query.DateFrom.Value, DateTimeKind.Utc));
+        if (query.DateTo.HasValue) expenses = expenses.Where(x => x.CreatedAt <= DateTime.SpecifyKind(query.DateTo.Value, DateTimeKind.Utc));
         if (query.Status.HasValue) expenses = expenses.Where(x => x.Status == query.Status.Value);
         if (query.Category.HasValue) expenses = expenses.Where(x => x.Category == query.Category.Value);
 

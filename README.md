@@ -53,7 +53,7 @@ Case değerlendirmesi için gereken tüm teknik detaylar modüler dökümanlarda
 | :--- | :--- |
 | **📦 [Teslimat Özeti](Docs/teslimat-özeti.md)** | **Hızlı Değerlendirme Özeti** |
 | **🏗️ [Mimari Topoloji](Docs/mimari-topoloji.md)** | Teknik Tasarım ve Veri Akışı |
-| **📡 [API Deneme Rehberi](Docs/api-deneme-reberi.md)** | Örnek İstekler ve Postman |
+| **📡 [API Deneme Rehberi](Docs/api-deneme-rehberi.md)** | Örnek İstekler ve Postman |
 | **🧪 [Test ve Doğrulama](Docs/test-dogrulama.md)** | Test Kapsamı ve Sonuçları |
 | **⚙️ [Çalıştırma Rehberi](Docs/çalıştırma-ve-ortamlar.md)** | Local ve Prod Kurulumu |
 

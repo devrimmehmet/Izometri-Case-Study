@@ -2,7 +2,7 @@ using ExpenseService.Domain.Common;
 
 namespace ExpenseService.Domain.Entities;
 
-public sealed class OutboxMessage : BaseEntity
+public sealed class OutboxMessage : TenantEntity
 {
     public string EventType { get; set; } = string.Empty;
     public string RoutingKey { get; set; } = string.Empty;

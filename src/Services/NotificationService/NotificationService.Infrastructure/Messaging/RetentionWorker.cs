@@ -53,17 +53,21 @@ public sealed class RetentionWorker : BackgroundService
                 .Where(x => x.CreatedAt < threshold)
                 .ExecuteDeleteAsync(cancellationToken);
 
-            // 2. Eski bildirim kayıtlarını temizle (Opsiyonel: Notification tablosu çok büyüyorsa)
-            // Genelde bildirimler audit için daha uzun tutulur ama case study kapsamında 30 gün diyebiliriz.
+            // 2. Eski bildirim kayıtlarını soft-delete ile işaretle.
+            // Notification bir iş entity'sidir (TenantEntity); TR-3 gereği hard delete kullanılmaz.
             var notificationThreshold = DateTime.UtcNow.AddDays(-30);
             var deletedNotifications = await dbContext.Notifications
-                .Where(x => x.SentAt < notificationThreshold)
-                .ExecuteDeleteAsync(cancellationToken);
+                .Where(x => x.SentAt < notificationThreshold && !x.IsDeleted)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(x => x.IsDeleted, true)
+                    .SetProperty(x => x.DeletedAt, DateTime.UtcNow)
+                    .SetProperty(x => x.DeletedBy, (Guid?)null),
+                    cancellationToken);
 
             if (deletedProcessed > 0 || deletedNotifications > 0)
             {
                 _logger.LogInformation(
-                    "Retention cleanup: {ProcessedCount} processed messages and {NotificationCount} notifications removed.", 
+                    "Retention cleanup: {ProcessedCount} processed messages hard-deleted, {NotificationCount} notifications soft-deleted.",
                     deletedProcessed, deletedNotifications);
             }
         }

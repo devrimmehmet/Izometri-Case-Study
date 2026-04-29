@@ -196,7 +196,7 @@ services:
     volumes:
       - ./deploy/keycloak:/opt/keycloak/data/import:ro
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/health/ready || exit 1"]
+      test: ["CMD-SHELL", "grep -q ':2328 ' /proc/net/tcp6 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12

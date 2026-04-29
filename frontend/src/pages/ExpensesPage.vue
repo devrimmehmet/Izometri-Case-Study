@@ -518,12 +518,22 @@ function openDetail(row: ExpenseDto) {
   showDetailDialog.value = true;
 }
 
+// "YYYY-MM-DD" → "YYYY-MM-DDT00:00:00.000Z"  (günün başı, UTC)
+function toUtcDayStart(dateStr: string): string {
+  return new Date(dateStr + 'T00:00:00.000Z').toISOString();
+}
+
+// "YYYY-MM-DD" → "YYYY-MM-DDT23:59:59.999Z"  (günün sonu, UTC — o günü dahil eder)
+function toUtcDayEnd(dateStr: string): string {
+  return new Date(dateStr + 'T23:59:59.999Z').toISOString();
+}
+
 async function applyFilters() {
   await expense.fetchExpenses({
     status: filters.status ?? undefined,
     category: filters.category as ExpenseQueryParams['category'],
-    dateFrom: filters.dateFrom !== '' ? filters.dateFrom : undefined,
-    dateTo: filters.dateTo !== '' ? filters.dateTo : undefined,
+    dateFrom: filters.dateFrom !== '' ? toUtcDayStart(filters.dateFrom) : undefined,
+    dateTo: filters.dateTo !== '' ? toUtcDayEnd(filters.dateTo) : undefined,
     pageNumber: pagination.value.page,
     pageSize: pagination.value.rowsPerPage,
   });

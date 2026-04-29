@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NotificationService.Api.Controllers;
 using NotificationService.Application.Abstractions;
+using NotificationService.Application.DTOs;
 
 namespace ExpenseService.Tests;
 

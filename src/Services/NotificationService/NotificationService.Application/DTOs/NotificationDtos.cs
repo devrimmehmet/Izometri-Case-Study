@@ -1,5 +1,7 @@
 namespace NotificationService.Application.DTOs;
 
+public sealed record SendProbeEmailRequest(string ToEmail, string Subject, string Body);
+
 public sealed record NotificationResponse(
     Guid Id,
     Guid TenantId,

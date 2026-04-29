@@ -1,7 +1,7 @@
 using ExpenseService.Application.Abstractions;
 using ExpenseService.Application.DTOs;
 using ExpenseService.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore; // Include(), ToListAsync() vb. async LINQ — pragmatik kabul
 
 namespace ExpenseService.Application.Services;
 
@@ -27,15 +27,15 @@ public sealed class AuthService : IAuthService
 
     public async Task<LoginResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
     {
+        // Login sırasında JWT yok → _currentUser.TenantId == null → global filter
+        // zaten tüm tenant kayıtlarını geçirir; IgnoreQueryFilters() gereksiz.
         var tenant = await _tenants.Query()
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(x => x.Name == request.TenantCode && !x.IsDeleted, cancellationToken)
+            .FirstOrDefaultAsync(x => x.Name == request.TenantCode, cancellationToken)
             ?? throw new UnauthorizedAccessException("Invalid credentials.");
 
         var user = await _users.Query()
-            .IgnoreQueryFilters()
             .Include(x => x.Roles)
-            .FirstOrDefaultAsync(x => x.TenantId == tenant.Id && x.Email == request.Email.ToLower() && !x.IsDeleted, cancellationToken)
+            .FirstOrDefaultAsync(x => x.TenantId == tenant.Id && x.Email == request.Email.ToLower(), cancellationToken)
             ?? throw new UnauthorizedAccessException("Invalid credentials.");
 
         if (!_passwordHasher.Verify(request.Password, user.PasswordHash))

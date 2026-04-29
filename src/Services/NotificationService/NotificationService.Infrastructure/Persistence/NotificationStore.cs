@@ -20,10 +20,10 @@ public sealed class NotificationStore : INotificationStore
 
     public async Task SaveAsync(Notification notification, ProcessedMessage processedMessage, CancellationToken cancellationToken)
     {
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+        // SaveChangesAsync birden fazla entity'yi tek implicit transaction içinde kaydeder.
+        // Explicit BeginTransactionAsync gerekli değil.
         await _dbContext.Notifications.AddAsync(notification, cancellationToken);
         await _dbContext.ProcessedMessages.AddAsync(processedMessage, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
     }
 }

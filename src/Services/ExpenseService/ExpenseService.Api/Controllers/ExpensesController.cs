@@ -19,6 +19,7 @@ public sealed class ExpensesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Personel")]
     [ProducesResponseType(typeof(ExpenseResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
@@ -29,6 +30,7 @@ public sealed class ExpensesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Personel")]
     [ProducesResponseType(typeof(ExpenseResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
@@ -45,6 +47,7 @@ public sealed class ExpensesController : ControllerBase
         return Ok(await _expenseAppService.GetListAsync(query, cancellationToken));
     }
 
+    // Service rolü (NotificationService → ExpenseService HTTP çağrısı) dahil tüm roller erişebilir.
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ExpenseResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -54,8 +57,10 @@ public sealed class ExpensesController : ControllerBase
     }
 
     [HttpPut("{id:guid}/submit")]
+    [Authorize(Roles = "Personel")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Submit(Guid id, CancellationToken cancellationToken)
     {
@@ -64,6 +69,7 @@ public sealed class ExpensesController : ControllerBase
     }
 
     [HttpPut("{id:guid}/approve")]
+    [Authorize(Roles = "HR,Admin")]
     [ProducesResponseType(typeof(ExpenseResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
@@ -74,6 +80,7 @@ public sealed class ExpensesController : ControllerBase
     }
 
     [HttpPut("{id:guid}/reject")]
+    [Authorize(Roles = "HR,Admin")]
     [ProducesResponseType(typeof(ExpenseResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]

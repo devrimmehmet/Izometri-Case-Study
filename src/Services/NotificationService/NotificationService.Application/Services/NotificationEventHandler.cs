@@ -44,7 +44,12 @@ public sealed class NotificationEventHandler : INotificationEventHandler
 
         var message = BuildMessage(eventType, integrationEvent, expense);
         var subject = BuildSubject(eventType, integrationEvent.ExpenseId);
-        var recipient = eventType == ExpenseEventNames.ExpenseCreated ? "HR/Admin" : "Personel";
+        var recipient = eventType switch
+        {
+            ExpenseEventNames.ExpenseCreated                => "HR/Admin",
+            ExpenseEventNames.ExpenseRequiresAdminApproval => "Admin",
+            _                                               => "Personel"
+        };
 
         var emailStatus = "Skipped";
         string? emailError = null;
