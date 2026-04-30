@@ -13,7 +13,7 @@
 
         <div class="row items-center q-gutter-sm">
           <q-badge
-            v-for="role in auth.roles"
+            v-for="role in visibleRoles"
             :key="role"
             :color="roleColorMap[role] ?? 'grey'"
             outline
@@ -104,6 +104,13 @@ const navItems = computed(() =>
     if (!item.roles) return true;
     return item.roles.some((r) => auth.roles.includes(r as 'Admin' | 'HR' | 'Personel'));
   }),
+);
+
+// Keycloak access tokens can contain built-in realm roles such as
+// offline_access or uma_authorization. The navbar should only show
+// application roles that are meaningful to end users.
+const visibleRoles = computed(() =>
+  auth.roles.filter((role) => ['Admin', 'HR', 'Personel'].includes(role)),
 );
 
 const roleColorMap: Record<string, string> = {

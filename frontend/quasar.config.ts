@@ -2,7 +2,7 @@ import { defineConfig } from '#q-app/wrappers';
 
 export default defineConfig(() => {
   return {
-    boot: ['axios'],
+    boot: ['axios', 'quasar-lang'],
 
     css: ['app.scss'],
 

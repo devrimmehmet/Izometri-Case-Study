@@ -32,6 +32,8 @@
       <q-table
         :rows="filteredNotifications"
         :columns="columns"
+        :pagination="{ rowsPerPage: 20 }"
+        :rows-per-page-options="[20, 50, 100]"
         :grid="$q.screen.xs"
         row-key="id"
         flat

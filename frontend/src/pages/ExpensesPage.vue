@@ -39,6 +39,7 @@
         v-model:pagination="pagination"
         :rows="expense.expenses"
         :columns="columns"
+        :rows-per-page-options="[20, 50, 100]"
         :grid="$q.screen.xs"
         row-key="id"
         flat
@@ -265,7 +266,7 @@ const currencyOptions = [
 
 const pagination = ref({
   page: 1,
-  rowsPerPage: 10,
+  rowsPerPage: 20,
   rowsNumber: 0,
 });
 

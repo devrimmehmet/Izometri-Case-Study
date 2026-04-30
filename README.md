@@ -53,6 +53,12 @@ dotnet test Izometri.CaseStudy.slnx --no-build
 docker compose up -d --build
 ```
 
+Not:
+
+- .NET servis Dockerfile'ları bilerek `mcr.microsoft.com` base image'larını kullanmıyor.
+- Sebep, bazı makinelerde Docker'ın MCR'ye giderken `EOF` / `connection reset` alabilmesi; servisler bu yüzden `debian:12-slim` üstüne `packages.microsoft.com` üzerinden .NET 10 runtime/SDK kuruyor.
+- Böylece case değerlendirmesinde `docker compose up -d --build` akışı, Docker Hub erişimi varken MCR erişimi bozuk olsa bile daha dayanıklı kalır.
+
 Container durumunu kontrol:
 
 ```powershell

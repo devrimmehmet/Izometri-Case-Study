@@ -22,6 +22,8 @@ interface KeycloakTokenResponse {
   access_token: string;
 }
 
+const appRoles: readonly UserRole[] = ['Admin', 'HR', 'Personel'];
+
 const keycloakTokenUrl =
   import.meta.env.VITE_KEYCLOAK_TOKEN_URL ??
   'http://localhost:18080/realms/izometri/protocol/openid-connect/token';
@@ -60,6 +62,13 @@ function claimArray(claims: Record<string, unknown>, ...keys: string[]): string[
   }
 
   return [];
+}
+
+function filterAppRoles(roles: string[]): UserRole[] {
+  // Keycloak access tokens may include built-in realm roles such as
+  // offline_access or uma_authorization. Keep only application roles in store
+  // so UI and authorization checks operate on a clean, intentional set.
+  return roles.filter((role): role is UserRole => appRoles.includes(role as UserRole));
 }
 
 function isKeycloakAccessToken(claims: Record<string, unknown>): boolean {
@@ -114,7 +123,9 @@ export const useAuthStore = defineStore('auth', {
       }
 
       const claims = parseJwtClaims(accessToken);
-      const roles = claimArray(claims, 'role', 'roles', 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role') as UserRole[];
+      const roles = filterAppRoles(
+        claimArray(claims, 'role', 'roles', 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'),
+      );
 
       this.token = accessToken;
       this.userId = claimString(claims, 'UserId', 'sub') || fallbackData?.userId || '';
@@ -124,7 +135,9 @@ export const useAuthStore = defineStore('auth', {
       );
       this.tenantId = claimString(claims, 'TenantId', 'tenantId') || fallbackData?.tenantId || '';
       this.tenantCode = payload.tenantCode;
-      this.roles = roles.length > 0 ? roles : (fallbackData?.roles as UserRole[] | undefined) ?? [];
+      this.roles = roles.length > 0
+        ? roles
+        : filterAppRoles(fallbackData?.roles ?? []);
 
       localStorage.setItem('jwt', accessToken);
       localStorage.setItem('tenantCode', payload.tenantCode);
@@ -154,7 +167,7 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         const claims = parseJwtClaims(token);
-        const exp = claims.exp as number | undefined;
+        const exp = typeof claims.exp === 'number' ? claims.exp : undefined;
         if (exp && exp * 1000 < Date.now()) {
           this.logout();
           return false;
@@ -172,12 +185,14 @@ export const useAuthStore = defineStore('auth', {
         this.displayName = claimString(claims, 'name', 'preferred_username', 'email');
         this.tenantId = claimString(claims, 'TenantId', 'tenantId');
         this.tenantCode = localStorage.getItem('tenantCode') ?? '';
-        this.roles = claimArray(
-          claims,
-          'role',
-          'roles',
-          'http://schemas.microsoft.com/ws/2008/06/identity/claims/role',
-        ) as UserRole[];
+        this.roles = filterAppRoles(
+          claimArray(
+            claims,
+            'role',
+            'roles',
+            'http://schemas.microsoft.com/ws/2008/06/identity/claims/role',
+          ),
+        );
 
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         notifyApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;

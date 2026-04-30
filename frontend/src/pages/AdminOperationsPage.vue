@@ -27,6 +27,8 @@
             <q-table
               :rows="admin.outboxDeadLetters"
               :columns="outboxColumns"
+              :pagination="{ rowsPerPage: 20 }"
+              :rows-per-page-options="[20, 50, 100]"
               :grid="$q.screen.xs"
               row-key="id"
               flat
@@ -69,6 +71,8 @@
             <q-table
               :rows="admin.notificationDeadLetters"
               :columns="notificationColumns"
+              :pagination="{ rowsPerPage: 20 }"
+              :rows-per-page-options="[20, 50, 100]"
               :grid="$q.screen.xs"
               row-key="id"
               flat
