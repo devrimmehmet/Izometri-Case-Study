@@ -35,6 +35,58 @@ Akış özeti:
 7. Notification Service bildirim metnini zenginleştirmek için `GET /api/internal/expenses/{id}` endpoint'ine service token ile HTTP çağrısı yapar.
 8. Bildirim kaydı Notification DB'ye yazılır, e-posta Mailpit'e gönderilir.
 
+## Mimari Tercih Açıklaması
+
+Bu proje, yalnızca gereksinimleri karşılamak için değil, gerçek hayatta production ortamında karşılaşılabilecek problemleri çözebilecek şekilde tasarlanmıştır.
+
+### Mikroservis Ayrımı (Expense & Notification)
+Harcama yönetimi ve bildirim süreçleri farklı sorumluluklara sahiptir. Bu nedenle ayrı servisler olarak tasarlanmıştır.
+- Servis bağımsız deploy edilebilir
+- Yük dağılımı optimize edilir
+- Gelecekte farklı bildirim kanalları (SMS, Push vs.) kolayca eklenebilir
+
+### Database per Service
+Her servisin kendi veritabanına sahip olması:
+- Servisler arası coupling’i azaltır
+- Veri sahipliğini netleştirir
+- Bağımsız ölçeklenebilirlik sağlar
+
+### Multi-Tenant Yaklaşım
+TenantId bazlı izolasyon:
+- Veri güvenliğini garanti eder
+- SaaS modeline uygundur
+- EF Core global query filter ile merkezi ve hatasız uygulanır
+
+### Outbox Pattern + RabbitMQ
+Event publishing işlemleri Outbox pattern ile garanti altına alınmıştır:
+- Transactional consistency sağlanır
+- “DB yazıldı ama event gitmedi” problemi çözülür
+- Event-driven mimari desteklenir
+
+### Senkron + Asenkron İletişim Birlikte Kullanımı
+- Asenkron: Event-driven notification (loosely coupled)
+- Senkron: Gerekli durumlarda detay sorgulama (consistency)
+
+Bu yaklaşım gerçek sistemlerde sıklıkla kullanılan hibrit iletişim modelidir.
+
+### Keycloak ile Merkezi Kimlik Yönetimi
+OAuth2/OIDC kullanımı:
+- Merkezi authentication sağlar
+- Token bazlı güvenli erişim
+- Servisler arası güvenli iletişim (service-to-service auth)
+
+### Observability (Logging + Tracing)
+- Correlation ID ile request takibi
+- OpenTelemetry + Jaeger ile distributed tracing
+- Problemlerin production ortamında hızlı tespiti
+
+### Test Stratejisi
+- Unit testler: iş kurallarını garanti altına alır
+- Integration testler: servisler arası akışı doğrular
+- Testcontainers: gerçek bağımlılıklarla test imkanı sağlar
+
+Bu yapı, sistemin yalnızca çalışmasını değil, sürdürülebilir, gözlemlenebilir ve genişletilebilir olmasını hedefler.
+
 ## Hızlı Başlangıç
 
 Ön koşullar:
