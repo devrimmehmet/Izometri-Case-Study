@@ -77,8 +77,18 @@ public sealed class OutboxPublisherWorker : BackgroundService
         _connection = await factory.CreateConnectionAsync(cancellationToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
         await _channel.ExchangeDeclareAsync(ExpenseEventNames.Exchange, ExchangeType.Topic, durable: true, cancellationToken: cancellationToken);
+        await DeclareNotificationBindingsAsync(cancellationToken);
 
         _logger.LogInformation("Outbox publisher connected to RabbitMQ.");
+    }
+
+    private async Task DeclareNotificationBindingsAsync(CancellationToken cancellationToken)
+    {
+        await _channel!.QueueDeclareAsync(ExpenseEventNames.NotificationQueue, durable: true, exclusive: false, autoDelete: false, cancellationToken: cancellationToken);
+        await _channel.QueueBindAsync(ExpenseEventNames.NotificationQueue, ExpenseEventNames.Exchange, ExpenseEventNames.ExpenseCreated, cancellationToken: cancellationToken);
+        await _channel.QueueBindAsync(ExpenseEventNames.NotificationQueue, ExpenseEventNames.Exchange, ExpenseEventNames.ExpenseApproved, cancellationToken: cancellationToken);
+        await _channel.QueueBindAsync(ExpenseEventNames.NotificationQueue, ExpenseEventNames.Exchange, ExpenseEventNames.ExpenseRejected, cancellationToken: cancellationToken);
+        await _channel.QueueBindAsync(ExpenseEventNames.NotificationQueue, ExpenseEventNames.Exchange, ExpenseEventNames.ExpenseRequiresAdminApproval, cancellationToken: cancellationToken);
     }
 
     private async Task PublishPendingAsync(CancellationToken cancellationToken)
@@ -144,6 +154,11 @@ public sealed class OutboxPublisherWorker : BackgroundService
                 message.ProcessedAt = DateTime.UtcNow;
                 message.Error = null;
                 activity?.SetStatus(ActivityStatusCode.Ok);
+                _logger.LogInformation(
+                    "Published outbox message {MessageId} to RabbitMQ. RoutingKey: {RoutingKey}, CorrelationId: {CorrelationId}",
+                    message.Id,
+                    message.RoutingKey,
+                    message.CorrelationId);
             }
             catch (Exception ex)
             {

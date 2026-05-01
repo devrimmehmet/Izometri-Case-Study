@@ -345,6 +345,7 @@ public sealed class ExpenseAppService : IExpenseAppService
     {
         await _unitOfWork.Repository<OutboxMessage>().AddAsync(new OutboxMessage
         {
+            TenantId = integrationEvent.TenantId,
             EventType = typeof(T).Name,
             RoutingKey = routingKey,
             Payload = JsonSerializer.Serialize(integrationEvent),

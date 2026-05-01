@@ -89,6 +89,11 @@ public sealed class RabbitMqConsumerWorker : BackgroundService
                 await handler.HandleAsync(ea.RoutingKey, payload, cancellationToken);
                 await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken);
                 activity?.SetStatus(ActivityStatusCode.Ok);
+                _logger.LogInformation(
+                    "RabbitMQ event consumed. RoutingKey: {RoutingKey}, MessageId: {MessageId}, CorrelationId: {CorrelationId}",
+                    ea.RoutingKey,
+                    ea.BasicProperties.MessageId,
+                    correlationId);
             }
             catch (Exception ex)
             {

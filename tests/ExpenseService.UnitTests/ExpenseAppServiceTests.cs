@@ -51,6 +51,7 @@ public sealed class ExpenseAppServiceTests
         Assert.Equal(ExpenseStatus.Draft, expense.Status);
 
         var outbox = Assert.Single(addedOutboxMessages);
+        Assert.Equal(tenantId, outbox.TenantId);
         Assert.Equal(ExpenseEventNames.ExpenseCreated, outbox.RoutingKey);
         Assert.Equal("corr-create", outbox.CorrelationId);
 

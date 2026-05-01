@@ -273,10 +273,26 @@ Tüm testler:
 dotnet test Izometri.CaseStudy.slnx
 ```
 
+RabbitMQ Management panelinde kuyruk davranışını manuel gözlemlemek için:
+
+```bash
+tests/Manual/rabbitmq-fill-queue.sh 500
+```
+
+Bu komut `expense.events` exchange'ine bağlı `debug.expense-events` kuyruğunu doldurur. RabbitMQ Management'te `Queues and Streams -> debug.expense-events` ekranında `Ready` mesaj sayısı izlenebilir. Bu manuel gözlem testi gerçek `notification.expense-events` kuyruğunu kirletmez.
+
+Debug kuyruğunu boşaltmak için:
+
+```bash
+curl -u 'izometri:Izometri2026!' -X DELETE \
+  'http://localhost:15673/api/queues/%2F/debug.expense-events/contents'
+```
+
 Test yapısı:
 
 - `tests/ExpenseService.UnitTests`: xUnit + Moq; controller, validator, domain rule, JWT contract, notification handler ve `ExpenseAppService` unit testleri.
 - `tests/ExpenseService.IntegrationTests`: Testcontainers ile PostgreSQL/RabbitMQ, Keycloak gated testleri ve live health/delivery testleri.
+- `tests/Manual`: Otomatik koşuya dahil olmayan, RabbitMQ Management gibi araçları elle gözlemlemek için kullanılan yardımcı test araçları.
 
 Son doğrulama durumu:
 

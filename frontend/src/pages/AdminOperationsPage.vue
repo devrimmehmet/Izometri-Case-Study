@@ -3,10 +3,61 @@
     <div class="row items-center q-mb-lg">
       <div>
         <div class="text-h5 text-weight-bold">Admin Operasyonları</div>
-        <div class="text-grey-5 text-body2">Outbox, bildirim dead-letter ve probe email işlemleri</div>
+        <div class="text-grey-5 text-body2">Hata kayıtları, dead-letter takibi ve servis deneme işlemleri</div>
       </div>
       <q-space />
       <q-btn color="primary" icon="refresh" label="Yenile" rounded unelevated @click="loadAll" />
+    </div>
+
+    <q-banner rounded class="ops-info q-mb-md">
+      <template #avatar>
+        <q-icon name="info" color="info" size="28px" />
+      </template>
+      Bu ekran normal bildirim akışını değil, sorunlu mesajları gösterir. Tablolar boşsa genellikle iyi haber:
+      outbox mesajları RabbitMQ'ya yayınlanmış, notification consumer mesajları işlemiş ve dead-letter oluşmamıştır.
+    </q-banner>
+
+    <div class="row q-col-gutter-md q-mb-md">
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="ops-summary">
+          <q-icon name="outbox" color="primary" size="24px" />
+          <div>
+            <div class="ops-summary__value">{{ admin.outboxDeadLetters.length }}</div>
+            <div class="ops-summary__label">Outbox hata kaydı</div>
+            <div class="ops-summary__hint">0 olması beklenen sağlıklı durumdur.</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="ops-summary">
+          <q-icon name="mark_email_unread" color="warning" size="24px" />
+          <div>
+            <div class="ops-summary__value">{{ admin.notificationDeadLetters.length }}</div>
+            <div class="ops-summary__label">Notification hata kaydı</div>
+            <div class="ops-summary__hint">Consumer 10 kez başaramazsa buraya düşer.</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="ops-summary">
+          <q-icon name="check_circle" color="positive" size="24px" />
+          <div>
+            <div class="ops-summary__value">{{ healthLabel }}</div>
+            <div class="ops-summary__label">Operasyon durumu</div>
+            <div class="ops-summary__hint">Liste boşsa takip edilecek hata yoktur.</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="ops-summary">
+          <q-icon name="science" color="deep-purple-4" size="24px" />
+          <div>
+            <div class="ops-summary__value">Probe</div>
+            <div class="ops-summary__label">E-posta denemesi</div>
+            <div class="ops-summary__hint">Mailpit üzerinden test e-postası doğrulanır.</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="row q-col-gutter-md q-mb-md">
@@ -22,6 +73,10 @@
         <q-card dark class="glass-card">
           <q-card-section>
             <div class="text-h6">Outbox Dead-Letter</div>
+            <div class="ops-card-help">
+              ExpenseService bir event'i RabbitMQ'ya gönderemezse retry yapar. 10 deneme sonunda mesaj burada görünür.
+              Boş olması, outbox publisher tarafında kalıcı hata olmadığını gösterir.
+            </div>
           </q-card-section>
           <q-card-section>
             <q-table
@@ -40,10 +95,10 @@
             >
               <template #no-data>
                 <DataState
-                  :title="errorMessage ? 'Outbox kayıtları yüklenemedi' : 'Kayıt bulunamadı'"
-                  :message="errorMessage || 'Outbox dead-letter kaydı yok.'"
-                  :icon="errorMessage ? 'error_outline' : 'inbox'"
-                  :color="errorMessage ? 'negative' : 'grey-5'"
+                  :title="errorMessage ? 'Outbox kayıtları yüklenemedi' : 'Outbox hatası yok'"
+                  :message="errorMessage || 'RabbitMQ yayını başarısız olup dead-letter olan outbox mesajı bulunmuyor.'"
+                  :icon="errorMessage ? 'error_outline' : 'task_alt'"
+                  :color="errorMessage ? 'negative' : 'positive'"
                   :retry-label="errorMessage ? 'Tekrar dene' : ''"
                   dense
                   @retry="loadAll"
@@ -66,6 +121,10 @@
         <q-card dark class="glass-card">
           <q-card-section>
             <div class="text-h6">Notification Dead-Letter</div>
+            <div class="ops-card-help">
+              NotificationService RabbitMQ'dan aldığı mesajı işlerken hata alırsa mesajı tekrar dener.
+              10 başarısız denemeden sonra kayıt burada incelenir.
+            </div>
           </q-card-section>
           <q-card-section>
             <q-table
@@ -84,10 +143,10 @@
             >
               <template #no-data>
                 <DataState
-                  :title="errorMessage ? 'Notification kayıtları yüklenemedi' : 'Kayıt bulunamadı'"
-                  :message="errorMessage || 'Notification dead-letter kaydı yok.'"
-                  :icon="errorMessage ? 'error_outline' : 'inbox'"
-                  :color="errorMessage ? 'negative' : 'grey-5'"
+                  :title="errorMessage ? 'Notification kayıtları yüklenemedi' : 'Notification hatası yok'"
+                  :message="errorMessage || 'Consumer tarafından işlenemeyip dead-letter olan bildirim mesajı bulunmuyor.'"
+                  :icon="errorMessage ? 'error_outline' : 'task_alt'"
+                  :color="errorMessage ? 'negative' : 'positive'"
                   :retry-label="errorMessage ? 'Tekrar dene' : ''"
                   dense
                   @retry="loadAll"
@@ -120,7 +179,10 @@
     <q-card dark class="glass-card">
       <q-card-section>
         <div class="text-h6">Probe Email</div>
-        <div class="text-caption text-grey-5">NotificationService üzerinden test e-postası gönderir.</div>
+        <div class="ops-card-help">
+          RabbitMQ'dan bağımsız olarak NotificationService SMTP ayarlarını dener. Başarılı gönderimleri
+          Mailpit ekranından kontrol edebilirsin.
+        </div>
       </q-card-section>
       <q-card-section>
         <q-form class="row q-col-gutter-sm items-start" @submit.prevent="sendProbeEmail">
@@ -143,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useAdminStore } from 'stores/admin';
 import CopyValue from 'components/CopyValue.vue';
@@ -155,6 +217,10 @@ const $q = useQuasar();
 const admin = useAdminStore();
 const sendingProbe = ref(false);
 const errorMessage = ref('');
+
+const healthLabel = computed(() =>
+  admin.outboxDeadLetters.length === 0 && admin.notificationDeadLetters.length === 0 ? 'Sağlıklı' : 'İncele',
+);
 
 const probe = reactive({
   toEmail: 'devrimmehmet@gmail.com',
@@ -217,4 +283,50 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.ops-info {
+  background: rgba(14, 116, 144, 0.16);
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  color: #d1f7ff;
+}
+
+.ops-summary {
+  align-items: flex-start;
+  background: rgba(30, 27, 46, 0.68);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 10px;
+  display: flex;
+  gap: 12px;
+  min-height: 112px;
+  padding: 16px;
+}
+
+.ops-summary__value {
+  color: #f9fafb;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ops-summary__label {
+  color: #d1d5db;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.ops-summary__hint,
+.ops-card-help {
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.ops-summary__hint {
+  margin-top: 4px;
+}
+
+.ops-card-help {
+  margin-top: 6px;
+  max-width: 720px;
+}
 </style>

@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.Json.Serialization;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -27,11 +26,14 @@ builder.Host.UseSerilog((context, _, configuration) =>
         .WriteTo.Console();
 });
 
-builder.Services.AddControllers().AddJsonOptions(options =>
+builder.Services.AddScoped<ValidationActionFilter>();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationActionFilter>();
+}).AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
-builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
