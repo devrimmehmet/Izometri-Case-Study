@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using NotificationService.Application.Abstractions;
-using NotificationService.Infrastructure.Auth;
-using NotificationService.Infrastructure.Clients;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 
@@ -57,8 +54,8 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
 
         ExpenseClient = _expenseFactory.CreateClient();
 
-        var expenseHandler = _expenseFactory.Server.CreateHandler();
-
+        // ExpenseDetailsClient kaldırıldı: NotificationService artık event payload'ından
+        // Amount/Currency/RecipientRole okur; ExpenseService'e HTTP çağrısı yapmaz.
         _notificationFactory = new WebApplicationFactory<NotificationService.Api.NotificationApiMarker>()
             .WithWebHostBuilder(builder =>
             {
@@ -67,20 +64,9 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
                 builder.UseSetting("RabbitMq:Port", rabbitPort.ToString());
                 builder.UseSetting("RabbitMq:UserName", "izometri");
                 builder.UseSetting("RabbitMq:Password", "Izometri2026!");
-                builder.UseSetting("ExpenseService:BaseUrl", "http://expense-test/");
 
                 builder.ConfigureTestServices(services =>
                 {
-                    // Route NotificationService → ExpenseService HTTP calls through the in-process test server
-                    services.AddTransient<IExpenseDetailsClient>(sp =>
-                    {
-                        var httpClient = new HttpClient(expenseHandler, disposeHandler: false)
-                        {
-                            BaseAddress = new Uri("http://localhost/")
-                        };
-                        var tokenFactory = sp.GetRequiredService<ServiceTokenFactory>();
-                        return new ExpenseDetailsClient(httpClient, tokenFactory, NullLogger<ExpenseDetailsClient>.Instance);
-                    });
                     services.AddTransient<IEmailSender, NoopEmailSender>();
                     services.AddTransient<ISmsService, NoopSmsService>();
                 });
