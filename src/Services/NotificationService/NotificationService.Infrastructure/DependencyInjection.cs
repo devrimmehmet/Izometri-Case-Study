@@ -1,7 +1,6 @@
 using NotificationService.Application.Abstractions;
 using NotificationService.Application.Services;
 using NotificationService.Infrastructure.Auth;
-using NotificationService.Infrastructure.Clients;
 using NotificationService.Infrastructure.Contexts;
 using NotificationService.Infrastructure.Messaging;
 using NotificationService.Infrastructure.Persistence;
@@ -18,7 +17,7 @@ public static class DependencyInjection
     {
         services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
-        services.Configure<ExpenseServiceOptions>(configuration.GetSection("ExpenseService"));
+        // ExpenseServiceOptions kaldırıldı: ExpenseDetailsClient artık kullanılmıyor.
         services.Configure<SmtpOptions>(options =>
         {
             configuration.GetSection("Smtp").Bind(options);
@@ -34,18 +33,8 @@ public static class DependencyInjection
         services.AddScoped<NotificationDeadLetterStore>();
         services.AddScoped<INotificationQueryService, NotificationQueryService>();
         services.AddScoped<INotificationDeadLetterAdminService, NotificationDeadLetterQueryService>();
-        services.AddSingleton<ServiceTokenFactory>();
-        services.AddHttpClient<IExpenseDetailsClient, ExpenseDetailsClient>((sp, client) =>
-        {
-            var options = configuration.GetSection("ExpenseService").Get<ExpenseServiceOptions>() ?? new ExpenseServiceOptions();
-            client.BaseAddress = new Uri(options.BaseUrl);
-        }).AddStandardResilienceHandler(options =>
-        {
-            options.Retry.MaxRetryAttempts = 3;
-            options.Retry.Delay = TimeSpan.FromMilliseconds(200);
-            options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(3);
-            options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
-        });
+        // ServiceTokenFactory ve ExpenseDetailsClient kaldırıldı:
+        // event'ler artık Amount/Currency/RecipientRole taşıdığından inter-service HTTP çağrısı gerekmez.
         services.AddTransient<IEmailSender, SmtpEmailSender>();
         services.AddHttpClient<ISmsService, NetgsmSmsSender>();
         services.AddHttpContextAccessor();

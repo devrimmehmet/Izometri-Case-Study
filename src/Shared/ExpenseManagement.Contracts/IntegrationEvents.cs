@@ -19,6 +19,9 @@ public abstract record ExpenseIntegrationEvent(
 {
     public string RecipientEmail { get; init; } = string.Empty;
     public string RecipientPhone { get; init; } = string.Empty;
+    // ExpenseService hangi rolün bilgilendirileceğini bilir ve burayı doldurur.
+    // NotificationService böylece event type'tan rol türetmek zorunda kalmaz (SRP, OCP).
+    public string RecipientRole { get; init; } = string.Empty;
 }
 
 public sealed record ExpenseCreatedEvent(
@@ -31,6 +34,8 @@ public sealed record ExpenseCreatedEvent(
     decimal Amount,
     string Currency) : ExpenseIntegrationEvent(EventId, CorrelationId, OccurredAt, TenantId, ExpenseId);
 
+// Amount + Currency eklendi: NotificationService, mesaj oluşturmak için
+// ExpenseService'e senkron HTTP çağrısı yapmak zorunda kalmaz; event zaten veriyi taşır.
 public sealed record ExpenseApprovedEvent(
     Guid EventId,
     string CorrelationId,
@@ -38,8 +43,11 @@ public sealed record ExpenseApprovedEvent(
     Guid TenantId,
     Guid ExpenseId,
     Guid ApprovedBy,
-    string FinalStatus) : ExpenseIntegrationEvent(EventId, CorrelationId, OccurredAt, TenantId, ExpenseId);
+    string FinalStatus,
+    decimal Amount,
+    string Currency) : ExpenseIntegrationEvent(EventId, CorrelationId, OccurredAt, TenantId, ExpenseId);
 
+// Amount + Currency eklendi: aynı gerekçe — event publish anında zenginleştirilir.
 public sealed record ExpenseRejectedEvent(
     Guid EventId,
     string CorrelationId,
@@ -47,4 +55,6 @@ public sealed record ExpenseRejectedEvent(
     Guid TenantId,
     Guid ExpenseId,
     Guid RejectedBy,
-    string Reason) : ExpenseIntegrationEvent(EventId, CorrelationId, OccurredAt, TenantId, ExpenseId);
+    string Reason,
+    decimal Amount,
+    string Currency) : ExpenseIntegrationEvent(EventId, CorrelationId, OccurredAt, TenantId, ExpenseId);

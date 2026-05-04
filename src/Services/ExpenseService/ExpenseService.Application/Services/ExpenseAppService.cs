@@ -75,7 +75,9 @@ public sealed class ExpenseAppService : IExpenseAppService
                 expense.Currency.ToString())
             {
                 RecipientEmail = string.Join(",", notificationContacts.Select(u => u.Email)),
-                RecipientPhone = notificationContacts.Select(u => u.Phone).FirstOrDefault(p => !string.IsNullOrEmpty(p)) ?? string.Empty
+                RecipientPhone = notificationContacts.Select(u => u.Phone).FirstOrDefault(p => !string.IsNullOrEmpty(p)) ?? string.Empty,
+                // Harcama oluşturulduğunda HR onaylayacak; bildirim alıcısı HR rolündedir.
+                RecipientRole = "HR"
             }, ExpenseEventNames.ExpenseCreated, ct);
         }, cancellationToken);
 
@@ -232,10 +234,15 @@ public sealed class ExpenseAppService : IExpenseAppService
                     expense.TenantId,
                     expense.Id,
                     userId,
-                    expense.Status.ToString())
+                    expense.Status.ToString(),
+                    // Tutar event'e gömülür; NotificationService ayrı HTTP çağrısı yapmaz.
+                    expense.Amount,
+                    expense.Currency.ToString())
                 {
                     RecipientEmail = requesterContact?.Email ?? string.Empty,
-                    RecipientPhone = requesterContact?.Phone ?? string.Empty
+                    RecipientPhone = requesterContact?.Phone ?? string.Empty,
+                    // Onay tamamlandığında harcamayı açan personel bilgilendirilir.
+                    RecipientRole = "Personel"
                 }, ExpenseEventNames.ExpenseApproved, ct);
             }
             else if (expense.HrApproved && !expense.AdminApproved && adminContacts != null)
@@ -252,7 +259,9 @@ public sealed class ExpenseAppService : IExpenseAppService
                     expense.Currency.ToString())
                 {
                     RecipientEmail = string.Join(",", adminContacts.Select(u => u.Email)),
-                    RecipientPhone = adminContacts.Select(u => u.Phone).FirstOrDefault(p => !string.IsNullOrEmpty(p)) ?? string.Empty
+                    RecipientPhone = adminContacts.Select(u => u.Phone).FirstOrDefault(p => !string.IsNullOrEmpty(p)) ?? string.Empty,
+                    // HR onayladı, sıra Admin'de; bildirim Admin rolüne gider.
+                    RecipientRole = "Admin"
                 }, ExpenseEventNames.ExpenseRequiresAdminApproval, ct);
             }
         }, cancellationToken);
@@ -303,10 +312,15 @@ public sealed class ExpenseAppService : IExpenseAppService
                 expense.TenantId,
                 expense.Id,
                 userId,
-                request.Reason)
+                request.Reason,
+                // Tutar event'e gömülür; NotificationService ayrı HTTP çağrısı yapmaz.
+                expense.Amount,
+                expense.Currency.ToString())
             {
                 RecipientEmail = requesterContact?.Email ?? string.Empty,
-                RecipientPhone = requesterContact?.Phone ?? string.Empty
+                RecipientPhone = requesterContact?.Phone ?? string.Empty,
+                // Red kararı harcamayı açan personele bildirilir.
+                RecipientRole = "Personel"
             }, ExpenseEventNames.ExpenseRejected, ct);
         }, cancellationToken);
 

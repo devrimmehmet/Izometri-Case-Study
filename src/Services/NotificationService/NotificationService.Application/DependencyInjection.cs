@@ -11,6 +11,14 @@ public static class DependencyInjection
     {
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         services.AddScoped<INotificationEventHandler, NotificationEventHandler>();
+
+        // Her event tipi için strateji kaydedilir.
+        // Yeni event = sadece buraya yeni satır; handler'a dokunulmaz (OCP).
+        services.AddScoped<IExpenseNotificationStrategy, ExpenseCreatedStrategy>();
+        services.AddScoped<IExpenseNotificationStrategy, ExpenseApprovedStrategy>();
+        services.AddScoped<IExpenseNotificationStrategy, ExpenseRejectedStrategy>();
+        services.AddScoped<IExpenseNotificationStrategy, ExpenseRequiresAdminApprovalStrategy>();
+
         return services;
     }
 }

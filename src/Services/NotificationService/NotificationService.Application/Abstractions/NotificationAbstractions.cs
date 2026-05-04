@@ -1,12 +1,9 @@
-using ExpenseManagement.Contracts;
 using NotificationService.Application.DTOs;
 
 namespace NotificationService.Application.Abstractions;
 
-public interface IExpenseDetailsClient
-{
-    Task<ExpenseDetailResponse?> GetExpenseAsync(Guid expenseId, Guid tenantId, string correlationId, CancellationToken cancellationToken);
-}
+// IExpenseDetailsClient kaldırıldı: event'ler artık Amount/Currency içerdiğinden
+// NotificationService, expense detayı için ExpenseService'e HTTP çağrısı yapmaz.
 
 public interface INotificationEventHandler
 {
